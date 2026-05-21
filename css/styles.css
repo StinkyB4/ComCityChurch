@@ -902,9 +902,13 @@ footer {
 
 /* Error fallback */
 .sermon-error-state {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
   padding: var(--space-xl);
   color: var(--muted-blue);
+  text-align: center;
   margin-top: var(--space-lg);
 }
 

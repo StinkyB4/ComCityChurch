@@ -461,7 +461,7 @@ class YouTubeHeroPlayer {
 }
 
 // ── LIVE SERMON RSS FEED ─────────────────────────────────────────────────
-// Fetches the 4 most recent episodes from the Anchor/Spotify RSS feed.
+// Multi-proxy fallback chain — tries each proxy in order until one succeeds.
 // Safe to call on every page — exits immediately if #sermon-grid isn't found.
 
 async function fetchSermons() {
@@ -472,68 +472,124 @@ async function fetchSermons() {
   if (!grid) return;
 
   const RSS_URL      = 'https://anchor.fm/s/fcef7890/podcast/rss';
-  const PROXY_URL    = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(RSS_URL)}&count=4`;
   const SPOTIFY_SHOW = 'https://open.spotify.com/show/2XGMvfMPl2GVUDEkHG5GTZ';
 
-  try {
-    const response = await fetch(PROXY_URL);
-    if (!response.ok) throw new Error('Network response not ok');
+  // Proxies tried in order — first success wins
+  const PROXIES = [
+    { type: 'xml',       url: `https://corsproxy.io/?${encodeURIComponent(RSS_URL)}` },
+    { type: 'allorigins', url: `https://api.allorigins.win/get?url=${encodeURIComponent(RSS_URL)}` },
+    { type: 'rss2json',  url: `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(RSS_URL)}&count=4` },
+  ];
 
-    const data = await response.json();
-    if (data.status !== 'ok' || !data.items || data.items.length === 0) {
-      throw new Error('Feed returned no items');
+  let items     = null;
+  let feedImage = '';
+
+  for (const proxy of PROXIES) {
+    try {
+      const response = await fetch(proxy.url, { signal: AbortSignal.timeout(8000) });
+      if (!response.ok) continue;
+
+      if (proxy.type === 'rss2json') {
+        const data = await response.json();
+        if (data.status === 'ok' && data.items?.length) {
+          items     = data.items.slice(0, 4);
+          feedImage = data.feed?.image || '';
+          break;
+        }
+      } else if (proxy.type === 'allorigins') {
+        const data   = await response.json();
+        const parsed = parseRSS(data.contents);
+        if (parsed?.length) { items = parsed.slice(0, 4); break; }
+      } else if (proxy.type === 'xml') {
+        const text   = await response.text();
+        const parsed = parseRSS(text);
+        if (parsed?.length) { items = parsed.slice(0, 4); break; }
+      }
+    } catch (e) {
+      console.warn(`[Sermons] Proxy failed (${proxy.type}):`, e.message);
     }
+  }
 
+  if (!items || items.length === 0) {
     if (loading) loading.style.display = 'none';
-    grid.style.display = 'grid';
+    if (error)   error.style.display   = 'flex';
+    return;
+  }
 
-    data.items.forEach(item => {
-      // Format date
-      const pubDate = new Date(item.pubDate);
-      const dateStr = pubDate.toLocaleDateString('en-CA', {
-        year: 'numeric', month: 'long', day: 'numeric'
-      });
+  if (loading) loading.style.display = 'none';
+  grid.style.display = 'grid';
 
-      // Strip HTML from description for a clean excerpt
-      const rawDesc  = item.description || item.content || '';
-      const cleanDesc = rawDesc.replace(/<[^>]*>/g, '').trim();
-      const excerpt   = cleanDesc.length > 140
-        ? cleanDesc.substring(0, 140).trim() + '…'
-        : cleanDesc;
-
-      // Episode artwork: try episode thumb → feed image → gradient fallback
-      const thumb = item.thumbnail
-        || item.enclosure?.thumbnail
-        || data.feed?.image
-        || '';
-
-      // Link directly to the episode; fall back to show page
-      const listenUrl = item.link || SPOTIFY_SHOW;
-
-      const card = document.createElement('article');
-      card.className = 'sermon-card';
-      card.innerHTML = `
-        <div class="sermon-thumb ${thumb ? '' : 'sermon-thumb-gradient'}"
-             ${thumb ? `style="background-image:url('${thumb}')"` : ''}>
-          <span class="sermon-series-badge">Latest</span>
-        </div>
-        <div class="sermon-body">
-          <p class="sermon-reference eyebrow">${dateStr}</p>
-          <h4 class="sermon-title">${item.title}</h4>
-          ${excerpt ? `<p class="sermon-excerpt">${excerpt}</p>` : ''}
-          <a href="${listenUrl}"
-             class="btn btn-primary"
-             target="_blank"
-             rel="noopener noreferrer">Listen →</a>
-        </div>
-      `;
-      grid.appendChild(card);
+  items.forEach(item => {
+    const pubDate = new Date(item.pubDate || item.isoDate || '');
+    const dateStr = isNaN(pubDate) ? '' : pubDate.toLocaleDateString('en-CA', {
+      year: 'numeric', month: 'long', day: 'numeric'
     });
 
-  } catch (err) {
-    console.warn('[Sermons] RSS fetch failed:', err);
-    if (loading) loading.style.display = 'none';
-    if (error)   error.style.display   = 'block';
+    const rawDesc   = item.description || item.content || item.contentSnippet || '';
+    const cleanDesc = rawDesc.replace(/<[^>]*>/g, '').trim();
+    const excerpt   = cleanDesc.length > 140
+      ? cleanDesc.substring(0, 140).trim() + '…'
+      : cleanDesc;
+
+    const thumb = item.thumbnail
+      || item.itunes?.image
+      || item.image
+      || feedImage
+      || '';
+
+    const listenUrl = item.link || item.guid || SPOTIFY_SHOW;
+
+    const card = document.createElement('article');
+    card.className = 'sermon-card card fade-in-up';
+    card.innerHTML = `
+      <div class="sermon-thumb ${thumb ? '' : 'sermon-thumb-gradient'}"
+           ${thumb ? `style="background-image:url('${thumb}')"` : ''}>
+        <span class="sermon-series">Latest</span>
+      </div>
+      <div class="sermon-body">
+        ${dateStr ? `<p class="sermon-reference eyebrow">${dateStr}</p>` : ''}
+        <h3 class="sermon-title">${item.title || 'Untitled'}</h3>
+        ${excerpt ? `<p class="sermon-excerpt">${excerpt}</p>` : ''}
+        <a href="${listenUrl}"
+           class="btn btn-primary"
+           target="_blank"
+           rel="noopener noreferrer">Listen →</a>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// ── RSS XML PARSER ────────────────────────────────────────────────────────
+// Parses a raw RSS XML string into episode objects.
+// Used when a proxy returns XML rather than pre-parsed JSON.
+
+function parseRSS(xmlString) {
+  try {
+    const parser = new DOMParser();
+    const doc    = parser.parseFromString(xmlString, 'text/xml');
+    if (doc.querySelector('parsererror')) return null;
+
+    const items = Array.from(doc.querySelectorAll('item'));
+    if (!items.length) return null;
+
+    return items.map(item => {
+      const itunesNS  = 'http://www.itunes.com/dtds/podcast-1.0.dtd';
+      const itunesImg = item.querySelector('image')?.getAttribute('href')
+        || item.getElementsByTagNameNS(itunesNS, 'image')[0]?.getAttribute('href')
+        || '';
+      return {
+        title:       item.querySelector('title')?.textContent?.trim() || '',
+        description: item.querySelector('description')?.textContent?.trim() || '',
+        pubDate:     item.querySelector('pubDate')?.textContent?.trim() || '',
+        link:        item.querySelector('link')?.textContent?.trim() || '',
+        guid:        item.querySelector('guid')?.textContent?.trim() || '',
+        thumbnail:   itunesImg,
+      };
+    });
+  } catch (e) {
+    console.warn('[parseRSS] Failed:', e);
+    return null;
   }
 }
 
