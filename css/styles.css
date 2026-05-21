@@ -862,4 +862,65 @@ footer {
   .btn-group.centered { align-items: center; }
 
   .community-card { min-height: 320px; }
+  .sermon-grid { grid-template-columns: 1fr; }
+}
+
+/* ── SERMON RSS FEED ─────────────────────────────────────────────── */
+
+/* Live grid layout */
+.sermon-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-lg);
+  margin-top: var(--space-lg);
+}
+
+/* Loading spinner */
+.sermon-loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xl) var(--space-lg);
+  color: var(--muted-blue);
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+.sermon-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--gray-bg);
+  border-top-color: var(--navy);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Error fallback */
+.sermon-error-state {
+  text-align: center;
+  padding: var(--space-xl);
+  color: var(--muted-blue);
+  margin-top: var(--space-lg);
+}
+
+/* Gradient fallback when no episode artwork exists */
+.sermon-thumb-gradient {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--muted-blue) 100%);
+}
+
+/* Episode description excerpt */
+.sermon-excerpt {
+  font-size: 14px;
+  color: var(--muted-blue);
+  line-height: 1.6;
+  margin-bottom: var(--space-md);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }

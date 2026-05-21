@@ -460,6 +460,84 @@ class YouTubeHeroPlayer {
   }
 }
 
+// ── LIVE SERMON RSS FEED ─────────────────────────────────────────────────
+// Fetches the 4 most recent episodes from the Anchor/Spotify RSS feed.
+// Safe to call on every page — exits immediately if #sermon-grid isn't found.
+
+async function fetchSermons() {
+  const grid    = document.getElementById('sermon-grid');
+  const loading = document.getElementById('sermon-loading');
+  const error   = document.getElementById('sermon-error');
+
+  if (!grid) return;
+
+  const RSS_URL      = 'https://anchor.fm/s/fcef7890/podcast/rss';
+  const PROXY_URL    = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(RSS_URL)}&count=4`;
+  const SPOTIFY_SHOW = 'https://open.spotify.com/show/2XGMvfMPl2GVUDEkHG5GTZ';
+
+  try {
+    const response = await fetch(PROXY_URL);
+    if (!response.ok) throw new Error('Network response not ok');
+
+    const data = await response.json();
+    if (data.status !== 'ok' || !data.items || data.items.length === 0) {
+      throw new Error('Feed returned no items');
+    }
+
+    if (loading) loading.style.display = 'none';
+    grid.style.display = 'grid';
+
+    data.items.forEach(item => {
+      // Format date
+      const pubDate = new Date(item.pubDate);
+      const dateStr = pubDate.toLocaleDateString('en-CA', {
+        year: 'numeric', month: 'long', day: 'numeric'
+      });
+
+      // Strip HTML from description for a clean excerpt
+      const rawDesc  = item.description || item.content || '';
+      const cleanDesc = rawDesc.replace(/<[^>]*>/g, '').trim();
+      const excerpt   = cleanDesc.length > 140
+        ? cleanDesc.substring(0, 140).trim() + '…'
+        : cleanDesc;
+
+      // Episode artwork: try episode thumb → feed image → gradient fallback
+      const thumb = item.thumbnail
+        || item.enclosure?.thumbnail
+        || data.feed?.image
+        || '';
+
+      // Link directly to the episode; fall back to show page
+      const listenUrl = item.link || SPOTIFY_SHOW;
+
+      const card = document.createElement('article');
+      card.className = 'sermon-card';
+      card.innerHTML = `
+        <div class="sermon-thumb ${thumb ? '' : 'sermon-thumb-gradient'}"
+             ${thumb ? `style="background-image:url('${thumb}')"` : ''}>
+          <span class="sermon-series-badge">Latest</span>
+        </div>
+        <div class="sermon-body">
+          <p class="sermon-reference eyebrow">${dateStr}</p>
+          <h4 class="sermon-title">${item.title}</h4>
+          ${excerpt ? `<p class="sermon-excerpt">${excerpt}</p>` : ''}
+          <a href="${listenUrl}"
+             class="btn btn-primary"
+             target="_blank"
+             rel="noopener noreferrer">Listen →</a>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+
+  } catch (err) {
+    console.warn('[Sermons] RSS fetch failed:', err);
+    if (loading) loading.style.display = 'none';
+    if (error)   error.style.display   = 'block';
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  fetchSermons();
   new MediaRenderer();
 });

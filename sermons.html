@@ -46,21 +46,7 @@
 <section class="page-hero page-hero--navy" data-media="heroes.sermons" aria-labelledby="page-heading">
   <span class="eyebrow fade-in-up">Preaching</span>
   <h1 id="page-heading" class="fade-in-up delay-1">God's Word Preached</h1>
-  <p class="page-hero-sub fade-in-up delay-2">Listen to our latest sermons on Spotify.</p>
-</section>
-
-<!-- ===== SPOTIFY CTA ===== -->
-<section class="section">
-  <div class="container" style="max-width:680px;">
-    <div class="card fade-in-up" style="padding:var(--space-xl); text-align:center;">
-      <div style="width:72px; height:72px; background:#1DB954; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto var(--space-md);">
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="white"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
-      </div>
-      <h3 class="fade-in-up delay-1" style="margin-bottom:var(--space-sm);">Listen on Spotify</h3>
-      <p class="fade-in-up delay-2" style="color:var(--muted-blue); margin-bottom:var(--space-lg);">We preach through books of the Bible, letting Scripture set the agenda. All our sermons are available on Spotify.</p>
-      <a href="https://open.spotify.com/show/2XGMvfMPl2GVUDEkHG5GTZ" target="_blank" rel="noopener" class="btn btn-primary fade-in-up delay-3">Open in Spotify →</a>
-    </div>
-  </div>
+  <p class="page-hero-sub fade-in-up delay-2">Latest episodes, updated automatically.</p>
 </section>
 
 <!-- ===== SERMON CARDS ===== -->
@@ -70,12 +56,26 @@
       <span class="eyebrow fade-in-up">Recent Sermons</span>
       <h2 class="fade-in-up delay-1">From the Pulpit</h2>
     </div>
-    <!-- JS builds this grid from SITE_MEDIA.sermons in media.js -->
-    <div id="sermon-grid" class="grid-2" style="margin-top:var(--space-lg);"></div>
 
-    <div class="text-center fade-in-up" style="margin-top:var(--space-xl);">
-      <a href="https://open.spotify.com/show/2XGMvfMPl2GVUDEkHG5GTZ" target="_blank" rel="noopener" class="btn btn-primary">Browse All Sermons on Spotify →</a>
+    <!-- Loading state shown while RSS fetches -->
+    <div id="sermon-loading" class="sermon-loading-state">
+      <div class="sermon-spinner"></div>
+      <p>Loading latest sermons...</p>
     </div>
+
+    <!-- Error state shown if feed fails -->
+    <div id="sermon-error" class="sermon-error-state" style="display:none;">
+      <p>Unable to load sermons right now.</p>
+      <a href="https://open.spotify.com/show/2XGMvfMPl2GVUDEkHG5GTZ"
+         target="_blank"
+         rel="noopener noreferrer"
+         class="btn btn-primary">
+        Listen on Spotify →
+      </a>
+    </div>
+
+    <!-- Grid — populated by JS from live RSS feed -->
+    <div id="sermon-grid" class="sermon-grid" style="display:none;"></div>
   </div>
 </section>
 
