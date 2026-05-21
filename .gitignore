@@ -1,0 +1,17 @@
+# ── Pre-rebrand mockup files ──────────────────────────────────────
+002.html
+commission city mockup.html
+etching.png
+assets/PLACE_LOGO_HERE.txt
+
+# ── Large video files (commit small MP4s individually if needed) ──
+assets/media/heroes/*.mov
+assets/media/heroes/*.webm
+
+# ── OS & editor ───────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+.vscode/
