@@ -85,10 +85,7 @@ class MediaRenderer {
       this.render(el, mediaData);
     });
 
-    const sermonGrid = document.getElementById('sermon-grid');
-    if (sermonGrid && SITE_MEDIA.sermons) {
-      this.renderSermonGrid(sermonGrid);
-    }
+    // Sermon grid is handled by fetchSermons() — not MediaRenderer
   }
 
   resolve(path) {
@@ -479,7 +476,12 @@ async function fetchSermons() {
       signal: AbortSignal.timeout(10000)
     });
 
-    if (!response.ok) throw new Error(`API returned ${response.status}`);
+    // Guard: if the response isn't JSON (e.g. local preview returns index.html),
+    // throw immediately rather than letting JSON.parse choke on HTML
+    const contentType = response.headers.get('content-type') || '';
+    if (!response.ok || !contentType.includes('application/json')) {
+      throw new Error(`API unavailable (${response.status})`);
+    }
 
     const data = await response.json();
     if (data.status !== 'ok' || !data.items?.length) {
@@ -489,46 +491,75 @@ async function fetchSermons() {
     if (loading) loading.style.display = 'none';
     grid.style.display = 'grid';
 
-    data.items.forEach(item => {
-      const pubDate = new Date(item.pubDate);
-      const dateStr = isNaN(pubDate) ? '' : pubDate.toLocaleDateString('en-CA', {
-        year: 'numeric', month: 'long', day: 'numeric'
-      });
-
-      const rawDesc   = item.description || '';
-      const cleanDesc = rawDesc.replace(/<[^>]*>/g, '').trim();
-      const excerpt   = cleanDesc.length > 140
-        ? cleanDesc.substring(0, 140).trim() + '…'
-        : cleanDesc;
-
-      const thumb     = item.thumbnail || '';
-      const listenUrl = item.link || SPOTIFY_SHOW;
-
-      const card = document.createElement('article');
-      card.className = 'sermon-card card fade-in-up';
-      card.innerHTML = `
-        <div class="sermon-thumb ${thumb ? '' : 'sermon-thumb-gradient'}"
-             ${thumb ? `style="background-image:url('${thumb}')"` : ''}>
-          <span class="sermon-series">Latest</span>
-        </div>
-        <div class="sermon-body">
-          ${dateStr ? `<p class="sermon-reference eyebrow">${dateStr}</p>` : ''}
-          <h3 class="sermon-title">${item.title || 'Untitled'}</h3>
-          ${excerpt ? `<p class="sermon-excerpt">${excerpt}</p>` : ''}
-          <a href="${listenUrl}"
-             class="btn btn-primary"
-             target="_blank"
-             rel="noopener noreferrer">Listen →</a>
-        </div>
-      `;
-      grid.appendChild(card);
-    });
+    renderSermonCards(grid, data.items.map(item => ({
+      title:       item.title || 'Untitled',
+      date:        item.pubDate,
+      description: item.description || '',
+      thumb:       item.thumbnail || '',
+      link:        item.link || SPOTIFY_SHOW,
+    })));
 
   } catch (err) {
-    console.warn('[Sermons] Failed to load:', err.message);
+    console.warn('[Sermons] API unavailable:', err.message);
     if (loading) loading.style.display = 'none';
-    if (error)   error.style.display   = 'flex';
+
+    // Fallback: use static sermon data from media.js when API isn't reachable
+    // (e.g. local file preview — the Azure Function only runs on Azure)
+    const staticSermons = window.SITE_MEDIA?.sermons;
+    if (staticSermons?.length) {
+      grid.style.display = 'grid';
+      renderSermonCards(grid, staticSermons.map(s => ({
+        title:       s.title,
+        date:        null,
+        description: `${s.reference} — ${s.speaker}`,
+        thumb:       s.thumb || '',
+        link:        s.spotifyUrl || SPOTIFY_SHOW,
+        series:      s.series || '',
+      })));
+    } else {
+      if (error) error.style.display = 'flex';
+    }
   }
+}
+
+// Shared card renderer — used by both live API path and static fallback
+function renderSermonCards(container, sermons) {
+  const SPOTIFY_SHOW = 'https://open.spotify.com/show/2XGMvfMPl2GVUDEkHG5GTZ';
+  sermons.forEach(item => {
+    const pubDate = item.date ? new Date(item.date) : null;
+    const dateStr = pubDate && !isNaN(pubDate)
+      ? pubDate.toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' })
+      : '';
+
+    const rawDesc   = item.description || '';
+    const cleanDesc = rawDesc.replace(/<[^>]*>/g, '').trim();
+    const excerpt   = cleanDesc.length > 140
+      ? cleanDesc.substring(0, 140).trim() + '…'
+      : cleanDesc;
+
+    const thumb     = item.thumb || '';
+    const listenUrl = item.link  || SPOTIFY_SHOW;
+    const badge     = item.series || 'Latest';
+
+    const card = document.createElement('article');
+    card.className = 'sermon-card card fade-in-up';
+    card.innerHTML = `
+      <div class="sermon-thumb ${thumb ? '' : 'sermon-thumb-gradient'}"
+           ${thumb ? `style="background-image:url('${thumb}')"` : ''}>
+        <span class="sermon-series">${badge}</span>
+      </div>
+      <div class="sermon-body">
+        ${dateStr ? `<p class="sermon-reference eyebrow">${dateStr}</p>` : ''}
+        <h3 class="sermon-title">${item.title}</h3>
+        ${excerpt ? `<p class="sermon-excerpt">${excerpt}</p>` : ''}
+        <a href="${listenUrl}"
+           class="btn btn-primary"
+           target="_blank"
+           rel="noopener noreferrer">Listen →</a>
+      </div>
+    `;
+    container.appendChild(card);
+  });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
