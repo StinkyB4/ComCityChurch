@@ -27,8 +27,8 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          app_location: "/"        # your HTML files are at the repo root
-          api_location: ""         # no backend API
+          app_location: "/"        # HTML files at repo root
+          api_location: "api"      # Azure Functions in /api folder
           output_location: ""      # no build step — files deploy as-is
           skip_app_build: true     # pure static — skip Oryx build detection
 
