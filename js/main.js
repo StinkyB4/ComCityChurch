@@ -505,7 +505,9 @@ async function fetchSermons() {
 
     // Fallback: use static sermon data from media.js when API isn't reachable
     // (e.g. local file preview — the Azure Function only runs on Azure)
-    const staticSermons = window.SITE_MEDIA?.sermons;
+    // Note: SITE_MEDIA is declared with const so it doesn't attach to window —
+    // use typeof guard to avoid a ReferenceError if media.js hasn't loaded
+    const staticSermons = (typeof SITE_MEDIA !== 'undefined') ? SITE_MEDIA.sermons : null;
     if (staticSermons?.length) {
       grid.style.display = 'grid';
       renderSermonCards(grid, staticSermons.map(s => ({
