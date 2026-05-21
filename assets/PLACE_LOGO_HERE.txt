@@ -1,0 +1,6 @@
+Drop your logo file in this folder and name it:
+
+  logo.png
+
+All 9 pages reference it as assets/logo.png.
+Until then, a text fallback is displayed automatically.

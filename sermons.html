@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sermons — Commissioned City Church</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400&family=Montserrat:wght@600;700;800&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- ===== NAVIGATION ===== -->
+<nav class="navbar" aria-label="Main navigation">
+  <div class="nav-inner">
+    <a class="nav-logo" href="index.html" aria-label="Commissioned City Church home">
+      <img src="assets/logo.png" alt="Commissioned City Church" onerror="this.parentElement.innerHTML='<div class=\'nav-logo-placeholder\'><div class=\'logo-mark\'><svg viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'white\' stroke-width=\'2\'><path d=\'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5\'/></svg></div><div class=\'logo-text\'>COMMISSIONED<br>CITY CHURCH</div></div>'">
+    </a>
+    <ul class="nav-links" role="list">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="communities.html">Communities</a></li>
+      <li><a href="gatherings.html">Gatherings</a></li>
+      <li><a href="sermons.html">Sermons</a></li>
+      <li><a href="give.html">Give</a></li>
+    </ul>
+    <a href="contact.html" class="btn btn-primary nav-cta">Plan Your Visit →</a>
+    <button class="nav-hamburger" aria-label="Open menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="nav-mobile" role="dialog" aria-modal="true">
+  <button class="nav-mobile-close" aria-label="Close menu">✕</button>
+  <a href="index.html">Home</a>
+  <a href="about.html">About</a>
+  <a href="communities.html">Communities</a>
+  <a href="gatherings.html">Gatherings</a>
+  <a href="sermons.html">Sermons</a>
+  <a href="give.html">Give</a>
+  <a href="contact.html" class="btn btn-primary">Plan Your Visit →</a>
+</div>
+
+<main>
+
+<!-- ===== PAGE HERO ===== -->
+<section class="page-hero page-hero--navy" data-media="heroes.sermons" aria-labelledby="page-heading">
+  <span class="eyebrow fade-in-up">Preaching</span>
+  <h1 id="page-heading" class="fade-in-up delay-1">God's Word Preached</h1>
+  <p class="page-hero-sub fade-in-up delay-2">Listen to our latest sermons on Spotify.</p>
+</section>
+
+<!-- ===== SPOTIFY CTA ===== -->
+<section class="section">
+  <div class="container" style="max-width:680px;">
+    <div class="card fade-in-up" style="padding:var(--space-xl); text-align:center;">
+      <div style="width:72px; height:72px; background:#1DB954; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto var(--space-md);">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="white"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+      </div>
+      <h3 class="fade-in-up delay-1" style="margin-bottom:var(--space-sm);">Listen on Spotify</h3>
+      <p class="fade-in-up delay-2" style="color:var(--muted-blue); margin-bottom:var(--space-lg);">We preach through books of the Bible, letting Scripture set the agenda. All our sermons are available on Spotify.</p>
+      <a href="https://open.spotify.com/show/2XGMvfMPl2GVUDEkHG5GTZ" target="_blank" rel="noopener" class="btn btn-primary fade-in-up delay-3">Open in Spotify →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SERMON CARDS ===== -->
+<section class="section section--gray">
+  <div class="container">
+    <div class="section-heading">
+      <span class="eyebrow fade-in-up">Recent Sermons</span>
+      <h2 class="fade-in-up delay-1">From the Pulpit</h2>
+    </div>
+    <!-- JS builds this grid from SITE_MEDIA.sermons in media.js -->
+    <div id="sermon-grid" class="grid-2" style="margin-top:var(--space-lg);"></div>
+
+    <div class="text-center fade-in-up" style="margin-top:var(--space-xl);">
+      <a href="https://open.spotify.com/show/2XGMvfMPl2GVUDEkHG5GTZ" target="_blank" rel="noopener" class="btn btn-primary">Browse All Sermons on Spotify →</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <img src="assets/logo.png" alt="Commissioned City Church" style="height:120px; background:white; border-radius:10px; padding:8px 12px; margin-bottom:var(--space-md);" onerror="this.outerHTML='<div style=\'font-family:Montserrat,sans-serif;font-weight:800;font-size:18px;color:white;margin-bottom:var(--space-md);\'>COMMISSIONED<br>CITY CHURCH</div>'">
+      <p class="footer-tagline">Sent into the City. Rooted in Christ.</p>
+      <div class="footer-social">
+        <a href="#" aria-label="Instagram" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="white" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="white" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.5" fill="white"/></svg></a>
+        <a href="#" aria-label="Facebook" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="believe.html">What We Believe</a></li>
+        <li><a href="gospel.html">The Gospel</a></li>
+        <li><a href="communities.html">Communities</a></li>
+        <li><a href="gatherings.html">Gatherings</a></li>
+        <li><a href="sermons.html">Sermons</a></li>
+        <li><a href="give.html">Give</a></li>
+        <li><a href="contact.html">Connect</a></li>
+      </ul>
+    </div>
+    <div class="footer-col footer-contact">
+      <h4>Find Us</h4>
+      <p>205 Roseberry St<br>Winnipeg, MB R3J 1T3</p>
+      <p style="margin-top:var(--space-sm);">☕ Coffee — 10:00am Sunday<br>🙏 Worship — 10:30am Sunday</p>
+      <p style="margin-top:var(--space-sm);"><a href="mailto:info@commissionedcity.church">info@commissionedcity.church</a></p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>Matthew 28:18–20 · © 2025 Commissioned City Church</span>
+    <span>Winnipeg, Manitoba</span>
+  </div>
+</footer>
+
+<script src="js/media.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

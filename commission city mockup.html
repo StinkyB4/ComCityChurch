@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Commission City Church · Sent With Authority</title>
+  <!-- Google Fonts: Oswald (condensed/directional) + Inter (clean body) -->
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <style>
+    /* ---------- RESET & BRAND SYSTEM ---------- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --navy: #0B1F3A;
+      --off-white: #F7F5F2;
+      --mission-red: #C23A2B;
+      --steel-gray: #6B7280;
+      --transition: all 0.25s ease-in-out;
+    }
+
+    body {
+      background-color: var(--off-white);
+      color: #1e2a2e;
+      font-family: 'Inter', sans-serif;
+      line-height: 1.5;
+      scroll-behavior: smooth;
+    }
+
+    /* typography - directional & structured */
+    h1, h2, h3, h4, .heading-font, .nav-links a, .btn, .logo h1, .section-title {
+      font-family: 'Oswald', sans-serif;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      font-size: 2.8rem;
+      line-height: 1.2;
+    }
+
+    h3 {
+      font-size: 1.8rem;
+      font-weight: 600;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    /* buttons - hard edges, slight rounding (max 4px) */
+    .btn-primary, .btn-outline, .cta-button, button[type="submit"] {
+      font-family: 'Oswald', sans-serif;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-radius: 4px;
+      transition: var(--transition);
+      cursor: pointer;
+      display: inline-block;
+      text-align: center;
+      border: none;
+    }
+
+    .btn-primary {
+      background-color: var(--mission-red);
+      color: white;
+      padding: 0.9rem 2rem;
+      font-size: 1rem;
+      transition: 0.2s;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--navy);
+      transform: translateY(-2px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 2px solid var(--mission-red);
+      color: var(--mission-red);
+      padding: 0.8rem 1.8rem;
+      font-size: 0.95rem;
+    }
+
+    .btn-outline:hover {
+      background-color: var(--mission-red);
+      color: white;
+      border-color: var(--mission-red);
+    }
+
+    /* navigation - structured with navy */
+    .navbar {
+      background-color: var(--navy);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 3px solid var(--mission-red);
+      padding: 1rem 0;
+    }
+
+    .nav-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+    }
+
+    /* circular seal effect (logo concept) */
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .circle-seal {
+      width: 48px;
+      height: 48px;
+      background-color: var(--mission-red);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 0 2px var(--off-white);
+    }
+
+    .circle-seal span {
+      font-family: 'Oswald', sans-serif;
+      font-weight: 800;
+      font-size: 1.5rem;
+      color: white;
+      transform: rotate(0deg);
+    }
+
+    .logo h1 {
+      font-size: 1.7rem;
+      font-weight: 700;
+      color: var(--off-white);
+      margin: 0;
+      line-height: 1.2;
+      letter-spacing: 1px;
+    }
+
+    .logo p {
+      font-size: 0.7rem;
+      color: var(--steel-gray);
+      font-family: 'Inter', sans-serif;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      font-family: 'Oswald', sans-serif;
+      font-weight: 500;
+      color: var(--off-white);
+      transition: var(--transition);
+      font-size: 1rem;
+      letter-spacing: 0.03em;
+    }
+
+    .nav-links a:hover {
+      color: var(--mission-red);
+    }
+
+    /* hero section – movement & mission feel */
+    .hero {
+      background: linear-gradient(95deg, var(--navy) 0%, #0f2a48 100%);
+      color: white;
+      padding: 5rem 0 6rem;
+      border-bottom: 2px solid var(--mission-red);
+    }
+
+    .hero-grid {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 3rem;
+    }
+
+    .hero-text {
+      flex: 1.2;
+    }
+
+    .hero-tag {
+      font-family: 'Inter', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      font-size: 0.8rem;
+      color: var(--mission-red);
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: inline-block;
+      background: rgba(194,58,43,0.12);
+      padding: 0.2rem 0.8rem;
+      border-radius: 20px;
+    }
+
+    .hero-text h2 {
+      font-size: 4rem;
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 1.2rem;
+    }
+
+    .hero-text p {
+      font-size: 1.2rem;
+      color: #d0dcec;
+      margin-bottom: 2rem;
+      max-width: 90%;
+    }
+
+    .hero-image {
+      flex: 1;
+      background-color: #1f3b58;
+      border-radius: 4px;
+      min-height: 380px;
+      background-image: url('hhttps://youtu.be/7mbqWoU9KXQ?si=vj_qJfE8rAojVzCY');
+      background-size: cover;
+      background-position: center 30%;
+      box-shadow: 20px 20px 0 rgba(194,58,43,0.25);
+      border: 1px solid rgba(255,255,240,0.1);
+    }
+
+    /* section headings + structured blocks */
+    .section {
+      padding: 5rem 0;
+    }
+
+    .section-dark {
+      background-color: var(--navy);
+      color: var(--off-white);
+    }
+
+    .section-title {
+      font-size: 2.6rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      letter-spacing: 1px;
+      position: relative;
+      display: inline-block;
+    }
+
+    .section-title:after {
+      content: '';
+      display: block;
+      width: 60px;
+      height: 4px;
+      background: var(--mission-red);
+      margin-top: 0.5rem;
+    }
+
+    .section-sub {
+      color: var(--steel-gray);
+      max-width: 700px;
+      margin: 1rem 0 3rem 0;
+      font-size: 1.1rem;
+    }
+    .section-dark .section-sub {
+      color: #cbd5e1;
+    }
+
+    /* grid zones */
+    .grid-3 {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .card-structure {
+      flex: 1;
+      background: var(--off-white);
+      padding: 2rem;
+      border-radius: 4px;
+      border-left: 5px solid var(--mission-red);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.02);
+      transition: transform 0.2s;
+    }
+    .section-dark .card-structure {
+      background: #112b44;
+      color: #f0f4fa;
+      border-left-color: var(--mission-red);
+    }
+    .card-structure h3 {
+      font-size: 1.7rem;
+      margin-bottom: 1rem;
+      font-family: 'Oswald', sans-serif;
+    }
+
+    /* worship times (structured) */
+    .times-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      justify-content: center;
+      margin: 2rem 0;
+    }
+    .time-card {
+      background: #ffffff;
+      padding: 1.5rem;
+      text-align: center;
+      min-width: 180px;
+      border-radius: 4px;
+      border-top: 4px solid var(--mission-red);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.03);
+    }
+    .time-day {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--navy);
+    }
+    .time-hour {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--mission-red);
+      margin-top: 0.5rem;
+    }
+
+    /* events */
+    .events-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+    }
+    .event-item {
+      flex: 1;
+      background: white;
+      padding: 1.8rem;
+      border-radius: 4px;
+      transition: var(--transition);
+      border-bottom: 3px solid transparent;
+    }
+    .event-item:hover {
+      border-bottom-color: var(--mission-red);
+      transform: translateY(-4px);
+    }
+    .event-date {
+      color: var(--mission-red);
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin: 0.7rem 0;
+    }
+
+    /* leadership — real people in motion imagery style */
+    .leaders-flex {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2.5rem;
+      justify-content: center;
+      margin-top: 2rem;
+    }
+    .leader-card {
+      text-align: center;
+      max-width: 200px;
+    }
+    .leader-img {
+      width: 140px;
+      height: 140px;
+      background: #2c4c6e;
+      border-radius: 0;
+      margin: 0 auto 1rem;
+      background-size: cover;
+      background-position: center;
+      filter: grayscale(0%) contrast(1.05);
+      border: 2px solid var(--mission-red);
+      transition: 0.2s;
+    }
+    .leader-card h4 {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.3rem;
+      margin-top: 0.5rem;
+    }
+    .leader-role {
+      color: var(--mission-red);
+      font-weight: 600;
+      font-size: 0.85rem;
+      letter-spacing: 0.5px;
+    }
+
+    /* Connect section (form / UI with compass feel) */
+    .connect-wrapper {
+      background: #e9e6e0;
+      border-radius: 4px;
+      padding: 3rem;
+    }
+    .connect-flex {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2.5rem;
+      align-items: center;
+    }
+    .connect-info {
+      flex: 1;
+    }
+    .compass-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    .connect-form {
+      flex: 1;
+      background: white;
+      padding: 2rem;
+      border-radius: 4px;
+      box-shadow: 8px 8px 0 var(--mission-red);
+    }
+    .input-field {
+      margin-bottom: 1rem;
+    }
+    .input-field input, .input-field textarea {
+      width: 100%;
+      padding: 0.9rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-family: 'Inter', sans-serif;
+      background: #fff;
+    }
+    .input-field input:focus, .input-field textarea:focus {
+      outline: none;
+      border-color: var(--mission-red);
+    }
+    button[type="submit"] {
+      background: var(--mission-red);
+      width: 100%;
+      padding: 0.9rem;
+      font-weight: 700;
+      color: white;
+      font-family: 'Oswald', sans-serif;
+      font-size: 1rem;
+    }
+    button[type="submit"]:hover {
+      background: var(--navy);
+    }
+
+    footer {
+      background: var(--navy);
+      color: var(--off-white);
+      padding: 2.5rem 0;
+      text-align: center;
+      border-top: 2px solid var(--mission-red);
+    }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .footer-links a {
+      color: #dce4ec;
+      text-decoration: none;
+      font-family: 'Oswald', sans-serif;
+      letter-spacing: 1px;
+    }
+    .footer-links a:hover {
+      color: var(--mission-red);
+    }
+
+    @media (max-width: 780px) {
+      .hero-text h2 { font-size: 2.5rem; }
+      .section-title { font-size: 2rem; }
+      .container { padding: 0 1.5rem; }
+      .navbar .nav-content { flex-direction: column; text-align: center; }
+      .nav-links { justify-content: center; flex-wrap: wrap; gap: 1rem; }
+    }
+
+    /* small caps / seal feel */
+    .small-caps {
+      font-variant: small-caps;
+      letter-spacing: 1px;
+      font-weight: 600;
+    }
+    .compass-line {
+      display: inline-block;
+      border-left: 2px solid var(--mission-red);
+      padding-left: 0.75rem;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container nav-content">
+    <div class="logo">
+      <div class="circle-seal">
+        <span>⛯</span>
+      </div>
+      <div>
+        <h1>COMMISSION CITY</h1>
+        <p>SENT WITH AUTHORITY</p>
+      </div>
+    </div>
+    <ul class="nav-links">
+      <li><a href="#">HOME</a></li>
+      <li><a href="#mission">MISSION</a></li>
+      <li><a href="#gather">GATHER</a></li>
+      <li><a href="#events">MOVEMENT</a></li>
+      <li><a href="#connect">SEND ME</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main>
+
+  <!-- Hero section - directional, outward -->
+  <section class="hero">
+    <div class="container hero-grid">
+      <div class="hero-text">
+        <span class="hero-tag">⚡ MOVEMENT AGENCY / SENT INTO THE CITY</span>
+        <h2>SENT. <br>WITH AUTHORITY. <br>INTO THE CITY.</h2>
+        <p>Commission City Church is a missional movement, rooted in clarity and urgency. We don’t just gather — we go. Structured, directional, sent.</p>
+        <div class="btn-group" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+          <a href="#gather" class="btn-primary">JOIN THE SENDING</a>
+          <a href="#connect" class="btn-outline">START YOUR PATH</a>
+        </div>
+      </div>
+      <div class="hero-image" style="background-image: url('https://placehold.co/700x500/0B1F3A/FFFFFF?text=PEOPLE+IN+MOTION+→&font=montserrat');"></div>
+    </div>
+  </section>
+
+  <!-- Mission section: structured block with directional personality -->
+  <section id="mission" class="section">
+    <div class="container">
+      <h2 class="section-title">SENT WITH AUTHORITY</h2>
+      <p class="section-sub">We are a movement of everyday missionaries. Directional, structured, and alive with purpose. Rooted in Navy authority & Red urgency.</p>
+      <div class="grid-3">
+        <div class="card-structure">
+          <h3>⚡ OUR COMMISSION</h3>
+          <p>To equip and send every believer into the streets, neighborhoods, and city structures — living as agents of renewal. Not spectators, but sent ones.</p>
+        </div>
+        <div class="card-structure">
+          <h3>🧭 OUR COMPASS</h3>
+          <p>We follow the Cross-compass: upward worship, inward formation, outward mission. Every ministry zone aligns with our "Go." posture.</p>
+        </div>
+        <div class="card-structure">
+          <h3>🏙️ CITY FOCUS</h3>
+          <p>Wichita is our primary mission field. We walk, serve, and declare Good News with feet on the ground. Real people, real motion.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gather (worship & service times) - hard edges, navy & red -->
+  <section id="gather" class="section section-dark">
+    <div class="container">
+      <h2 class="section-title" style="color: var(--off-white);">GATHER · SEND · DEPLOY</h2>
+      <p class="section-sub">Weekly rhythms that fuel our movement. Join us at our base — structured worship, urgent prayer, and strategic equipping.</p>
+      <div class="times-grid">
+        <div class="time-card"><div class="time-day">SUNDAY // SENDING</div><div class="time-hour">9:00A + 11:00A</div><div class="small-caps" style="font-size:0.8rem; margin-top:0.5rem;">Commission worship</div></div>
+        <div class="time-card"><div class="time-day">WEDNESDAY // TRAINING</div><div class="time-hour">7:00PM</div><div class="small-caps" style="font-size:0.8rem;">Word + Praxis</div></div>
+        <div class="time-card"><div class="time-day">SATURDAY // DEPLOY</div><div class="time-hour">9:00AM</div><div class="small-caps" style="font-size:0.8rem;">City Serve & Prayer Walk</div></div>
+      </div>
+      <div style="margin-top: 1.5rem; text-align: center;"><span class="compass-line">📍 2340 E Douglas Ave, Wichita, KS</span> &nbsp;|&nbsp; <span class="compass-line">⛯ Cross-compass hub</span></div>
+    </div>
+  </section>
+
+  <!-- events + movement - real people, mission edge -->
+  <section id="events" class="section">
+    <div class="container">
+      <h2 class="section-title">UPCOMING: URGENT MISSION</h2>
+      <p class="section-sub">Moments to gather, be equipped, and step outward. No passive Christianity.</p>
+      <div class="events-grid">
+        <div class="event-item">
+          <h3 style="font-family: 'Oswald';">🌆 CITY BLITZ</h3>
+          <div class="event-date">MAY 24 | 8AM – 2PM</div>
+          <p>Prayer-walk + community care projects across 3 city zones. Be part of the sending wave.</p>
+          <div class="small-caps" style="color: var(--mission-red); margin-top: 0.8rem;">sign-up →</div>
+        </div>
+        <div class="event-item">
+          <h3 style="font-family: 'Oswald';">🔥 AUTHORITY NIGHT</h3>
+          <div class="event-date">JUNE 5 | 7PM</div>
+          <p>Worship, prophetic commissioning, and intercession for the city. Childcare + directional ministry.</p>
+          <div class="small-caps" style="color: var(--mission-red); margin-top: 0.8rem;">register →</div>
+        </div>
+        <div class="event-item">
+          <h3 style="font-family: 'Oswald';">🧭 COMPASS TRAINING</h3>
+          <div class="event-date">JUNE 12-13 | 9AM–4PM</div>
+          <p>Learn how to live “sent with authority” — evangelism, justice, and everyday mission.</p>
+          <div class="small-caps" style="color: var(--mission-red); margin-top: 0.8rem;">apply now →</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Leadership (real people in motion, imagery) -->
+  <section class="section section-dark" style="background-color: #0B1F3A;">
+    <div class="container">
+      <h2 class="section-title" style="color: var(--off-white);">LEADERSHIP / SENDING TEAM</h2>
+      <p class="section-sub">Directional voices who equip and release the church into the city.</p>
+      <div class="leaders-flex">
+        <div class="leader-card">
+          <div class="leader-img" style="background-image: url('https://placehold.co/200x200/6B7280/FFFFFF?text=M.+Carter');"></div>
+          <h4>M. CARTER</h4>
+          <div class="leader-role">LEAD PASTOR · AUTHORITY</div>
+        </div>
+        <div class="leader-card">
+          <div class="leader-img" style="background-image: url('https://placehold.co/200x200/6B7280/FFFFFF?text=J.+Rivera');"></div>
+          <h4>J. RIVERA</h4>
+          <div class="leader-role">MISSION + DEPLOYMENT</div>
+        </div>
+        <div class="leader-card">
+          <div class="leader-img" style="background-image: url('https://placehold.co/200x200/6B7280/FFFFFF?text=S.+Kim');"></div>
+          <h4>S. KIM</h4>
+          <div class="leader-role">WORSHIP + PROPHETIC</div>
+        </div>
+        <div class="leader-card">
+          <div class="leader-img" style="background-image: url('https://placehold.co/200x200/6B7280/FFFFFF?text=A.+Wesley');"></div>
+          <h4>A. WESLEY</h4>
+          <div class="leader-role">CITY COMPASS DIRECTOR</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Connect & Form - directional message + urgency red -->
+  <section id="connect" class="section">
+    <div class="container">
+      <div class="connect-wrapper">
+        <div class="connect-flex">
+          <div class="connect-info">
+            <div class="compass-icon">⛯</div>
+            <h2 style="font-family: 'Oswald'; font-size: 2rem; margin-bottom: 1rem;">SEND ME INTO THE CITY</h2>
+            <p style="margin-bottom: 1rem;">Step into the movement. Whether you're new or a missionary at heart — fill out the form. We will connect you with next steps: mission teams, training, or prayer.</p>
+            <div class="connect-details" style="margin-top: 1rem;">
+              <p><span style="color: var(--mission-red);">✉️</span> hello@commissioncity.church</p>
+              <p><span style="color: var(--mission-red);">📞</span> (316) 555-8742</p>
+              <p><span style="color: var(--mission-red);">⏯️</span> Gather: Sundays 9a/11a | Weds 7p</p>
+            </div>
+          </div>
+          <div class="connect-form">
+            <h3 style="font-family: 'Oswald'; margin-bottom: 1rem;">I AM READY TO BE SENT</h3>
+            <form id="commissionForm">
+              <div class="input-field"><input type="text" id="fullName" placeholder="Full name" required></div>
+              <div class="input-field"><input type="email" id="emailAddr" placeholder="Email address" required></div>
+              <div class="input-field"><textarea rows="3" placeholder="How do you want to engage? Serve, training, or just step in?"></textarea></div>
+              <button type="submit" class="btn-primary" style="width:100%;">SEND ME →</button>
+              <p id="formMsg" style="margin-top: 0.8rem; font-size: 0.8rem; text-align: center;"></p>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="footer-links">
+      <a href="#">SENT WITH AUTHORITY</a>
+      <a href="#mission">MISSION</a>
+      <a href="#gather">GATHER</a>
+      <a href="#events">MOVEMENT</a>
+      <a href="#connect">DEPLOY</a>
+    </div>
+    <p>© 2026 Commission City Church — a missional movement. Navy & Red: authority & urgency. “Go. Into the city.”</p>
+    <div style="margin-top: 1rem; font-size: 0.75rem;">Cross-compass seal | Directional & structured | Real people, real sending</div>
+  </div>
+</footer>
+
+<script>
+  (function() {
+    const form = document.getElementById('commissionForm');
+    const msgSpan = document.getElementById('formMsg');
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const nameInput = document.getElementById('fullName');
+        const emailInput = document.getElementById('emailAddr');
+        if (!nameInput.value.trim() || !emailInput.value.trim()) {
+          msgSpan.style.color = "#C23A2B";
+          msgSpan.innerText = "⚠️ Both fields required. Ready to be sent?";
+          return;
+        }
+        if (!emailInput.value.includes('@')) {
+          msgSpan.style.color = "#C23A2B";
+          msgSpan.innerText = "Enter a valid email address to receive mission info.";
+          return;
+        }
+        msgSpan.style.color = "#0B1F3A";
+        msgSpan.innerText = `✅ ${nameInput.value.split(' ')[0]}, you're marked: SENT. A leader will respond within 24h.`;
+        form.reset();
+        setTimeout(() => { msgSpan.innerText = ''; }, 5000);
+      });
+    }
+
+    // smooth anchor scrolling
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        const href = this.getAttribute('href');
+        if (href === "#" || href === "") return;
+        const target = document.querySelector(href);
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+  })();
+</script>
+</body>
+</html>

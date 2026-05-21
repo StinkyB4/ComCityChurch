@@ -1,0 +1,57 @@
+{
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": ["/assets/*", "/css/*", "/js/*"]
+  },
+  "routes": [
+    {
+      "route": "/about",
+      "rewrite": "/about.html"
+    },
+    {
+      "route": "/believe",
+      "rewrite": "/believe.html"
+    },
+    {
+      "route": "/gospel",
+      "rewrite": "/gospel.html"
+    },
+    {
+      "route": "/communities",
+      "rewrite": "/communities.html"
+    },
+    {
+      "route": "/gatherings",
+      "rewrite": "/gatherings.html"
+    },
+    {
+      "route": "/sermons",
+      "rewrite": "/sermons.html"
+    },
+    {
+      "route": "/give",
+      "rewrite": "/give.html"
+    },
+    {
+      "route": "/contact",
+      "rewrite": "/contact.html"
+    }
+  ],
+  "responseOverrides": {
+    "404": {
+      "rewrite": "/index.html",
+      "statusCode": 200
+    }
+  },
+  "globalHeaders": {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "SAMEORIGIN",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()"
+  },
+  "mimeTypes": {
+    ".json": "application/json",
+    ".mp4": "video/mp4",
+    ".webp": "image/webp"
+  }
+}

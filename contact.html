@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plan Your Visit — Commissioned City Church</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400&family=Montserrat:wght@600;700;800&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- ===== NAVIGATION ===== -->
+<nav class="navbar" aria-label="Main navigation">
+  <div class="nav-inner">
+    <a class="nav-logo" href="index.html" aria-label="Commissioned City Church home">
+      <img src="assets/logo.png" alt="Commissioned City Church" onerror="this.parentElement.innerHTML='<div class=\'nav-logo-placeholder\'><div class=\'logo-mark\'><svg viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'white\' stroke-width=\'2\'><path d=\'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5\'/></svg></div><div class=\'logo-text\'>COMMISSIONED<br>CITY CHURCH</div></div>'">
+    </a>
+    <ul class="nav-links" role="list">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="communities.html">Communities</a></li>
+      <li><a href="gatherings.html">Gatherings</a></li>
+      <li><a href="sermons.html">Sermons</a></li>
+      <li><a href="give.html">Give</a></li>
+    </ul>
+    <a href="contact.html" class="btn btn-primary nav-cta">Plan Your Visit →</a>
+    <button class="nav-hamburger" aria-label="Open menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="nav-mobile" role="dialog" aria-modal="true">
+  <button class="nav-mobile-close" aria-label="Close menu">✕</button>
+  <a href="index.html">Home</a>
+  <a href="about.html">About</a>
+  <a href="communities.html">Communities</a>
+  <a href="gatherings.html">Gatherings</a>
+  <a href="sermons.html">Sermons</a>
+  <a href="give.html">Give</a>
+  <a href="contact.html" class="btn btn-primary">Plan Your Visit →</a>
+</div>
+
+<main>
+
+<!-- ===== PAGE HERO ===== -->
+<section class="page-hero page-hero--navy" data-media="heroes.contact" aria-labelledby="page-heading">
+  <span class="eyebrow fade-in-up">Connect</span>
+  <h1 id="page-heading" class="fade-in-up delay-1">Plan Your Visit</h1>
+  <p class="page-hero-sub fade-in-up delay-2">We'd love to meet you. Come as you are.</p>
+</section>
+
+<!-- ===== CONTACT LAYOUT ===== -->
+<section class="section">
+  <div class="container">
+    <div class="grid-2" style="gap:var(--space-xl); align-items:start;">
+
+      <!-- Left: Info -->
+      <div class="fade-in-up">
+        <h3 style="margin-bottom:var(--space-md);">Find Us</h3>
+        <div style="display:flex; gap:var(--space-md); align-items:flex-start; margin-bottom:var(--space-lg);">
+          <div style="width:44px; height:44px; min-width:44px; background:var(--gray-bg); border-radius:10px; display:flex; align-items:center; justify-content:center;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div>
+            <p style="font-weight:600; color:var(--navy); margin-bottom:2px;">Address</p>
+            <p style="color:var(--muted-blue); margin:0;">205 Roseberry St<br>Winnipeg, MB R3J 1T3</p>
+          </div>
+        </div>
+
+        <h3 style="margin-bottom:var(--space-md);">Service Times</h3>
+        <div style="background:var(--gray-bg); border-radius:var(--radius-card); padding:var(--space-md); margin-bottom:var(--space-lg);">
+          <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:var(--space-sm); border-bottom:1px solid rgba(0,0,0,.06); margin-bottom:var(--space-sm);">
+            <span style="font-weight:600; color:var(--charcoal);">☕ Coffee &amp; Welcome</span>
+            <span style="font-weight:700; color:var(--navy);">10:00am</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-weight:600; color:var(--charcoal);">🙏 Worship Service</span>
+            <span style="font-weight:700; color:var(--navy);">10:30am</span>
+          </div>
+          <p style="font-size:13px; color:var(--muted-blue); margin-top:var(--space-sm); margin-bottom:0;">Every Sunday</p>
+        </div>
+
+        <h3 style="margin-bottom:var(--space-md);">Get in Touch</h3>
+        <div style="display:flex; flex-direction:column; gap:var(--space-sm);">
+          <a href="mailto:info@commissionedcity.church" style="display:flex; align-items:center; gap:12px; color:var(--charcoal); font-weight:600;">
+            <div style="width:44px; height:44px; min-width:44px; background:var(--gray-bg); border-radius:10px; display:flex; align-items:center; justify-content:center;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </div>
+            info@commissionedcity.church
+          </a>
+          <a href="#" target="_blank" rel="noopener" style="display:flex; align-items:center; gap:12px; color:var(--charcoal); font-weight:600;">
+            <div style="width:44px; height:44px; min-width:44px; background:var(--gray-bg); border-radius:10px; display:flex; align-items:center; justify-content:center;">
+              <svg width="20" height="20" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="var(--navy)" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="var(--navy)" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.5" fill="var(--navy)"/></svg>
+            </div>
+            Instagram
+          </a>
+          <a href="#" target="_blank" rel="noopener" style="display:flex; align-items:center; gap:12px; color:var(--charcoal); font-weight:600;">
+            <div style="width:44px; height:44px; min-width:44px; background:var(--gray-bg); border-radius:10px; display:flex; align-items:center; justify-content:center;">
+              <svg width="20" height="20" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" fill="none" stroke="var(--navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            Facebook
+          </a>
+        </div>
+      </div>
+
+      <!-- Right: Form -->
+      <div class="fade-in-up delay-1">
+        <div class="card" style="padding:var(--space-lg);">
+          <h3 style="margin-bottom:var(--space-md);">Say Hello</h3>
+          <form class="contact-form" action="#" method="post" novalidate>
+            <div class="grid-2" style="gap:var(--space-sm);">
+              <div>
+                <label for="first-name">First Name</label>
+                <input type="text" id="first-name" name="first_name" autocomplete="given-name" placeholder="Jane" required>
+              </div>
+              <div>
+                <label for="last-name">Last Name</label>
+                <input type="text" id="last-name" name="last_name" autocomplete="family-name" placeholder="Smith" required>
+              </div>
+            </div>
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" autocomplete="email" placeholder="jane@example.com" required>
+            <label for="phone">Phone <span style="font-weight:400; color:var(--muted-blue);">(optional)</span></label>
+            <input type="tel" id="phone" name="phone" autocomplete="tel" placeholder="204-555-0100">
+            <label for="reason">How can we help you?</label>
+            <select id="reason" name="reason">
+              <option value="">Select an option…</option>
+              <option value="visit">Plan a Visit</option>
+              <option value="community">Connect to a Community</option>
+              <option value="prayer">Prayer Request</option>
+              <option value="general">General Question</option>
+            </select>
+            <label for="message">Message</label>
+            <textarea id="message" name="message" placeholder="Tell us a bit about yourself or your question…"></textarea>
+            <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">Send Message</button>
+            <p style="text-align:center; font-size:13px; color:var(--muted-blue); margin-top:var(--space-sm); margin-bottom:0;">We'll be in touch within 48 hours.</p>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== MAP ===== -->
+<div class="map-wrapper" aria-label="Map showing 205 Roseberry St, Winnipeg">
+  <iframe
+    src="https://maps.google.com/maps?q=205+Roseberry+St,+Winnipeg,+MB&output=embed"
+    allowfullscreen
+    loading="lazy"
+    referrerpolicy="no-referrer-when-downgrade"
+    title="205 Roseberry St, Winnipeg, MB R3J 1T3">
+  </iframe>
+</div>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <img src="assets/logo.png" alt="Commissioned City Church" style="height:120px; background:white; border-radius:10px; padding:8px 12px; margin-bottom:var(--space-md);" onerror="this.outerHTML='<div style=\'font-family:Montserrat,sans-serif;font-weight:800;font-size:18px;color:white;margin-bottom:var(--space-md);\'>COMMISSIONED<br>CITY CHURCH</div>'">
+      <p class="footer-tagline">Sent into the City. Rooted in Christ.</p>
+      <div class="footer-social">
+        <a href="#" aria-label="Instagram" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="white" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="white" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.5" fill="white"/></svg></a>
+        <a href="#" aria-label="Facebook" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="believe.html">What We Believe</a></li>
+        <li><a href="gospel.html">The Gospel</a></li>
+        <li><a href="communities.html">Communities</a></li>
+        <li><a href="gatherings.html">Gatherings</a></li>
+        <li><a href="sermons.html">Sermons</a></li>
+        <li><a href="give.html">Give</a></li>
+        <li><a href="contact.html">Connect</a></li>
+      </ul>
+    </div>
+    <div class="footer-col footer-contact">
+      <h4>Find Us</h4>
+      <p>205 Roseberry St<br>Winnipeg, MB R3J 1T3</p>
+      <p style="margin-top:var(--space-sm);">☕ Coffee — 10:00am Sunday<br>🙏 Worship — 10:30am Sunday</p>
+      <p style="margin-top:var(--space-sm);"><a href="mailto:info@commissionedcity.church">info@commissionedcity.church</a></p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>Matthew 28:18–20 · © 2025 Commissioned City Church</span>
+    <span>Winnipeg, Manitoba</span>
+  </div>
+</footer>
+
+<script src="js/media.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
