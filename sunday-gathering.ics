@@ -1,0 +1,17 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Commissioned City Church//Sunday Gathering//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:sunday-gathering@commissionedcity.church
+DTSTART;TZID=America/Winnipeg:20260531T103000
+DTEND;TZID=America/Winnipeg:20260531T120000
+RRULE:FREQ=WEEKLY;BYDAY=SU
+SUMMARY:Sunday Gathering — Commissioned City Church
+DESCRIPTION:Coffee & Connection at 10:00am\nWorship & Word at 10:30am\n
+ Come as you are.
+LOCATION:205 Roseberry St\, Winnipeg\, MB R3J 1T3
+URL:https://commissionedcity.church/visit.html
+END:VEVENT
+END:VCALENDAR

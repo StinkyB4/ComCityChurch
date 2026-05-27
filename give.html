@@ -19,25 +19,67 @@
     </a>
     <ul class="nav-links" role="list">
       <li><a href="index.html">Home</a></li>
-      <li><a href="about.html">About</a></li>
-      <li><a href="communities.html">Communities</a></li>
+      <li class="nav-has-dropdown">
+        <a href="about.html">About</a>
+        <ul class="nav-dropdown" role="list">
+          <li><a href="team.html">Meet the Team</a></li>
+          <li><a href="believe.html">What We Believe</a></li>
+          <li><a href="partnerships.html">Our Partnerships</a></li>
+        </ul>
+      </li>
+      <li class="nav-has-dropdown">
+        <a href="communities.html">Communities</a>
+        <ul class="nav-dropdown" role="list">
+          <li><a href="communities/south-osborne.html">South Osborne</a></li>
+          <li><a href="communities/river-heights.html">River Heights</a></li>
+          <li><a href="communities/st-james.html">St. James</a></li>
+          <li><a href="communities/youth.html">Youth</a></li>
+        </ul>
+      </li>
       <li><a href="gatherings.html">Gatherings</a></li>
-      <li><a href="sermons.html">Sermons</a></li>
+      <li class="nav-has-dropdown">
+        <a href="blog.html">Resources</a>
+        <ul class="nav-dropdown" role="list">
+          <li><a href="sermons.html">Sermons</a></li>
+          <li><a href="blog.html">Blog</a></li>
+        </ul>
+      </li>
       <li><a href="give.html">Give</a></li>
     </ul>
-    <a href="contact.html" class="btn btn-primary nav-cta">Plan Your Visit →</a>
+    <a href="visit.html" class="btn btn-primary nav-cta">Plan Your Visit →</a>
     <button class="nav-hamburger" aria-label="Open menu"><span></span><span></span><span></span></button>
   </div>
 </nav>
 <div class="nav-mobile" role="dialog" aria-modal="true">
   <button class="nav-mobile-close" aria-label="Close menu">✕</button>
   <a href="index.html">Home</a>
-  <a href="about.html">About</a>
-  <a href="communities.html">Communities</a>
+  <div class="nav-mobile-group">
+    <a href="about.html">About</a>
+    <div class="nav-mobile-sub">
+      <a href="team.html">Meet the Team</a>
+      <a href="believe.html">What We Believe</a>
+      <a href="partnerships.html">Our Partnerships</a>
+    </div>
+  </div>
+  <div class="nav-mobile-group">
+    <a href="communities.html">Communities</a>
+    <div class="nav-mobile-sub">
+      <a href="communities/south-osborne.html">South Osborne</a>
+      <a href="communities/river-heights.html">River Heights</a>
+      <a href="communities/st-james.html">St. James</a>
+      <a href="communities/youth.html">Youth</a>
+    </div>
+  </div>
   <a href="gatherings.html">Gatherings</a>
-  <a href="sermons.html">Sermons</a>
+  <div class="nav-mobile-group">
+    <a href="blog.html">Resources</a>
+    <div class="nav-mobile-sub">
+      <a href="sermons.html">Sermons</a>
+      <a href="blog.html">Blog</a>
+    </div>
+  </div>
   <a href="give.html">Give</a>
-  <a href="contact.html" class="btn btn-primary">Plan Your Visit →</a>
+  <a href="visit.html" class="btn btn-primary">Plan Your Visit →</a>
 </div>
 
 <main>
@@ -54,31 +96,81 @@
   <div class="container text-block mx-auto">
     <span class="eyebrow fade-in-up">Support the Mission</span>
     <h2 class="fade-in-up delay-1">Support the Mission</h2>
+  </br>
     <p class="fade-in-up delay-2">As a church family on mission, we depend on the generous giving of our members to sustain ministry, support our pastors and staff, and extend the gospel into Winnipeg and beyond. Giving is an act of worship — a declaration that our trust is in God, not money.</p>
-    <p class="fade-in-up delay-2">Commissioned City Church is a registered charitable organization. All donations are eligible for a charitable tax receipt.</p>
+    <p class="fade-in-up delay-2">Commissioned City Church is a registered charitable organization in Canada, legally permitted to issue tax-deductible receipts for all donations.
+      <!-- ============================================================
+        CRA CHARITABLE REGISTRATION NUMBER
+        ============================================================
+        Update the registration number below once Commissioned City
+        Church's CRA charitable number has been assigned.
+        Example format: Charity registration no. 123456789RR0001
+        ============================================================ -->
+    </p>
   </div>
 </section>
 
 <!-- ===== GIVING OPTIONS ===== -->
-<section class="section-sm section--gray">
+<section class="section section--gray">
   <div class="container">
-    <div class="grid-2" style="max-width:800px; margin:0 auto;">
-      <div class="card fade-in-up" style="padding:var(--space-lg); text-align:center;">
+    <div class="section-heading text-center mx-auto" style="max-width:520px; margin-bottom:var(--space-lg);">
+      <span class="eyebrow fade-in-up">Ways to Give</span>
+      <h2 class="fade-in-up delay-1">Choose What Works for You</h2>
+    </div>
+    <div class="grid-3" style="max-width:960px; margin:0 auto;">
+
+      <!-- ── CREDIT CARD / ONLINE ── -->
+      <div class="card fade-in-up" style="padding:var(--space-lg); text-align:center; display:flex; flex-direction:column; align-items:center;">
         <div style="width:64px; height:64px; background:var(--navy); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto var(--space-md);">
-          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
         </div>
-        <h3 style="font-size:22px; margin-bottom:var(--space-sm);">Online Giving</h3>
-        <p style="color:var(--muted-blue); margin-bottom:var(--space-lg);">Set up a one-time or recurring gift online. Safe, simple, and available any time.</p>
-        <a href="#" class="btn btn-primary">Give Online</a>
+        <h3 style="font-size:22px; margin-bottom:var(--space-sm);">Credit Card</h3>
+        <p style="color:var(--muted-blue); margin-bottom:var(--space-lg); flex:1;">Give securely online using a credit or debit card. Set up a one-time or recurring gift — available any time.</p>
+        <!--
+          ============================================================
+          ONLINE GIVING LINK — CREDIT CARD
+          ============================================================
+          Replace the href below with Commissioned City Church's own
+          ChurchCenter (or other platform) giving page URL.
+          The current URL below is from Osborne Village Church and
+          must be updated before the site goes live.
+          ============================================================
+        -->
+        <a href="https://osbornevillagechurch.churchcenter.com/giving" class="btn btn-primary" target="_blank" rel="noopener">Give Online →</a>
       </div>
-      <div class="card fade-in-up delay-1" style="padding:var(--space-lg); text-align:center;">
+
+      <!-- ── E-TRANSFER ── -->
+      <div class="card fade-in-up delay-1" style="padding:var(--space-lg); text-align:center; display:flex; flex-direction:column; align-items:center;">
         <div style="width:64px; height:64px; background:var(--navy); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto var(--space-md);">
-          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <h3 style="font-size:22px; margin-bottom:var(--space-sm);">Interac E-Transfer</h3>
+        <p style="color:var(--muted-blue); margin-bottom:var(--space-sm); flex:1;">Send an e-transfer directly through your online banking to:</p>
+        <!--
+          ============================================================
+          E-TRANSFER EMAIL ADDRESS
+          ============================================================
+          Replace the email address below with Commissioned City
+          Church's own donations e-transfer address.
+          The address shown is currently from Osborne Village Church
+          and must be updated before the site goes live.
+          ============================================================
+        -->
+        <p style="font-family:'Montserrat',sans-serif; font-weight:700; font-size:15px; color:var(--navy); margin-bottom:var(--space-sm);">ovcdonations@gmail.com</p>
+        <p style="font-size:13px; color:var(--muted-blue); margin-bottom:var(--space-lg);">Include your full name in the message field so we can issue your tax receipt.</p>
+        <a href="mailto:ovcdonations@gmail.com" class="btn btn-primary">Send E-Transfer →</a>
+      </div>
+
+      <!-- ── IN PERSON ── -->
+      <div class="card fade-in-up delay-2" style="padding:var(--space-lg); text-align:center; display:flex; flex-direction:column; align-items:center;">
+        <div style="width:64px; height:64px; background:var(--navy); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto var(--space-md);">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         </div>
         <h3 style="font-size:22px; margin-bottom:var(--space-sm);">In Person</h3>
-        <p style="color:var(--muted-blue); margin-bottom:var(--space-lg);">Bring a cheque or cash to any Sunday gathering and drop it in the offering basket.</p>
-        <a href="gatherings.html" class="btn btn-secondary">Find a Gathering</a>
+        <p style="color:var(--muted-blue); margin-bottom:var(--space-lg); flex:1;">Bring a cheque (payable to Commissioned City Church) or cash to any Sunday gathering and place it in the offering.</p>
+        <a href="gatherings.html" class="btn btn-outline">Weekly Gathering →</a>
       </div>
+
     </div>
   </div>
 </section>
@@ -108,8 +200,10 @@
 <footer>
   <div class="footer-grid">
     <div>
-      <img src="assets/logo.png" alt="Commissioned City Church" style="height:120px; background:white; border-radius:10px; padding:8px 12px; margin-bottom:var(--space-md);" onerror="this.outerHTML='<div style=\'font-family:Montserrat,sans-serif;font-weight:800;font-size:18px;color:white;margin-bottom:var(--space-md);\'>COMMISSIONED<br>CITY CHURCH</div>'">
-      <p class="footer-tagline">Sent into the City. Rooted in Christ.</p>
+      <a href="index.html" aria-label="Commissioned City Church">
+        <img src="assets/logo.png" alt="Commissioned City Church" class="footer-logo-img" style="height:120px; background:white; border-radius:10px; padding:8px 12px; margin-bottom:var(--space-md);" onerror="this.outerHTML='<div style=\'font-family:Montserrat,sans-serif;font-weight:800;font-size:18px;color:white;margin-bottom:var(--space-md);\'>COMMISSIONED<br>CITY CHURCH</div>'">
+      </a>
+      <p class="footer-tagline">For the Good of the City<br>For the Glory of Christ</p>
       <div class="footer-social">
         <a href="#" aria-label="Instagram" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="white" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="white" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.5" fill="white"/></svg></a>
         <a href="#" aria-label="Facebook" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
@@ -132,7 +226,7 @@
     <div class="footer-col footer-contact">
       <h4>Find Us</h4>
       <p>205 Roseberry St<br>Winnipeg, MB R3J 1T3</p>
-      <p style="margin-top:var(--space-sm);">☕ Coffee — 10:00am Sunday<br>🙏 Worship — 10:30am Sunday</p>
+      <p style="margin-top:var(--space-sm);">Coffee — 10:00am Sunday<br>Worship — 10:30am Sunday</p>
       <p style="margin-top:var(--space-sm);"><a href="mailto:info@commissionedcity.church">info@commissionedcity.church</a></p>
     </div>
   </div>

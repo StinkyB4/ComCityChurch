@@ -19,25 +19,67 @@
     </a>
     <ul class="nav-links" role="list">
       <li><a href="index.html">Home</a></li>
-      <li><a href="about.html">About</a></li>
-      <li><a href="communities.html">Communities</a></li>
+      <li class="nav-has-dropdown">
+        <a href="about.html">About</a>
+        <ul class="nav-dropdown" role="list">
+          <li><a href="team.html">Meet the Team</a></li>
+          <li><a href="believe.html">What We Believe</a></li>
+          <li><a href="partnerships.html">Our Partnerships</a></li>
+        </ul>
+      </li>
+      <li class="nav-has-dropdown">
+        <a href="communities.html">Communities</a>
+        <ul class="nav-dropdown" role="list">
+          <li><a href="communities/south-osborne.html">South Osborne</a></li>
+          <li><a href="communities/river-heights.html">River Heights</a></li>
+          <li><a href="communities/st-james.html">St. James</a></li>
+          <li><a href="communities/youth.html">Youth</a></li>
+        </ul>
+      </li>
       <li><a href="gatherings.html">Gatherings</a></li>
-      <li><a href="sermons.html">Sermons</a></li>
+      <li class="nav-has-dropdown">
+        <a href="blog.html">Resources</a>
+        <ul class="nav-dropdown" role="list">
+          <li><a href="sermons.html">Sermons</a></li>
+          <li><a href="blog.html">Blog</a></li>
+        </ul>
+      </li>
       <li><a href="give.html">Give</a></li>
     </ul>
-    <a href="contact.html" class="btn btn-primary nav-cta">Plan Your Visit →</a>
+    <a href="visit.html" class="btn btn-primary nav-cta">Plan Your Visit →</a>
     <button class="nav-hamburger" aria-label="Open menu"><span></span><span></span><span></span></button>
   </div>
 </nav>
 <div class="nav-mobile" role="dialog" aria-modal="true">
   <button class="nav-mobile-close" aria-label="Close menu">✕</button>
   <a href="index.html">Home</a>
-  <a href="about.html">About</a>
-  <a href="communities.html">Communities</a>
+  <div class="nav-mobile-group">
+    <a href="about.html">About</a>
+    <div class="nav-mobile-sub">
+      <a href="team.html">Meet the Team</a>
+      <a href="believe.html">What We Believe</a>
+      <a href="partnerships.html">Our Partnerships</a>
+    </div>
+  </div>
+  <div class="nav-mobile-group">
+    <a href="communities.html">Communities</a>
+    <div class="nav-mobile-sub">
+      <a href="communities/south-osborne.html">South Osborne</a>
+      <a href="communities/river-heights.html">River Heights</a>
+      <a href="communities/st-james.html">St. James</a>
+      <a href="communities/youth.html">Youth</a>
+    </div>
+  </div>
   <a href="gatherings.html">Gatherings</a>
-  <a href="sermons.html">Sermons</a>
+  <div class="nav-mobile-group">
+    <a href="blog.html">Resources</a>
+    <div class="nav-mobile-sub">
+      <a href="sermons.html">Sermons</a>
+      <a href="blog.html">Blog</a>
+    </div>
+  </div>
   <a href="give.html">Give</a>
-  <a href="contact.html" class="btn btn-primary">Plan Your Visit →</a>
+  <a href="visit.html" class="btn btn-primary">Plan Your Visit →</a>
 </div>
 
 <main>
@@ -48,7 +90,7 @@
     <span class="eyebrow fade-in-up">Every Sunday</span>
     <h1 id="page-heading" class="fade-in-up delay-1">Sunday Gatherings</h1>
     <p class="hero-sub fade-in-up delay-2">Coffee at 10am. Worship at 10:30am.</p>
-    <a href="contact.html" class="btn btn-red fade-in-up delay-3">Plan Your Visit</a>
+    <a href="visit.html" class="btn btn-red fade-in-up delay-3">Plan Your Visit</a>
   </div>
 </section>
 
@@ -148,7 +190,7 @@
   <div class="container">
     <h2 class="fade-in-up" style="color:white; max-width:540px; margin:0 auto var(--space-md);">We'd Love to See You This Sunday</h2>
     <p class="fade-in-up delay-1" style="color:rgba(255,255,255,.75); margin-bottom:var(--space-lg);">Let us know you're coming and we'll make sure someone is ready to welcome you.</p>
-    <a href="contact.html" class="btn btn-red fade-in-up delay-2">Plan Your Visit</a>
+    <a href="visit.html" class="btn btn-red fade-in-up delay-2">Plan Your Visit</a>
   </div>
 </section>
 
@@ -158,8 +200,10 @@
 <footer>
   <div class="footer-grid">
     <div>
-      <img src="assets/logo.png" alt="Commissioned City Church" style="height:120px; background:white; border-radius:10px; padding:8px 12px; margin-bottom:var(--space-md);" onerror="this.outerHTML='<div style=\'font-family:Montserrat,sans-serif;font-weight:800;font-size:18px;color:white;margin-bottom:var(--space-md);\'>COMMISSIONED<br>CITY CHURCH</div>'">
-      <p class="footer-tagline">Sent into the City. Rooted in Christ.</p>
+      <a href="index.html" aria-label="Commissioned City Church">
+        <img src="assets/logo.png" alt="Commissioned City Church" class="footer-logo-img" style="height:120px; background:white; border-radius:10px; padding:8px 12px; margin-bottom:var(--space-md);" onerror="this.outerHTML='<div style=\'font-family:Montserrat,sans-serif;font-weight:800;font-size:18px;color:white;margin-bottom:var(--space-md);\'>COMMISSIONED<br>CITY CHURCH</div>'">
+      </a>
+      <p class="footer-tagline">For the Good of the City<br>For the Glory of Christ</p>
       <div class="footer-social">
         <a href="#" aria-label="Instagram" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="white" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="white" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.5" fill="white"/></svg></a>
         <a href="#" aria-label="Facebook" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
@@ -182,7 +226,7 @@
     <div class="footer-col footer-contact">
       <h4>Find Us</h4>
       <p>205 Roseberry St<br>Winnipeg, MB R3J 1T3</p>
-      <p style="margin-top:var(--space-sm);">☕ Coffee — 10:00am Sunday<br>🙏 Worship — 10:30am Sunday</p>
+      <p style="margin-top:var(--space-sm);">Coffee — 10:00am Sunday<br>Worship — 10:30am Sunday</p>
       <p style="margin-top:var(--space-sm);"><a href="mailto:info@commissionedcity.church">info@commissionedcity.church</a></p>
     </div>
   </div>

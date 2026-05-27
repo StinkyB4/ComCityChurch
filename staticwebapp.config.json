@@ -4,14 +4,18 @@
     "exclude": ["/assets/*", "/css/*", "/js/*", "/api/*"]
   },
   "routes": [
-    { "route": "/about",       "rewrite": "/about.html"       },
-    { "route": "/believe",     "rewrite": "/believe.html"     },
-    { "route": "/gospel",      "rewrite": "/gospel.html"      },
-    { "route": "/communities", "rewrite": "/communities.html" },
-    { "route": "/gatherings",  "rewrite": "/gatherings.html"  },
-    { "route": "/sermons",     "rewrite": "/sermons.html"     },
-    { "route": "/give",        "rewrite": "/give.html"        },
-    { "route": "/contact",     "rewrite": "/contact.html"     }
+    { "route": "/about",             "rewrite": "/about.html"             },
+    { "route": "/believe",           "rewrite": "/believe.html"           },
+    { "route": "/gospel",            "rewrite": "/gospel.html"            },
+    { "route": "/communities",       "rewrite": "/communities.html"       },
+    { "route": "/gatherings",        "rewrite": "/gatherings.html"        },
+    { "route": "/sermons",           "rewrite": "/sermons.html"           },
+    { "route": "/give",              "rewrite": "/give.html"              },
+    { "route": "/contact",           "rewrite": "/contact.html"           },
+    { "route": "/members",           "rewrite": "/members/index.html"     },
+    { "route": "/members/",          "rewrite": "/members/index.html"     },
+    { "route": "/members/dashboard", "rewrite": "/members/dashboard.html" },
+    { "route": "/members/admin",     "rewrite": "/members/admin.html"     }
   ],
   "responseOverrides": {
     "404": {

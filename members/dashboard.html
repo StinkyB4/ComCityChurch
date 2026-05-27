@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Member Dashboard | Commissioned City Church</title>
+  <link rel="preload" href="/css/styles.css" as="style">
+  <link rel="preload" href="/css/members.css" as="style">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/members.css">
+  <link rel="icon" type="image/png" href="/assets/logo.png">
+</head>
+<body class="members-portal">
+
+  <!-- NAVIGATION -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">
+        <a href="/"><img src="/assets/logo.png" alt="Commissioned City Church" class="logo-img"></a>
+      </div>
+      <ul class="nav-menu">
+        <li><a href="/" class="nav-link">Home</a></li>
+        <li><a href="/about" class="nav-link">About</a></li>
+        <li><a href="/believe" class="nav-link">What We Believe</a></li>
+        <li><a href="/communities" class="nav-link">Communities</a></li>
+        <li><a href="/gatherings" class="nav-link">Gatherings</a></li>
+        <li><a href="/sermons" class="nav-link">Sermons</a></li>
+        <li><a href="/give" class="nav-link">Give</a></li>
+        <li><a href="/contact" class="nav-link">Contact</a></li>
+      </ul>
+      <div class="hamburger"><span></span><span></span><span></span></div>
+    </div>
+  </nav>
+
+  <!-- PORTAL SUB-NAV -->
+  <div class="members-sub-nav">
+    <div class="members-sub-nav-content">
+      <a href="#" id="subnav-home"       class="active" onclick="navigateTo('home');      return false;">Dashboard</a>
+      <a href="#" id="subnav-profile"               onclick="navigateTo('profile');   return false;">My Profile</a>
+      <a href="#" id="subnav-community"             onclick="navigateTo('community'); return false;">My Community</a>
+      <a href="#" id="subnav-directory"             onclick="navigateTo('directory'); return false;">Member Directory</a>
+      <a href="#" id="subnav-teams"                 onclick="navigateTo('teams');     return false;">My Teams</a>
+      <a href="#" id="subnav-signout"               onclick="signOutUser();           return false;">Sign Out</a>
+    </div>
+  </div>
+
+  <main class="members-main">
+    <div class="dashboard-container">
+
+      <!-- WELCOME BANNER -->
+      <section class="dashboard-welcome">
+        <div class="welcome-content">
+          <h1>Welcome, <span id="member-name">Member</span></h1>
+          <p>You're part of the Commissioned City Church family. Stay connected below.</p>
+        </div>
+      </section>
+
+      <!-- INFO CARDS (always visible) -->
+      <div class="dashboard-cards">
+        <div class="info-card" onclick="navigateTo('community')" style="cursor:pointer;">
+          <h3>My Community</h3>
+          <p id="community-name" class="info-value-text">Loading…</p>
+          <span class="info-link">View Details →</span>
+        </div>
+        <div class="info-card" onclick="navigateTo('teams')" style="cursor:pointer;">
+          <h3>My Teams</h3>
+          <p id="teams-count" class="info-value">–</p>
+          <span class="info-link">View All →</span>
+        </div>
+        <div class="info-card" onclick="navigateTo('home')" style="cursor:pointer;">
+          <h3>Announcements</h3>
+          <p id="announcement-count" class="info-value">–</p>
+          <span class="info-link">View All →</span>
+        </div>
+        <div class="info-card" onclick="navigateTo('directory')" style="cursor:pointer;">
+          <h3>Members</h3>
+          <p id="members-count" class="info-value">–</p>
+          <span class="info-link">Browse →</span>
+        </div>
+      </div>
+
+      <!-- ── SECTION: HOME / ANNOUNCEMENTS (default) ── -->
+      <section id="announcements-section" class="dashboard-section">
+        <div class="section-header">
+          <h2>Announcements</h2>
+        </div>
+        <div id="announcements-list" class="announcement-list">
+          <p class="loading" style="color:var(--color-text-muted);">Loading…</p>
+        </div>
+      </section>
+
+      <!-- ── SECTION: MY PROFILE ── -->
+      <section id="profile-section" class="dashboard-section" style="display:none;">
+        <div class="section-header">
+          <h2>My Profile</h2>
+        </div>
+
+        <!-- VIEW MODE -->
+        <div id="profile-view" class="profile-card">
+          <div class="profile-header">
+            <div class="profile-avatar-wrap">
+              <img id="profile-avatar" src="/assets/logo.png" alt="Avatar" class="profile-avatar">
+            </div>
+            <div class="profile-info">
+              <h3 id="profile-name">–</h3>
+              <p id="profile-email">–</p>
+              <span id="profile-status" class="profile-status status-approved">Approved</span>
+            </div>
+          </div>
+          <div class="profile-details">
+            <p><strong>Phone:</strong> <span id="profile-phone">Not provided</span></p>
+            <p><strong>Community:</strong> <span id="profile-community">Not assigned</span></p>
+            <p><strong>Member Since:</strong> <span id="profile-joined">–</span></p>
+            <p id="profile-bio-row" style="display:none;"><strong>Bio:</strong> <span id="profile-bio">–</span></p>
+          </div>
+          <button class="btn btn-primary" onclick="showProfileEdit()">Edit Profile</button>
+        </div>
+
+        <!-- EDIT MODE (hidden by default) -->
+        <div id="profile-edit" class="profile-card" style="display:none;">
+          <h3 style="margin:0 0 1.5rem; font-family:var(--font-serif); color:var(--color-navy);">Edit Profile</h3>
+          <form id="profile-edit-form" class="auth-form">
+            <div class="form-group">
+              <label for="edit-name">Full Name</label>
+              <input type="text" id="edit-name" name="full_name" required>
+            </div>
+            <div class="form-group">
+              <label for="edit-phone">Phone Number</label>
+              <input type="tel" id="edit-phone" name="phone" placeholder="204-555-1234">
+            </div>
+            <div class="form-group">
+              <label for="edit-bio">Short Bio <small>(optional — visible in member directory)</small></label>
+              <textarea id="edit-bio" name="bio" rows="3"
+                style="padding:.75rem; border:1px solid #e0e0e0; border-radius:6px; font-family:var(--font-sans); font-size:1rem; resize:vertical;"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="edit-avatar">Profile Photo <small>(JPG or PNG, max 2 MB)</small></label>
+              <input type="file" id="edit-avatar" name="avatar" accept="image/jpeg,image/png"
+                style="padding:.5rem 0; border:none; background:none;">
+            </div>
+            <div class="form-message" id="profile-edit-message"></div>
+            <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+              <button type="submit" class="btn btn-primary">Save Changes</button>
+              <button type="button" class="btn btn-outline" onclick="cancelProfileEdit()">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ── SECTION: MY COMMUNITY ── -->
+      <section id="community-section" class="dashboard-section" style="display:none;">
+        <div class="section-header">
+          <h2>My Community</h2>
+        </div>
+        <div id="community-content">
+          <p class="loading" style="color:var(--color-text-muted);">Loading…</p>
+        </div>
+      </section>
+
+      <!-- ── SECTION: MEMBER DIRECTORY ── -->
+      <section id="directory-section" class="dashboard-section" style="display:none;">
+        <div class="section-header" style="flex-wrap:wrap; gap:1rem;">
+          <h2>Member Directory</h2>
+          <input type="search" id="directory-search" placeholder="Search by name…"
+            style="padding:.6rem 1rem; border:1px solid #e0e0e0; border-radius:6px;
+                   font-family:var(--font-sans); font-size:.95rem; width:220px;"
+            oninput="filterDirectory(this.value)">
+        </div>
+        <div id="directory-grid" class="members-grid">
+          <p class="loading" style="color:var(--color-text-muted);">Loading…</p>
+        </div>
+      </section>
+
+      <!-- ── SECTION: MY TEAMS ── -->
+      <section id="teams-section" class="dashboard-section" style="display:none;">
+        <div class="section-header">
+          <h2>My Teams</h2>
+        </div>
+        <div id="teams-content">
+          <p class="loading" style="color:var(--color-text-muted);">Loading…</p>
+        </div>
+      </section>
+
+      <!-- ERROR STATE -->
+      <div id="error-indicator" style="display:none;" class="notice notice-error">
+        <strong>Error</strong>
+        <p id="error-text">An error occurred. Please try refreshing the page.</p>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <img src="/assets/logo.png" alt="Commissioned City Church" class="footer-logo">
+      </div>
+      <div class="footer-section">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="/about">About Us</a></li>
+          <li><a href="/believe">What We Believe</a></li>
+          <li><a href="/communities">Missional Communities</a></li>
+          <li><a href="/contact">Contact Us</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Service Times</h4>
+        <p>Sunday 10:00 AM<br>Location TBD</p>
+      </div>
+      <div class="footer-section">
+        <h4>Follow Us</h4>
+        <ul class="social-links">
+          <li><a href="#" aria-label="Facebook">f</a></li>
+          <li><a href="#" aria-label="Instagram">@</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 Commissioned City Church. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script async src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    window.SUPABASE_URL = '{{ SUPABASE_URL }}';
+    window.SUPABASE_ANON_KEY = '{{ SUPABASE_ANON_KEY }}';
+  </script>
+  <script src="/js/main.js" defer></script>
+  <script src="/js/supabase.js" defer></script>
+  <script src="/js/dashboard.js" defer></script>
+
+</body>
+</html>

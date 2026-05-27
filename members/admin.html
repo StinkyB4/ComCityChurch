@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin | Commissioned City Church</title>
+  <link rel="preload" href="/css/styles.css" as="style">
+  <link rel="preload" href="/css/members.css" as="style">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/members.css">
+  <link rel="icon" type="image/png" href="/assets/logo.png">
+</head>
+<body class="members-portal">
+
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">
+        <a href="/"><img src="/assets/logo.png" alt="Commissioned City Church" class="logo-img"></a>
+      </div>
+      <ul class="nav-menu">
+        <li><a href="/" class="nav-link">Home</a></li>
+        <li><a href="/about" class="nav-link">About</a></li>
+        <li><a href="/believe" class="nav-link">What We Believe</a></li>
+        <li><a href="/communities" class="nav-link">Communities</a></li>
+        <li><a href="/gatherings" class="nav-link">Gatherings</a></li>
+        <li><a href="/sermons" class="nav-link">Sermons</a></li>
+        <li><a href="/give" class="nav-link">Give</a></li>
+        <li><a href="/contact" class="nav-link">Contact</a></li>
+      </ul>
+      <div class="hamburger"><span></span><span></span><span></span></div>
+    </div>
+  </nav>
+
+  <div class="members-sub-nav">
+    <div class="members-sub-nav-content">
+      <a href="/members/dashboard">Dashboard</a>
+      <a href="/members/admin" class="active">Admin</a>
+      <a href="#" onclick="doSignOut(); return false;">Sign Out</a>
+    </div>
+  </div>
+
+  <main class="members-main">
+    <div class="dashboard-container">
+
+      <div class="section-header" style="margin-bottom: 2rem;">
+        <h1 style="margin:0; font-family: var(--font-serif); color: var(--color-navy); font-size: 2rem;">Member Administration</h1>
+      </div>
+
+      <!-- STAT CARDS -->
+      <div class="dashboard-cards" id="stat-cards">
+        <div class="info-card">
+          <h3>Pending Approval</h3>
+          <p id="count-pending" class="info-value">–</p>
+        </div>
+        <div class="info-card">
+          <h3>Approved Members</h3>
+          <p id="count-approved" class="info-value">–</p>
+        </div>
+        <div class="info-card">
+          <h3>Inactive</h3>
+          <p id="count-inactive" class="info-value">–</p>
+        </div>
+        <div class="info-card">
+          <h3>Total</h3>
+          <p id="count-total" class="info-value">–</p>
+        </div>
+      </div>
+
+      <!-- FILTER TABS -->
+      <div class="auth-tabs" style="max-width: 100%; margin-bottom: 1.5rem; border-radius: 8px 8px 0 0; overflow: hidden;">
+        <button class="auth-tab-btn active" data-filter="pending" onclick="setFilter('pending')">Pending</button>
+        <button class="auth-tab-btn" data-filter="approved" onclick="setFilter('approved')">Approved</button>
+        <button class="auth-tab-btn" data-filter="inactive" onclick="setFilter('inactive')">Inactive</button>
+        <button class="auth-tab-btn" data-filter="all" onclick="setFilter('all')">All</button>
+      </div>
+
+      <!-- MEMBER TABLE -->
+      <div id="members-table-wrap">
+        <p class="loading" style="text-align:center; padding: 2rem; color: var(--color-text-muted);">Loading members...</p>
+      </div>
+
+      <!-- TOAST -->
+      <div id="admin-toast" class="admin-toast" role="alert" aria-live="polite"></div>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <img src="/assets/logo.png" alt="Commissioned City Church" class="footer-logo">
+      </div>
+      <div class="footer-section">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="/about">About Us</a></li>
+          <li><a href="/believe">What We Believe</a></li>
+          <li><a href="/communities">Missional Communities</a></li>
+          <li><a href="/contact">Contact Us</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Service Times</h4>
+        <p>Sunday 10:00 AM<br>Location TBD</p>
+      </div>
+      <div class="footer-section">
+        <h4>Follow Us</h4>
+        <ul class="social-links">
+          <li><a href="#" aria-label="Facebook">f</a></li>
+          <li><a href="#" aria-label="Instagram">@</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 Commissioned City Church. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script async src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    window.SUPABASE_URL = '{{ SUPABASE_URL }}';
+    window.SUPABASE_ANON_KEY = '{{ SUPABASE_ANON_KEY }}';
+  </script>
+  <script src="/js/main.js" defer></script>
+  <script src="/js/supabase.js" defer></script>
+  <script src="/js/admin.js" defer></script>
+
+</body>
+</html>

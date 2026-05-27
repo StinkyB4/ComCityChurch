@@ -44,6 +44,7 @@ const SITE_MEDIA = {
         { src: "assets/media/heroes/home-1.jpg", alt: "Sunday worship gathering" },
         { src: "assets/media/heroes/home-2.jpg", alt: "Community life together" },
         { src: "assets/media/heroes/home-3.jpg", alt: "Baptism celebration" },
+        { src: "assets/media/heroes/home-4.jpg", alt: "Baptism celebration" },
       ],
       interval: 6000,
       transition: 1000,
@@ -57,12 +58,34 @@ const SITE_MEDIA = {
     about: {
       type: "image",
       src: "assets/media/heroes/about-hero.jpg",
-      alt: "Our team",
+      alt: "Commissioned City Church",
       overlay: {
         type: "gradient",
         direction: "to-top",
         color: "#112E53",
-        opacity: 0.65,
+        opacity: 1.65,
+      }
+    },
+
+    visit: {
+      type: "image",
+      src: "assets/media/heroes/visit-hero.jpg",
+      alt: "Welcome to Commissioned City Church",
+      overlay: {
+        type: "dark",
+        opacity: 0.52,
+      }
+    },
+
+    team: {
+      type: "image",
+      src: "assets/media/heroes/team-hero.jpg",
+      alt: "Our leadership team",
+      overlay: {
+        type: "gradient",
+        direction: "to-top",
+        color: "#112E53",
+        opacity: 1.65,
       }
     },
 
@@ -72,7 +95,7 @@ const SITE_MEDIA = {
       alt: "Open Bible",
       overlay: {
         type: "navy",
-        opacity: 0.72,
+        opacity: 0.2,
       }
     },
 
@@ -84,7 +107,7 @@ const SITE_MEDIA = {
         type: "gradient",
         direction: "radial",
         color: "#000000",
-        opacity: 0.60,
+        opacity: 0.80,
       }
     },
 
@@ -139,8 +162,108 @@ const SITE_MEDIA = {
       alt: "Welcome — plan your visit",
       overlay: {
         type: "dark",
-        opacity: 0.52,
+        opacity: 0.2,
       }
+    },
+
+    partnerships: {
+      type: "image",
+      src: "assets/media/heroes/partnerships-hero.jpg",
+      alt: "Our gospel partnerships",
+      overlay: {
+        type: "navy",
+        opacity: 0.65,
+      }
+    },
+
+    // ── MISSIONAL COMMUNITY SUB-PAGES ──────────────────────────────
+    // NOTE: These pages live in communities/ (one level deep), so paths
+    // use ../assets/ rather than assets/. Do not reference these keys
+    // from any root-level page — the path will not resolve correctly.
+    // When the site moves to a web server, update all paths below to
+    // absolute paths (e.g. /assets/media/heroes/mc-south-osborne.jpg).
+    // Until photos are ready, the CSS gradient on .mc-hero shows through
+    // because a missing background-image renders transparently.
+
+    "south-osborne": {
+      type: "image",
+      src: "../assets/media/heroes/mc-south-osborne.jpg",
+      alt: "South Osborne neighbourhood",
+      overlay: {
+        type: "dark",
+        opacity: 0.45,
+      }
+    },
+
+    "river-heights": {
+      type: "image",
+      src: "../assets/media/heroes/mc-river-heights.jpg",
+      alt: "River Heights neighbourhood",
+      overlay: {
+        type: "dark",
+        opacity: 0.45,
+      }
+    },
+
+    "st-james": {
+      type: "image",
+      src: "../assets/media/heroes/mc-st-james.jpg",
+      alt: "St. James neighbourhood",
+      overlay: {
+        type: "dark",
+        opacity: 0.45,
+      }
+    },
+
+    "youth": {
+      type: "image",
+      src: "../assets/media/heroes/mc-youth.jpg",
+      alt: "Youth community gathering",
+      overlay: {
+        type: "dark",
+        opacity: 0.45,
+      }
+    },
+
+    // ── BLOG PAGES ─────────────────────────────────────────────────
+    // "blog" is used by blog.html (root level) — assets/ paths.
+    // Post-level keys are used by blog/*.html (one level deep) — ../assets/ paths.
+    // Same convention as communities/ sub-pages. Switch to absolute paths
+    // (e.g. /assets/media/blog/...) when the site is deployed to a server.
+
+    blog: {
+      type: "image",
+      src: "assets/media/blog/post-missionary-servants.jpg",
+      alt: "Resources — Blog",
+      overlay: { type: "dark", opacity: 0.55 }
+    },
+
+    "blog-missionary-servants": {
+      type: "image",
+      src: "../assets/media/blog/post-missionary-servants.jpg",
+      alt: "A Family of Missionary Servants",
+      overlay: { type: "dark", opacity: 0.50 }
+    },
+
+    "blog-matthew-715": {
+      type: "image",
+      src: "../assets/media/blog/post-matthew-715.jpg",
+      alt: "Matthew 7:15–29 — Hearing and Doing",
+      overlay: { type: "dark", opacity: 0.50 }
+    },
+
+    "blog-gospel-fluency": {
+      type: "image",
+      src: "../assets/media/blog/post-gospel-fluency.jpg",
+      alt: "Gospel Fluency",
+      overlay: { type: "dark", opacity: 0.50 }
+    },
+
+    "blog-sabbath": {
+      type: "image",
+      src: "../assets/media/blog/post-sabbath.jpg",
+      alt: "The Essence of Sabbath in the Body of Christ",
+      overlay: { type: "dark", opacity: 0.50 }
     },
 
   },
@@ -165,7 +288,7 @@ const SITE_MEDIA = {
     },
     beingBeforeDoing: {
       src: "assets/media/blocks/being-before-doing.jpg",
-      alt: "Rooted in identity",
+      alt: "Identity Rooted in Jesus",
       objectPosition: "center center",
     },
   },
@@ -180,7 +303,7 @@ const SITE_MEDIA = {
         type: "gradient",
         direction: "to-top",
         color: "#112E53",
-        opacity: 0.60,
+        opacity: 1.60,
       }
     },
     "river-heights": {
@@ -189,8 +312,8 @@ const SITE_MEDIA = {
       overlay: {
         type: "gradient",
         direction: "to-top",
-        color: "#30343B",
-        opacity: 0.60,
+        color: "#112E53",
+        opacity: 1.60,
       }
     },
     "st-james": {
@@ -200,7 +323,7 @@ const SITE_MEDIA = {
         type: "gradient",
         direction: "to-top",
         color: "#112E53",
-        opacity: 0.65,
+        opacity: 1.65,
       }
     },
     "youth": {
@@ -209,9 +332,32 @@ const SITE_MEDIA = {
       overlay: {
         type: "gradient",
         direction: "to-top",
-        color: "#D5393B",
-        opacity: 0.55,
+        color: "#112E53",
+        opacity: 1.55,
       }
+    },
+  },
+
+  // ── PARTNER LOGOS ──────────────────────────────────────────────────────────
+  // Add new partners here. Use data-media="partners.key" on <img> tags in
+  // partnerships.html and the renderer will set src + alt automatically.
+
+  partners: {
+    "ness-baptist": {
+      src: "assets/media/partners/ness-baptist.png",
+      alt: "Ness Avenue Baptist Church",
+    },
+    "bgc-canada": {
+      src: "assets/media/partners/bgc-canada.png",
+      alt: "Baptist General Conference of Canada",
+    },
+    "soma": {
+      src: "assets/media/partners/soma.jpg",
+      alt: "SOMA Family of Churches",
+    },
+    "9marks": {
+      src: "assets/media/partners/9marks.jpg",
+      alt: "9Marks",
     },
   },
 

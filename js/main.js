@@ -6,9 +6,21 @@
 (function setActiveNav() {
   const path = window.location.pathname.split('/').pop() || 'index.html';
   document.querySelectorAll('.nav-links a, .nav-mobile a').forEach(link => {
-    const href = link.getAttribute('href');
-    if (href === path || (path === '' && href === 'index.html')) {
+    const href = link.getAttribute('href') || '';
+    const hrefFile = href.split('/').pop();
+    if (hrefFile === path || (path === '' && hrefFile === 'index.html')) {
       link.classList.add('active');
+      // Also highlight the parent dropdown trigger
+      const parentLi = link.closest('.nav-has-dropdown');
+      if (parentLi) {
+        const trigger = parentLi.querySelector(':scope > a');
+        if (trigger) trigger.classList.add('active');
+      }
+      const parentGroup = link.closest('.nav-mobile-group');
+      if (parentGroup) {
+        const trigger = parentGroup.querySelector(':scope > a');
+        if (trigger) trigger.classList.add('active');
+      }
     }
   });
 })();
@@ -30,8 +42,8 @@
   if (!hamburger || !mobileNav) return;
 
   hamburger.addEventListener('click', () => {
-    mobileNav.classList.add('open');
-    document.body.style.overflow = 'hidden';
+    const isOpen = mobileNav.classList.toggle('open');
+    document.body.style.overflow = isOpen ? 'hidden' : '';
   });
 
   function closeMenu() {

@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plan Your Visit — Commissioned City Church</title>
+  <meta name="description" content="Plan your first visit to Commissioned City Church in Winnipeg. Get service times, directions, and everything you need for Sunday.">
+  <meta property="og:title" content="Plan Your Visit — Commissioned City Church">
+  <meta property="og:description" content="Sent into the City. Rooted in Christ. We'd love to meet you this Sunday.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Plan Your Visit — Commissioned City Church">
+  <meta name="twitter:description" content="Sent into the City. Rooted in Christ. We'd love to meet you this Sunday.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400&family=Montserrat:wght@600;700;800&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    /* ── STICKY BOTTOM BAR ──────────────────────────────────────── */
+    body { padding-bottom: 72px; }
+    .visit-sticky {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+      display: flex;
+      background: var(--navy);
+      box-shadow: 0 -4px 24px rgba(0,0,0,.28);
+    }
+    .visit-sticky a {
+      flex: 1;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 3px;
+      min-height: 72px; padding: 8px 12px;
+      color: white;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700; font-size: 11px;
+      letter-spacing: .08em; text-transform: uppercase;
+      text-decoration: none;
+      transition: background var(--transition);
+    }
+    .visit-sticky a + a { border-left: 1px solid rgba(255,255,255,.15); }
+    .visit-sticky a:hover { background: rgba(255,255,255,.08); }
+    .visit-sticky a.vs-red { background: var(--red); }
+    .visit-sticky a.vs-red:hover { background: #b02e30; }
+    .vs-icon { font-size: 22px; line-height: 1; }
+
+    /* ── HERO PILL ──────────────────────────────────────────────── */
+    .visit-pill {
+      display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      justify-content: center;
+      background: rgba(255,255,255,.14);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 40px;
+      padding: 10px 22px;
+      font-size: 13px; font-weight: 600; color: white;
+      margin-top: var(--space-lg);
+    }
+    .visit-pill .vp-dot { opacity: .4; }
+
+    /* ── ESSENTIALS GRID ────────────────────────────────────────── */
+    .essentials-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: var(--space-md); margin-top: var(--space-lg);
+    }
+    @media (max-width: 640px) { .essentials-grid { grid-template-columns: 1fr; } }
+
+    .e-card {
+      background: white; border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.08);
+      padding: var(--space-lg);
+      display: flex; flex-direction: column; gap: var(--space-sm);
+    }
+    .e-icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      background: var(--navy);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; flex-shrink: 0;
+    }
+    .e-card h3 { font-size: 20px; color: var(--navy); margin: 0 0 2px; }
+    .e-primary { font-size: 16px; font-weight: 600; color: var(--charcoal); margin: 0 0 2px; }
+    .e-detail { font-size: 13px; color: var(--muted-blue); margin: 0; line-height: 1.55; }
+    .map-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: var(--space-sm); }
+    .btn-map {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px;
+      background: #f0f3f7; border: 1.5px solid #dde2eb; border-radius: 8px;
+      font-size: 13px; font-weight: 600; color: var(--navy);
+      text-decoration: none;
+      transition: background var(--transition), border-color var(--transition), color var(--transition);
+    }
+    .btn-map:hover { background: var(--navy); border-color: var(--navy); color: white; }
+
+    /* ── TIMELINE ───────────────────────────────────────────────── */
+    .expect-wrap { max-width: 600px; margin: var(--space-lg) auto 0; }
+    .expect-item { display: flex; gap: 20px; }
+    .expect-left { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 44px; }
+    .expect-bubble {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--navy);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 16px; color: white;
+      flex-shrink: 0;
+    }
+    .expect-line {
+      width: 2px; flex: 1; min-height: 16px;
+      background: linear-gradient(to bottom, rgba(17,46,83,.25), transparent);
+      margin-top: 4px;
+    }
+    .expect-item:last-child .expect-line { display: none; }
+    .expect-body { padding: 6px 0 var(--space-lg); flex: 1; }
+    .expect-time {
+      font-size: 11px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--red); margin-bottom: 2px;
+    }
+    .expect-body h3 { font-size: 18px; color: var(--navy); margin: 0 0 4px; }
+    .expect-body p { font-size: 15px; color: var(--charcoal); margin: 0; line-height: 1.6; }
+
+    /* ── KIDS BANNER ────────────────────────────────────────────── */
+    .kids-banner {
+      background: var(--navy);
+      border-radius: 20px;
+      padding: var(--space-xl) var(--space-lg);
+      display: grid; grid-template-columns: 1fr 100px;
+      gap: var(--space-lg); align-items: center;
+    }
+    @media (max-width: 580px) {
+      .kids-banner { grid-template-columns: 1fr; }
+      .kids-emoji { display: none; }
+    }
+    .kids-banner h2 { font-size: clamp(22px,4vw,32px); color: white; margin-bottom: var(--space-sm); }
+    .kids-banner p { font-size: 16px; color: rgba(255,255,255,.8); margin: 0; line-height: 1.65; }
+    .kids-emoji { font-size: 80px; text-align: center; line-height: 1; }
+
+    /* ── SCRIPTURE ──────────────────────────────────────────────── */
+    .visit-scripture {
+      background: #f5f7fa;
+      padding: var(--space-xl) var(--space-lg);
+      text-align: center; position: relative; overflow: hidden;
+    }
+    .visit-scripture::before {
+      content: '"';
+      position: absolute; top: -30px; left: 16px;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 220px; color: rgba(17,46,83,.05);
+      line-height: 1; pointer-events: none; user-select: none;
+    }
+    .visit-scripture blockquote {
+      font-family: 'Cormorant Garamond', serif; font-style: italic;
+      font-size: clamp(20px, 3.5vw, 30px); color: var(--navy);
+      max-width: 680px; margin: 0 auto var(--space-sm);
+      line-height: 1.5; position: relative;
+    }
+    .visit-scripture cite {
+      font-family: 'Montserrat', sans-serif; font-style: normal;
+      font-size: 11px; font-weight: 700; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--muted-blue);
+    }
+    .visit-motif {
+      text-align: center; color: var(--navy); opacity: .2;
+      letter-spacing: 8px; font-size: 16px; margin-top: var(--space-md);
+    }
+
+    /* ── PILLARS ────────────────────────────────────────────────── */
+    .pillars-grid {
+      display: grid; grid-template-columns: repeat(3,1fr);
+      gap: var(--space-md); margin-top: var(--space-lg);
+    }
+    @media (max-width: 680px) { .pillars-grid { grid-template-columns: 1fr; } }
+    .pillar-card {
+      background: white; border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.08);
+      padding: var(--space-lg);
+      border-top: 3px solid var(--navy);
+      transition: transform var(--transition);
+    }
+    .pillar-card:nth-child(2) { border-top-color: var(--red); }
+    .pillar-card:hover { transform: translateY(-4px); }
+    .pillar-num {
+      font-family: 'Cormorant Garamond', serif; font-style: italic;
+      font-size: 54px; color: rgba(17,46,83,.1); line-height: 1; margin-bottom: -8px;
+    }
+    .pillar-card h3 { font-size: 20px; color: var(--navy); margin: 0 0 var(--space-sm); }
+    .pillar-card p { font-size: 14px; color: var(--charcoal); margin: 0; line-height: 1.65; }
+
+    /* ── CONNECT CARDS ──────────────────────────────────────────── */
+    .connect-grid {
+      display: grid; grid-template-columns: repeat(3,1fr);
+      gap: var(--space-md); margin-top: var(--space-lg);
+    }
+    @media (max-width: 680px) { .connect-grid { grid-template-columns: 1fr; } }
+    .connect-card {
+      background: white; border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.08);
+      padding: var(--space-lg);
+      display: flex; flex-direction: column;
+    }
+    .cc-icon { font-size: 32px; margin-bottom: var(--space-sm); line-height: 1; }
+    .connect-card h3 { font-size: 18px; color: var(--navy); margin: 0 0 6px; }
+    .connect-card p { font-size: 14px; color: var(--muted-blue); margin: 0 0 var(--space-md); line-height: 1.6; flex: 1; }
+    .connect-card .btn { align-self: flex-start; font-size: 13px; }
+
+    /* ── GIVING STRIP ───────────────────────────────────────────── */
+    .giving-strip {
+      background: #eef1f7; border-radius: 16px;
+      padding: var(--space-md) var(--space-lg);
+      display: flex; align-items: center; justify-content: space-between;
+      gap: var(--space-md); flex-wrap: wrap;
+      margin-top: var(--space-xl);
+    }
+    .giving-strip h4 { font-size: 16px; color: var(--navy); margin: 0 0 2px; }
+    .giving-strip p { font-size: 13px; color: var(--muted-blue); margin: 0; }
+    .giving-strip .btn { white-space: nowrap; font-size: 13px; flex-shrink: 0; }
+
+    /* ── ADD TO CALENDAR ────────────────────────────────────────── */
+    .cal-details { margin-top: var(--space-sm); position: relative; }
+    .cal-details summary {
+      list-style: none;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px;
+      background: #f0f3f7; border: 1.5px solid #dde2eb; border-radius: 8px;
+      font-size: 13px; font-weight: 600; color: var(--navy);
+      cursor: pointer; user-select: none;
+      transition: background var(--transition), border-color var(--transition), color var(--transition);
+    }
+    .cal-details summary::-webkit-details-marker,
+    .cal-details summary::marker { display: none; }
+    .cal-details[open] summary,
+    .cal-details summary:hover { background: var(--navy); border-color: var(--navy); color: white; }
+    .cal-options {
+      position: absolute; top: calc(100% + 6px); left: 0;
+      min-width: 210px; z-index: 20;
+      background: white; border-radius: 12px;
+      box-shadow: 0 8px 28px rgba(0,0,0,.14);
+      border: 1px solid #e8ecf2; overflow: hidden;
+    }
+    .cal-option {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 16px;
+      font-size: 13px; font-weight: 600; color: var(--navy);
+      text-decoration: none;
+      transition: background var(--transition);
+    }
+    .cal-option:hover { background: #f0f3f7; }
+    .cal-option + .cal-option { border-top: 1px solid #f0f3f7; }
+    .cal-opt-icon { font-size: 17px; line-height: 1; flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<!-- ===== NAVIGATION ===== -->
+<nav class="navbar" aria-label="Main navigation">
+  <div class="nav-inner">
+    <a class="nav-logo" href="index.html" aria-label="Commissioned City Church home">
+      <img src="assets/logo.png" alt="Commissioned City Church" onerror="this.parentElement.innerHTML='<div class=\'nav-logo-placeholder\'><div class=\'logo-mark\'><svg viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'white\' stroke-width=\'2\'><path d=\'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5\'/></svg></div><div class=\'logo-text\'>COMMISSIONED<br>CITY CHURCH</div></div>'">
+    </a>
+    <ul class="nav-links" role="list">
+      <li><a href="index.html">Home</a></li>
+      <li class="nav-has-dropdown">
+        <a href="about.html">About</a>
+        <ul class="nav-dropdown" role="list">
+          <li><a href="team.html">Meet the Team</a></li>
+          <li><a href="believe.html">What We Believe</a></li>
+          <li><a href="partnerships.html">Our Partnerships</a></li>
+        </ul>
+      </li>
+      <li class="nav-has-dropdown">
+        <a href="communities.html">Communities</a>
+        <ul class="nav-dropdown" role="list">
+          <li><a href="communities/south-osborne.html">South Osborne</a></li>
+          <li><a href="communities/river-heights.html">River Heights</a></li>
+          <li><a href="communities/st-james.html">St. James</a></li>
+          <li><a href="communities/youth.html">Youth</a></li>
+        </ul>
+      </li>
+      <li><a href="gatherings.html">Gatherings</a></li>
+      <li class="nav-has-dropdown">
+        <a href="blog.html">Resources</a>
+        <ul class="nav-dropdown" role="list">
+          <li><a href="sermons.html">Sermons</a></li>
+          <li><a href="blog.html">Blog</a></li>
+        </ul>
+      </li>
+      <li><a href="give.html">Give</a></li>
+    </ul>
+    <!-- On this page, swap the CTA to Contact so we don't self-link -->
+    <a href="contact.html" class="btn btn-primary nav-cta">Contact Us →</a>
+    <button class="nav-hamburger" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+<div class="nav-mobile" role="dialog" aria-modal="true">
+  <button class="nav-mobile-close" aria-label="Close menu">✕</button>
+  <a href="index.html">Home</a>
+  <div class="nav-mobile-group">
+    <a href="about.html">About</a>
+    <div class="nav-mobile-sub">
+      <a href="team.html">Meet the Team</a>
+      <a href="believe.html">What We Believe</a>
+      <a href="partnerships.html">Our Partnerships</a>
+    </div>
+  </div>
+  <div class="nav-mobile-group">
+    <a href="communities.html">Communities</a>
+    <div class="nav-mobile-sub">
+      <a href="communities/south-osborne.html">South Osborne</a>
+      <a href="communities/river-heights.html">River Heights</a>
+      <a href="communities/st-james.html">St. James</a>
+      <a href="communities/youth.html">Youth</a>
+    </div>
+  </div>
+  <a href="gatherings.html">Gatherings</a>
+  <div class="nav-mobile-group">
+    <a href="blog.html">Resources</a>
+    <div class="nav-mobile-sub">
+      <a href="sermons.html">Sermons</a>
+      <a href="blog.html">Blog</a>
+    </div>
+  </div>
+  <a href="give.html">Give</a>
+  <a href="contact.html" class="btn btn-primary">Contact Us →</a>
+</div>
+
+<main>
+
+<!-- ===== HERO ===== -->
+<section class="page-hero page-hero--navy" data-media="heroes.visit" style="min-height:62vh;" aria-labelledby="page-heading">
+  <span class="eyebrow fade-in-up">First Time?</span>
+  <h1 id="page-heading" class="fade-in-up delay-1">We'd Love to<br>Have You Over.</h1>
+  <div class="visit-pill fade-in-up delay-2" aria-label="Service times and location">
+    <span>☕ Coffee · 10:00am</span>
+    <span class="vp-dot">·</span>
+    <span>🙏 Worship · 10:30am</span>
+    <span class="vp-dot">·</span>
+    <span>📍 205 Roseberry St, Winnipeg</span>
+  </div>
+</section>
+
+<!-- ===== SUNDAY AT A GLANCE ===== -->
+<section class="section section--gray" aria-labelledby="glance-heading">
+  <div class="container">
+    <div class="section-heading text-center mx-auto" style="max-width:520px;">
+      <span class="eyebrow fade-in-up">Your First Sunday</span>
+      <h2 id="glance-heading" class="fade-in-up delay-1">Sunday at a Glance</h2>
+      <p class="fade-in-up delay-2">Every Sunday we gather to encounter Jesus, grow with one another, and be sent into the city. Here's what you need to find us.</p>
+    </div>
+    <div class="essentials-grid">
+
+      <div class="e-card fade-in-up">
+        <div class="e-icon" aria-hidden="true">🗓</div>
+        <h3>When We Meet</h3>
+        <p class="e-primary">Every Sunday</p>
+        <p class="e-detail" style="margin-bottom:6px;">
+          ☕ Coffee &amp; Connection &mdash; <strong>10:00am</strong><br>
+          🙏 Worship &amp; Word &mdash; <strong>10:30am</strong>
+        </p>
+        <p class="e-detail">The service runs about 90 minutes total. We love when people linger afterward &mdash; the best conversations happen over a second cup.</p>
+        <details class="cal-details">
+          <summary>📅 Add to Calendar</summary>
+          <div class="cal-options">
+            <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=Sunday+Gathering+%E2%80%94+Commissioned+City+Church&dates=20260531T103000%2F20260531T120000&details=Coffee+%26+Connection+at+10%3A00am+%7C+Worship+%26+Word+at+10%3A30am.+Come+as+you+are.&location=205+Roseberry+St%2C+Winnipeg%2C+MB+R3J+1T3&recur=RRULE%3AFREQ%3DWEEKLY%3BBYDAY%3DSU"
+               target="_blank" rel="noopener" class="cal-option">
+              <span class="cal-opt-icon">🗓</span> Google Calendar
+            </a>
+            <a href="sunday-gathering.ics" download class="cal-option">
+              <span class="cal-opt-icon">📥</span> Apple / ICS File
+            </a>
+            <a href="https://outlook.live.com/calendar/0/action/compose?subject=Sunday+Gathering+%E2%80%94+Commissioned+City+Church&startdt=2026-05-31T10%3A30%3A00&enddt=2026-05-31T12%3A00%3A00&body=Coffee+%26+Connection+at+10%3A00am+%7C+Worship+%26+Word+at+10%3A30am.+Come+as+you+are.&location=205+Roseberry+St%2C+Winnipeg%2C+MB+R3J+1T3"
+               target="_blank" rel="noopener" class="cal-option">
+              <span class="cal-opt-icon">📧</span> Outlook
+            </a>
+          </div>
+        </details>
+      </div>
+
+      <div class="e-card fade-in-up delay-1">
+        <div class="e-icon" aria-hidden="true">📍</div>
+        <h3>Where We Are</h3>
+        <p class="e-primary">205 Roseberry St</p>
+        <p class="e-detail" style="margin-bottom:6px;">Winnipeg, MB &nbsp;R3J 1T3</p>
+        <p class="e-detail">Street parking is available on Roseberry St and in the surrounding neighbourhood. There's plenty of room.</p>
+        <div class="map-btns">
+          <a href="https://maps.google.com/?q=205+Roseberry+St,+Winnipeg,+MB+R3J+1T3"
+             target="_blank" rel="noopener" class="btn-map"
+             aria-label="Open 205 Roseberry St in Google Maps">
+            🗺 Google Maps
+          </a>
+          <a href="https://maps.apple.com/?address=205+Roseberry+St,+Winnipeg,+MB+R3J+1T3"
+             target="_blank" rel="noopener" class="btn-map"
+             aria-label="Open 205 Roseberry St in Apple Maps">
+            🍎 Apple Maps
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== WHAT TO EXPECT ===== -->
+<section class="section" aria-labelledby="expect-heading">
+  <div class="container">
+    <div class="text-block text-center mx-auto" style="max-width:560px;">
+      <span class="eyebrow fade-in-up">No Surprises</span>
+      <h2 id="expect-heading" class="fade-in-up delay-1">What to Expect on Sunday</h2>
+      <p class="fade-in-up delay-2">Walking into a new church can feel a little nerve-wracking. Here's a walk-through of a typical Sunday morning — so you know exactly what you're stepping into.</p>
+    </div>
+    <div class="expect-wrap">
+
+      <div class="expect-item fade-in-up">
+        <div class="expect-left">
+          <div class="expect-bubble" aria-hidden="true">1</div>
+          <div class="expect-line"></div>
+        </div>
+        <div class="expect-body">
+          <p class="expect-time">9:50am — Doors Open</p>
+          <h3>Find a Seat</h3>
+          <p>The doors open a few minutes early. Come in, find a comfortable spot, and take a breath. Our space is casual — jeans are fine, suits are fine, come as you are.</p>
+        </div>
+      </div>
+
+      <div class="expect-item fade-in-up delay-1">
+        <div class="expect-left">
+          <div class="expect-bubble" aria-hidden="true">2</div>
+          <div class="expect-line"></div>
+        </div>
+        <div class="expect-body">
+          <p class="expect-time">10:00am — Coffee &amp; Connection</p>
+          <h3>Grab a Coffee</h3>
+          <p>We serve free coffee and take the first 30 minutes to connect. This is intentional — we believe Sunday starts before the music does. Introduce yourself, meet a few people, settle the kids.</p>
+        </div>
+      </div>
+
+      <div class="expect-item fade-in-up delay-2">
+        <div class="expect-left">
+          <div class="expect-bubble" aria-hidden="true">3</div>
+          <div class="expect-line"></div>
+        </div>
+        <div class="expect-body">
+          <p class="expect-time">10:30am — The Gathering</p>
+          <h3>Worship &amp; the Word</h3>
+          <p>We sing together, pray, and hear from God's Word through expository preaching. The service runs about 60 minutes. No fog machines, no performance — just gathered people encountering the living God.</p>
+        </div>
+      </div>
+
+      <div class="expect-item fade-in-up delay-3">
+        <div class="expect-left">
+          <div class="expect-bubble" aria-hidden="true">4</div>
+          <div class="expect-line"></div>
+        </div>
+        <div class="expect-body">
+          <p class="expect-time">~Noon — Stick Around</p>
+          <h3>More Coffee. Good Conversation.</h3>
+          <p>Some of the best moments happen after the service. No agenda — just people lingering, asking questions, and genuinely enjoying each other. We'd love to meet you in person.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== KIDS & FAMILY ===== -->
+<section class="section section--gray" aria-labelledby="kids-heading">
+  <div class="container">
+    <div class="kids-banner fade-in-up">
+      <div>
+        <span class="eyebrow" style="color:rgba(255,255,255,.5);">Families Welcome</span>
+        <h2 id="kids-heading">Bring the Whole Family.</h2>
+        <p>We love having kids in the room with us. Children of all ages are welcome in the service — we'll have colouring sheets and quiet activities available for little ones. You're never a distraction. Come as you are, bring who you love.</p>
+      </div>
+      <div class="kids-emoji" aria-hidden="true">👨‍👩‍👧‍👦</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SCRIPTURE ===== -->
+<div class="visit-scripture">
+  <blockquote class="fade-in-up">
+    "Go therefore and make disciples of all nations, baptizing them in the name of the Father and of the Son and of the Holy Spirit, teaching them to observe all that I have commanded you. And behold, I am with you always, to the end of the age."
+  </blockquote>
+  <cite>Matthew 28:19–20</cite>
+  <div class="visit-motif" aria-hidden="true">→ → →</div>
+</div>
+
+<!-- ===== THREE PILLARS ===== -->
+<section class="section" aria-labelledby="pillars-heading">
+  <div class="container">
+    <div class="section-heading text-center mx-auto" style="max-width:540px;">
+      <span class="eyebrow fade-in-up">How We Do Life</span>
+      <h2 id="pillars-heading" class="fade-in-up delay-1">Gather. Grow. Go.</h2>
+      <p class="fade-in-up delay-2">Three rhythms shape everything we do as a church. These aren't programs — they're a way of life for a people sent on mission.</p>
+    </div>
+    <div class="pillars-grid">
+
+      <div class="pillar-card fade-in-up">
+        <div class="pillar-num" aria-hidden="true">01</div>
+        <h3>Gather</h3>
+        <p>Every Sunday we gather to worship, hear God's Word preached, and celebrate what He's doing among us. The Sunday gathering isn't the only thing we do — but it's the heartbeat that everything else flows from.</p>
+      </div>
+
+      <div class="pillar-card fade-in-up delay-1">
+        <div class="pillar-num" aria-hidden="true">02</div>
+        <h3>Grow</h3>
+        <p>Life change happens in community. We grow as disciples through Missional Communities — small groups scattered across Winnipeg that share life, open their homes, and serve their neighbours together.</p>
+      </div>
+
+      <div class="pillar-card fade-in-up delay-2">
+        <div class="pillar-num" aria-hidden="true">03</div>
+        <h3>Go</h3>
+        <p>We are a sent people. Every member is a missionary — to their neighbourhood, their workplace, and their city. We don't invite people into our programs; we go out to where they already are.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== GET CONNECTED ===== -->
+<section class="section section--gray" aria-labelledby="connect-heading">
+  <div class="container">
+    <div class="section-heading text-center mx-auto" style="max-width:520px;">
+      <span class="eyebrow fade-in-up">Next Steps</span>
+      <h2 id="connect-heading" class="fade-in-up delay-1">Ready to Take a Next Step?</h2>
+      <p class="fade-in-up delay-2">Whether this is your first Sunday or your fiftieth, there's always a way to go deeper.</p>
+    </div>
+    <div class="connect-grid">
+
+      <div class="connect-card fade-in-up">
+        <div class="cc-icon" aria-hidden="true">🏘</div>
+        <h3>Join a Community</h3>
+        <p>Our Missional Communities meet weekly in homes across Winnipeg for food, life, and mission. It's where the "Grow" part happens — and where you'll find your people.</p>
+        <a href="communities.html" class="btn btn-primary">Explore Communities →</a>
+      </div>
+
+      <div class="connect-card fade-in-up delay-1">
+        <div class="cc-icon" aria-hidden="true">🎙</div>
+        <h3>Listen to a Sermon</h3>
+        <p>Want a feel for who we are before Sunday? All our sermons are on Spotify. Hit play, hear the Word preached, and get a sense of what Sunday sounds like.</p>
+        <a href="sermons.html" class="btn btn-primary">Listen Now →</a>
+      </div>
+
+      <div class="connect-card fade-in-up delay-2">
+        <div class="cc-icon" aria-hidden="true">✉️</div>
+        <h3>Say Hello</h3>
+        <p>Have questions before you come? Want someone to meet you at the door? Drop us a note. We're real people and we'd genuinely love to hear from you.</p>
+        <a href="contact.html" class="btn btn-primary">Get in Touch →</a>
+      </div>
+
+    </div>
+
+    <div class="giving-strip fade-in-up">
+      <div>
+        <h4>Want to Support the Mission?</h4>
+        <p>Generous giving is an act of worship. Every gift goes directly toward establishing the church in Winnipeg.</p>
+      </div>
+      <a href="give.html" class="btn btn-primary">Give →</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <a href="index.html" aria-label="Commissioned City Church">
+        <img src="assets/logo.png" alt="Commissioned City Church" class="footer-logo-img" style="height:120px; background:white; border-radius:10px; padding:8px 12px; margin-bottom:var(--space-md);" onerror="this.outerHTML='<div style=\'font-family:Montserrat,sans-serif;font-weight:800;font-size:18px;color:white;margin-bottom:var(--space-md);\'>COMMISSIONED<br>CITY CHURCH</div>'">
+      </a>
+      <p class="footer-tagline">For the Good of the City<br>For the Glory of Christ</p>
+      <div class="footer-social">
+        <a href="#" aria-label="Instagram" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="white" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="white" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.5" fill="white"/></svg>
+        </a>
+        <a href="#" aria-label="Facebook" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="believe.html">What We Believe</a></li>
+        <li><a href="gospel.html">The Gospel</a></li>
+        <li><a href="communities.html">Communities</a></li>
+        <li><a href="gatherings.html">Gatherings</a></li>
+        <li><a href="sermons.html">Sermons</a></li>
+        <li><a href="give.html">Give</a></li>
+        <li><a href="contact.html">Connect</a></li>
+      </ul>
+    </div>
+    <div class="footer-col footer-contact">
+      <h4>Find Us</h4>
+      <p>205 Roseberry St<br>Winnipeg, MB R3J 1T3</p>
+      <p style="margin-top:var(--space-sm);">Coffee — 10:00am Sunday<br>Worship — 10:30am Sunday</p>
+      <p style="margin-top:var(--space-sm);"><a href="mailto:info@commissionedcity.church">info@commissionedcity.church</a></p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>Matthew 28:18–20 · © 2025 Commissioned City Church</span>
+    <span>Winnipeg, Manitoba</span>
+  </div>
+</footer>
+
+<!-- ===== STICKY ACTION BAR ===== -->
+<div class="visit-sticky" role="navigation" aria-label="Quick actions">
+  <a href="https://maps.google.com/?q=205+Roseberry+St,+Winnipeg,+MB+R3J+1T3"
+     target="_blank" rel="noopener" class="vs-red"
+     aria-label="Get directions to 205 Roseberry St, Winnipeg">
+    <span class="vs-icon" aria-hidden="true">📍</span>
+    Get Directions
+  </a>
+  <a href="mailto:info@commissionedcity.church"
+     aria-label="Email us at info@commissionedcity.church">
+    <span class="vs-icon" aria-hidden="true">✉️</span>
+    Email Us
+  </a>
+</div>
+
+<script src="js/media.js"></script>
+<script src="js/main.js"></script>
+<script>
+  // Close "Add to Calendar" dropdown when clicking outside it
+  document.addEventListener('click', function(e) {
+    document.querySelectorAll('.cal-details[open]').forEach(function(d) {
+      if (!d.contains(e.target)) d.removeAttribute('open');
+    });
+  });
+</script>
+</body>
+</html>

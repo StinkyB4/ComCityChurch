@@ -241,6 +241,109 @@ small, .small { font-size: 14px; color: var(--muted-blue); }
 
 .nav-cta { margin-left: var(--space-sm); }
 
+/* ── NAV DROPDOWN ───────────────────────────────────────────────── */
+.nav-has-dropdown { position: relative; }
+
+/* Caret — rotates up on hover */
+.nav-has-dropdown > a::after {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  margin-left: 5px;
+  vertical-align: middle;
+  position: relative;
+  top: -2px;
+  transition: transform var(--transition), top var(--transition);
+}
+.nav-has-dropdown:hover > a::after,
+.nav-has-dropdown:focus-within > a::after {
+  transform: rotate(-135deg);
+  top: 1px;
+}
+
+/* Dropdown panel */
+.nav-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  background: var(--white);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(17,46,83,0.14), 0 2px 8px rgba(0,0,0,0.06);
+  border: 1px solid rgba(0,0,0,0.06);
+  min-width: 196px;
+  padding: 6px 0;
+  list-style: none;
+  margin: 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+  z-index: 200;
+  pointer-events: none;
+}
+/* Invisible bridge so hovering into the panel doesn't close it */
+.nav-dropdown::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 0;
+  right: 0;
+  height: 10px;
+}
+.nav-has-dropdown:hover .nav-dropdown,
+.nav-has-dropdown:focus-within .nav-dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.nav-dropdown li { list-style: none; }
+
+.nav-dropdown a {
+  display: block;
+  padding: 9px 18px !important;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--charcoal);
+  white-space: nowrap;
+  border-bottom: none !important;
+  transition: background 0.15s, color 0.15s;
+}
+.nav-dropdown li + li { border-top: 1px solid rgba(0,0,0,0.05); }
+.nav-dropdown a:hover { background: var(--gray-bg); color: var(--navy); }
+.nav-dropdown a.active { background: var(--gray-bg); color: var(--navy); }
+
+/* ── MOBILE NAV GROUPS ──────────────────────────────────────────── */
+.nav-mobile-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+.nav-mobile-sub {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.nav-mobile-sub a {
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  color: var(--muted-blue) !important;
+  border-bottom: 2px solid transparent;
+}
+.nav-mobile-sub a:hover { color: var(--red) !important; }
+.nav-mobile-sub a.active {
+  color: var(--navy) !important;
+  border-bottom-color: var(--red);
+}
+
 /* Hamburger */
 .nav-hamburger {
   display: none;
@@ -558,31 +661,40 @@ footer {
 
 /* ---------- TEAM CARDS ---------- */
 .team-card {
-  text-align: center;
-  background: var(--white);
+  background: var(--navy);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
-  padding: var(--space-lg) var(--space-md);
+  overflow: hidden;
   transition: transform var(--transition), box-shadow var(--transition);
 }
 .team-card:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(0,0,0,.12); }
 .team-avatar {
-  width: 100px; height: 100px;
+  width: 100%; height: 320px;
   background: var(--navy);
-  border-radius: 50%;
+  border-radius: 0;
   display: flex; align-items: center; justify-content: center;
-  margin: 0 auto var(--space-md);
+  margin: 0;
+  position: relative;
+  overflow: hidden;
 }
 .team-avatar span {
   font-family: 'Montserrat', sans-serif;
   font-weight: 800;
   font-size: 28px;
-  color: white;
+  color: rgba(255,255,255,0.4);
 }
-.team-card h4 { font-size: 20px; margin-bottom: 4px; }
-.team-role { font-size: 14px; color: var(--muted-blue); font-weight: 600; display: block; margin-bottom: var(--space-sm); }
-.team-email { font-size: 14px; color: var(--red); }
-.team-email:hover { text-decoration: underline; }
+.team-overlay {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  z-index: 3;
+  background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.82));
+  padding: 48px var(--space-md) var(--space-md);
+  text-align: left;
+}
+.team-overlay h4 { font-size: 18px; color: white; margin-bottom: 2px; }
+.team-overlay .team-role { font-size: 13px; color: rgba(255,255,255,0.72); font-weight: 600; display: block; margin-bottom: 4px; }
+.team-overlay .team-email { font-size: 12px; color: rgba(255,190,190,0.9); word-break: break-all; }
+.team-overlay .team-email:hover { color: white; text-decoration: underline; }
 
 /* ---------- PARTNER CARDS ---------- */
 .partner-card {
@@ -714,7 +826,7 @@ footer {
 }
 
 /* All direct children of media-container stack above the bg layers and overlay */
-.media-container > *:not(.media-bg):not(.media-overlay):not(.slideshow-dots) {
+.media-container > *:not(.media-bg):not(.media-overlay):not(.team-overlay):not(.slideshow-dots) {
   position: relative;
   z-index: 3;
 }
