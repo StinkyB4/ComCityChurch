@@ -1,0 +1,187 @@
+================================================================
+COMMISSIONED CITY CHURCH — BLOG FORMATTING GUIDE
+================================================================
+This file explains how to format and add content to blog posts
+on the Commissioned City Church website.
+================================================================
+
+
+----------------------------------------------------------------
+ADDING A NEW BLOG POST
+----------------------------------------------------------------
+1. Duplicate an existing post file in the blog/ folder
+   (e.g. copy a-family-of-missionary-servants.html and rename it)
+
+2. Update in the new file:
+   - <title> tag in <head>
+   - The hero data-media attribute (see HERO IMAGES below)
+   - The breadcrumb category text
+   - The eyebrow category label
+   - The <h1> post title
+   - The author and date line
+   - All article body content
+
+3. Add the post's featured image to:
+   assets/media/blog/your-image-name.jpg
+
+4. Add a hero entry to js/media.js under heroes:
+   "blog-your-slug": {
+     type: "image",
+     src: "../assets/media/blog/your-image-name.jpg",
+     alt: "Description of image",
+     overlay: { type: "dark", opacity: 0.50 }
+   },
+
+5. Add a new card to the TOP of the grid in blog.html
+   (duplicate an existing <article> block and update it)
+
+
+----------------------------------------------------------------
+INLINE IMAGES IN POSTS
+----------------------------------------------------------------
+All images for blog posts go in:  assets/media/blog/
+
+In post files (inside the blog/ subfolder), the path back up to
+assets always starts with ../assets/...
+
+-- FULL-WIDTH IMAGE (recommended default) --
+
+<figure class="fade-in-up" style="margin:var(--space-xl) 0;">
+  <img
+    src="../assets/media/blog/your-image.jpg"
+    alt="Describe what is in the photo"
+    style="width:100%; border-radius:var(--radius-card); display:block;">
+  <figcaption style="font-size:13px; color:var(--muted-blue); margin-top:8px; text-align:center;">
+    Optional caption text here.
+  </figcaption>
+</figure>
+
+
+-- HALF-WIDTH, FLOATED RIGHT (text wraps around) --
+
+<img src="../assets/media/blog/your-image.jpg" alt="..."
+  style="float:right; width:45%; margin:0 0 var(--space-md) var(--space-lg); border-radius:var(--radius-card);">
+
+Add this after the paragraph that follows to stop the text wrap:
+<div style="clear:both;"></div>
+
+
+-- CENTRED, NARROWER (good for portraits or square photos) --
+
+<img src="../assets/media/blog/your-image.jpg" alt="..."
+  style="display:block; width:60%; margin:var(--space-lg) auto; border-radius:var(--radius-card);">
+
+
+-- FULL EXAMPLE IN CONTEXT --
+
+<p class="fade-in-up">First paragraph of text...</p>
+
+<figure class="fade-in-up" style="margin:var(--space-xl) 0;">
+  <img
+    src="../assets/media/blog/community-gathering.jpg"
+    alt="South Osborne MC gathered for a meal"
+    style="width:100%; border-radius:var(--radius-card); display:block;">
+  <figcaption style="font-size:13px; color:var(--muted-blue); margin-top:8px; text-align:center;">
+    South Osborne MC — October 2024
+  </figcaption>
+</figure>
+
+<p class="fade-in-up">Next paragraph of text...</p>
+
+NOTE: Adding class="fade-in-up" to the <figure> tag makes the
+image animate in on scroll, matching the rest of the article.
+
+NOTE: Inline images do NOT need a media.js entry. The data-media
+system is only used for hero background sections. Just use a
+direct src attribute for inline body images.
+
+
+----------------------------------------------------------------
+TEXT FORMATTING
+----------------------------------------------------------------
+
+-- HEADINGS --
+<h2 class="fade-in-up">Main Section Heading</h2>
+<h3 class="fade-in-up">Sub-Section Heading</h3>
+
+
+-- BODY PARAGRAPH --
+<p class="fade-in-up">Your paragraph text here.</p>
+
+
+-- SCRIPTURE / PULL QUOTE --
+<div class="fade-in-up" style="border-left:4px solid var(--red); padding:var(--space-md) var(--space-lg); background:var(--gray-bg); border-radius:0 var(--radius-card) var(--radius-card) 0; margin:var(--space-lg) 0;">
+  <p style="font-style:italic; margin:0; color:var(--charcoal);">"Your quote text here."</p>
+  <p style="font-size:13px; font-weight:600; color:var(--muted-blue); margin:8px 0 0;">— Reference (Book Chapter:Verse)</p>
+</div>
+
+
+-- BULLETED LIST --
+<ul class="fade-in-up" style="line-height:2; color:var(--charcoal); padding-left:var(--space-lg);">
+  <li>First item</li>
+  <li>Second item</li>
+  <li>Third item</li>
+</ul>
+
+
+-- NUMBERED LIST --
+<ol class="fade-in-up" style="color:var(--charcoal); line-height:1.8; padding-left:var(--space-lg);">
+  <li>First item</li>
+  <li>Second item</li>
+  <li>Third item</li>
+</ol>
+
+
+-- BOLD / ITALIC INLINE TEXT --
+<strong>Bold text</strong>
+<em>Italic text</em>
+
+
+-- AUTHOR NOTE / CITATION (small muted text) --
+<p class="fade-in-up" style="font-size:14px; color:var(--muted-blue); font-style:italic;">
+  Based on a sermon by Elder Timothy Reeve.
+</p>
+
+
+----------------------------------------------------------------
+HERO IMAGES
+----------------------------------------------------------------
+Each post page uses a hero image set via data-media in the
+<section> tag at the top of <main>:
+
+  <section class="page-hero page-hero--navy"
+    data-media="heroes.blog-your-slug"
+    style="min-height:52vh;" aria-labelledby="page-heading">
+
+The matching entry in js/media.js (heroes section):
+
+  "blog-your-slug": {
+    type: "image",
+    src: "../assets/media/blog/your-image.jpg",
+    alt: "Description",
+    overlay: { type: "dark", opacity: 0.50 }
+  },
+
+Overlay opacity guide:
+  0.35 — light overlay, image shows strongly
+  0.50 — balanced (recommended default)
+  0.65 — heavier overlay, text is very readable
+  0.80 — very dark, use for low-contrast images
+
+
+----------------------------------------------------------------
+FILE & PATH REFERENCE
+----------------------------------------------------------------
+Blog index page:       blog.html                (root level)
+Individual posts:      blog/post-name.html      (one level deep)
+Post images:           assets/media/blog/       (root level)
+Path to images from
+a post file:           ../assets/media/blog/
+CSS & JS:              ../css/styles.css
+                       ../js/media.js
+                       ../js/main.js
+
+
+================================================================
+END OF GUIDE
+================================================================

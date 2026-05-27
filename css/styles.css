@@ -154,6 +154,17 @@ small, .small { font-size: 14px; color: var(--muted-blue); }
   color: var(--navy);
   transform: translateY(-2px);
 }
+.btn-outline-navy {
+  background: transparent;
+  color: var(--navy);
+  border-color: var(--navy);
+}
+
+.btn-outline-navy:hover {
+  background: var(--navy);
+  color: var(--white);
+  transform: translateY(-2px);
+}
 .btn-group { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
 
 /* ---------- CARDS ---------- */
