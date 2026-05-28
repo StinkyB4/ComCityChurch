@@ -13,7 +13,6 @@
     { "route": "/give",              "rewrite": "/give.html"              },
     { "route": "/contact",           "rewrite": "/contact.html"           },
     { "route": "/members",           "rewrite": "/members/index.html"     },
-    { "route": "/members/",          "rewrite": "/members/index.html"     },
     { "route": "/members/dashboard", "rewrite": "/members/dashboard.html" },
     { "route": "/members/admin",     "rewrite": "/members/admin.html"     }
   ],
