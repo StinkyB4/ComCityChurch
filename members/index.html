@@ -3,79 +3,116 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Members Portal | Commissioned City Church</title>
-
-  <!-- Preload styles for faster rendering -->
-  <link rel="preload" href="/css/styles.css" as="style">
-  <link rel="preload" href="/css/members.css" as="style">
-
-  <!-- Core styles -->
+  <title>Log In — Commissioned City Church</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400&family=Montserrat:wght@600;700;800&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="/css/members.css">
-
-  <!-- Favicon -->
   <link rel="icon" type="image/png" href="/assets/logo.png">
 </head>
-<body class="members-portal">
+<body>
 
-  <!-- ────────────────────────────────────────────────────────────── -->
-  <!-- NAVIGATION (Shared)                                            -->
-  <!-- ────────────────────────────────────────────────────────────── -->
+<!-- ===== NAVIGATION ===== -->
+<nav class="navbar" aria-label="Main navigation">
+  <div class="nav-inner">
+    <a class="nav-logo" href="/index.html" aria-label="Commissioned City Church home">
+      <img src="/assets/logo.png" alt="Commissioned City Church"
+        onerror="this.parentElement.innerHTML='<div class=\'nav-logo-placeholder\'><div class=\'logo-mark\'><svg viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'white\' stroke-width=\'2\'><path d=\'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5\'/></svg></div><div class=\'logo-text\'>COMMISSIONED<br>CITY CHURCH</div></div>'">
+    </a>
+    <ul class="nav-links" role="list">
+      <li><a href="/index.html">Home</a></li>
+      <li class="nav-has-dropdown">
+        <a href="/about.html">About</a>
+        <ul class="nav-dropdown" role="list">
+          <li><a href="/team.html">Meet the Team</a></li>
+          <li><a href="/believe.html">What We Believe</a></li>
+          <li><a href="/partnerships.html">Our Partnerships</a></li>
+        </ul>
+      </li>
+      <li class="nav-has-dropdown">
+        <a href="/communities.html">Communities</a>
+        <ul class="nav-dropdown" role="list">
+          <li><a href="/communities/south-osborne.html">South Osborne</a></li>
+          <li><a href="/communities/river-heights.html">River Heights</a></li>
+          <li><a href="/communities/st-james.html">St. James</a></li>
+          <li><a href="/communities/youth.html">Youth</a></li>
+        </ul>
+      </li>
+      <li><a href="/gatherings.html">Gatherings</a></li>
+      <li class="nav-has-dropdown">
+        <a href="/blog.html">Resources</a>
+        <ul class="nav-dropdown" role="list">
+          <li><a href="/sermons.html">Sermons</a></li>
+          <li><a href="/blog.html">Blog</a></li>
+        </ul>
+      </li>
+      <li><a href="/give.html">Give</a></li>
+      <li><a href="/members/" aria-current="page">Log In</a></li>
+    </ul>
+    <a href="/visit.html" class="btn btn-primary nav-cta">Plan Your Visit →</a>
+    <button class="nav-hamburger" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
 
-  <nav class="navbar">
-    <div class="nav-container">
-      <div class="nav-logo">
-        <a href="/">
-          <img src="/assets/logo.png" alt="Commissioned City Church" class="logo-img">
-        </a>
-      </div>
-      <ul class="nav-menu">
-        <li><a href="/" class="nav-link">Home</a></li>
-        <li><a href="/about" class="nav-link">About</a></li>
-        <li><a href="/believe" class="nav-link">What We Believe</a></li>
-        <li><a href="/communities" class="nav-link">Communities</a></li>
-        <li><a href="/gatherings" class="nav-link">Gatherings</a></li>
-        <li><a href="/sermons" class="nav-link">Sermons</a></li>
-        <li><a href="/give" class="nav-link">Give</a></li>
-        <li><a href="/contact" class="nav-link">Contact</a></li>
-      </ul>
-      <div class="hamburger">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
+<!-- Mobile nav overlay -->
+<div class="nav-mobile" role="dialog" aria-modal="true" aria-label="Mobile navigation">
+  <button class="nav-mobile-close" aria-label="Close menu">✕</button>
+  <a href="/index.html">Home</a>
+  <div class="nav-mobile-group">
+    <a href="/about.html">About</a>
+    <div class="nav-mobile-sub">
+      <a href="/team.html">Meet the Team</a>
+      <a href="/believe.html">What We Believe</a>
+      <a href="/partnerships.html">Our Partnerships</a>
     </div>
-  </nav>
+  </div>
+  <div class="nav-mobile-group">
+    <a href="/communities.html">Communities</a>
+    <div class="nav-mobile-sub">
+      <a href="/communities/south-osborne.html">South Osborne</a>
+      <a href="/communities/river-heights.html">River Heights</a>
+      <a href="/communities/st-james.html">St. James</a>
+      <a href="/communities/youth.html">Youth</a>
+    </div>
+  </div>
+  <a href="/gatherings.html">Gatherings</a>
+  <div class="nav-mobile-group">
+    <a href="/blog.html">Resources</a>
+    <div class="nav-mobile-sub">
+      <a href="/sermons.html">Sermons</a>
+      <a href="/blog.html">Blog</a>
+    </div>
+  </div>
+  <a href="/give.html">Give</a>
+  <a href="/members/">Log In</a>
+  <a href="/visit.html" class="btn btn-primary">Plan Your Visit →</a>
+</div>
 
-  <!-- ────────────────────────────────────────────────────────────── -->
-  <!-- HERO SECTION                                                   -->
-  <!-- ────────────────────────────────────────────────────────────── -->
+<main>
 
-  <section class="members-hero">
-    <h1>Members Portal</h1>
-    <p>Sign in or create an account to access member resources</p>
-  </section>
+<!-- ===== PAGE HERO ===== -->
+<section class="page-hero page-hero--navy" data-media="heroes.home" aria-labelledby="page-heading">
+  <span class="eyebrow fade-in-up">Members</span>
+  <h1 id="page-heading" class="fade-in-up delay-1">Member Portal</h1>
+  <p class="page-hero-sub fade-in-up delay-2">Sign in or create an account to connect with your church family.</p>
+</section>
 
-  <!-- ────────────────────────────────────────────────────────────── -->
-  <!-- AUTH FORMS CONTAINER                                           -->
-  <!-- ────────────────────────────────────────────────────────────── -->
+<!-- ===== AUTH FORMS ===== -->
+<section class="section">
+  <div class="container" style="max-width: 520px;">
 
-  <main class="members-main">
     <div class="auth-container">
 
-      <!-- ─────────────────────────────────────────────────────────── -->
-      <!-- TAB NAVIGATION                                              -->
-      <!-- ─────────────────────────────────────────────────────────── -->
-
+      <!-- TAB NAVIGATION -->
       <div class="auth-tabs">
         <button class="auth-tab-btn active" data-tab="sign-in">Sign In</button>
         <button class="auth-tab-btn" data-tab="register">Create Account</button>
       </div>
 
-      <!-- ─────────────────────────────────────────────────────────── -->
-      <!-- SIGN IN TAB                                                 -->
-      <!-- ─────────────────────────────────────────────────────────── -->
-
+      <!-- SIGN IN TAB -->
       <div id="sign-in" class="auth-tab-content active">
         <form id="sign-in-form" class="auth-form">
           <div class="form-group">
@@ -110,10 +147,7 @@
         </p>
       </div>
 
-      <!-- ─────────────────────────────────────────────────────────── -->
-      <!-- REGISTER TAB                                                -->
-      <!-- ─────────────────────────────────────────────────────────── -->
-
+      <!-- REGISTER TAB -->
       <div id="register" class="auth-tab-content">
         <form id="register-form" class="auth-form">
           <div class="form-group">
@@ -176,61 +210,67 @@
         </div>
       </div>
 
-    </div>
-  </main>
+    </div><!-- /.auth-container -->
+  </div><!-- /.container -->
+</section>
 
-  <!-- ────────────────────────────────────────────────────────────── -->
-  <!-- FOOTER (Shared)                                                -->
-  <!-- ────────────────────────────────────────────────────────────── -->
+</main>
 
-  <footer class="footer">
-    <div class="footer-content">
-      <div class="footer-section">
-        <img src="/assets/logo.png" alt="Commissioned City Church" class="footer-logo">
-      </div>
-      <div class="footer-section">
-        <h4>Quick Links</h4>
-        <ul>
-          <li><a href="/about">About Us</a></li>
-          <li><a href="/believe">What We Believe</a></li>
-          <li><a href="/communities">Missional Communities</a></li>
-          <li><a href="/contact">Contact Us</a></li>
-        </ul>
-      </div>
-      <div class="footer-section">
-        <h4>Service Times</h4>
-        <p>Sunday 10:00 AM<br>Location TBD</p>
-      </div>
-      <div class="footer-section">
-        <h4>Follow Us</h4>
-        <ul class="social-links">
-          <li><a href="#" aria-label="Facebook">f</a></li>
-          <li><a href="#" aria-label="Instagram">@</a></li>
-        </ul>
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <a href="/index.html" aria-label="Commissioned City Church">
+        <img src="/assets/logo.png" alt="Commissioned City Church" class="footer-logo-img"
+          style="height:120px; background:white; border-radius:10px; padding:8px 12px; margin-bottom:var(--space-md);"
+          onerror="this.outerHTML='<div style=\'font-family:Montserrat,sans-serif;font-weight:800;font-size:18px;color:white;margin-bottom:var(--space-md);\'>COMMISSIONED<br>CITY CHURCH</div>'">
+      </a>
+      <p class="footer-tagline">For the Good of the City<br>For the Glory of Christ</p>
+      <div class="footer-social">
+        <a href="#" aria-label="Instagram" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="white" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="white" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.5" fill="white"/></svg></a>
+        <a href="#" aria-label="Facebook" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
       </div>
     </div>
-    <div class="footer-bottom">
-      <p>&copy; 2025 Commissioned City Church. All rights reserved.</p>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <ul>
+        <li><a href="/index.html">Home</a></li>
+        <li><a href="/about.html">About</a></li>
+        <li><a href="/believe.html">What We Believe</a></li>
+        <li><a href="/gospel.html">The Gospel</a></li>
+        <li><a href="/communities.html">Communities</a></li>
+        <li><a href="/gatherings.html">Gatherings</a></li>
+        <li><a href="/sermons.html">Sermons</a></li>
+        <li><a href="/give.html">Give</a></li>
+        <li><a href="/contact.html">Connect</a></li>
+      </ul>
     </div>
-  </footer>
+    <div class="footer-col footer-contact">
+      <h4>Find Us</h4>
+      <p>205 Roseberry St<br>Winnipeg, MB R3J 1T3</p>
+      <p style="margin-top:var(--space-sm);">Coffee — 10:00am Sunday<br>Worship — 10:30am Sunday</p>
+      <p style="margin-top:var(--space-sm);"><a href="mailto:info@commissionedcity.church">info@commissionedcity.church</a></p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>Matthew 28:18–20 · © 2025 Commissioned City Church</span>
+    <span>Winnipeg, Manitoba</span>
+  </div>
+</footer>
 
-  <!-- ────────────────────────────────────────────────────────────── -->
-  <!-- SCRIPTS                                                        -->
-  <!-- ────────────────────────────────────────────────────────────── -->
+<!-- Supabase CDN -->
+<script async src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- Supabase JS Library (CDN) -->
-  <script async src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Supabase credentials (injected by Azure Static Web Apps) -->
+<script>
+  window.SUPABASE_URL = '{{ SUPABASE_URL }}';
+  window.SUPABASE_ANON_KEY = '{{ SUPABASE_ANON_KEY }}';
+</script>
 
-  <!-- Supabase Configuration (populate from environment) -->
-  <script>
-    window.SUPABASE_URL = '{{ SUPABASE_URL }}';
-    window.SUPABASE_ANON_KEY = '{{ SUPABASE_ANON_KEY }}';
-  </script>
-
-  <!-- Main JS files -->
-  <script src="/js/main.js" defer></script>
-  <script src="/js/supabase.js" defer></script>
-  <script src="/js/members.js" defer></script>
+<script src="/js/media.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/supabase.js" defer></script>
+<script src="/js/members.js" defer></script>
 
 </body>
 </html>
