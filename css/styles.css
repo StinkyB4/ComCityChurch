@@ -240,7 +240,7 @@ small, .small { font-size: 14px; color: var(--muted-blue); }
 }
 .nav-links a {
   font-family: 'Source Sans Pro', sans-serif;
-  font-size: 15px;
+  font-size: 25px;
   font-weight: 600;
   color: var(--charcoal);
   padding-bottom: 2px;
