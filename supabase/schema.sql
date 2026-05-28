@@ -255,63 +255,6 @@ CREATE POLICY "admins_manage_messages"
 
 
 -- ──────────────────────────────────────────────────────────────────────────
--- 6. PRAYER_REQUESTS — Community prayer requests
--- ──────────────────────────────────────────────────────────────────────────
-
-CREATE TABLE IF NOT EXISTS prayer_requests (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  author_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  title TEXT NOT NULL,
-  content TEXT NOT NULL,
-  is_private BOOLEAN DEFAULT FALSE, -- private = only requestor + admins see
-  prayer_count INTEGER DEFAULT 0, -- count of "prayed for" responses
-  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_prayer_requests_author ON prayer_requests(author_id);
-CREATE INDEX IF NOT EXISTS idx_prayer_requests_created ON prayer_requests(created_at DESC);
-
-ALTER TABLE prayer_requests ENABLE ROW LEVEL SECURITY;
-
--- RLS: Approved members see public prayer requests
-CREATE POLICY "members_view_public_requests"
-  ON prayer_requests FOR SELECT
-  USING (
-    auth.uid() IN (SELECT id FROM profiles WHERE status = 'approved')
-    AND (is_private = FALSE OR auth.uid() = author_id)
-  );
-
--- RLS: Admins see all prayer requests
-CREATE POLICY "admins_view_all_requests"
-  ON prayer_requests FOR SELECT
-  USING (
-    auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin')
-  );
-
--- RLS: Approved members can submit prayer requests
-CREATE POLICY "members_create_requests"
-  ON prayer_requests FOR INSERT
-  WITH CHECK (
-    auth.uid() = author_id
-    AND auth.uid() IN (SELECT id FROM profiles WHERE status = 'approved')
-  );
-
--- RLS: Members edit their own requests
-CREATE POLICY "members_update_own_requests"
-  ON prayer_requests FOR UPDATE
-  USING (auth.uid() = author_id)
-  WITH CHECK (auth.uid() = author_id);
-
--- RLS: Admins can delete requests
-CREATE POLICY "admins_delete_requests"
-  ON prayer_requests FOR DELETE
-  USING (
-    auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin')
-  );
-
-
--- ──────────────────────────────────────────────────────────────────────────
 -- TRIGGERS — Auto-update timestamps
 -- ──────────────────────────────────────────────────────────────────────────
 
@@ -333,7 +276,4 @@ CREATE TRIGGER teams_timestamp BEFORE UPDATE ON teams
   FOR EACH ROW EXECUTE FUNCTION update_timestamp();
 
 CREATE TRIGGER admin_messages_timestamp BEFORE UPDATE ON admin_messages
-  FOR EACH ROW EXECUTE FUNCTION update_timestamp();
-
-CREATE TRIGGER prayer_requests_timestamp BEFORE UPDATE ON prayer_requests
   FOR EACH ROW EXECUTE FUNCTION update_timestamp();

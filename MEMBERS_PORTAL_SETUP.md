@@ -17,7 +17,7 @@ The Members Portal is a private community platform for Commissioned City Church 
 
 1. **Database Schema**
    - `supabase/schema.sql` — 6 tables with Row Level Security policies
-   - Tables: profiles, missional_communities, teams, team_members, admin_messages, prayer_requests
+   - Tables: profiles, missional_communities, teams, team_members, admin_messages
 
 2. **Frontend Files**
    - `members/index.html` — Sign-in / Register page
@@ -238,7 +238,7 @@ From there you can:
 ## Next Steps (Phase 2-6)
 
 Future phases include:
-- **Phase 2:** Member directory & prayer request pages
+- **Phase 2:** Member directory
 - **Phase 3:** Admin dashboard for approving members
 - **Phase 4:** Email notifications (welcome, approval, announcements)
 - **Phase 5:** Community & team management
