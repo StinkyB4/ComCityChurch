@@ -98,35 +98,21 @@ async function getProfile() {
 async function signUp(email, password, fullName) {
   const sb = getSupabase();
 
-  // Sign up via auth
   const { data: authData, error: authError } = await sb.auth.signUp({
     email,
     password,
     options: {
+      // full_name is stored in raw_user_meta_data and picked up by the
+      // handle_new_user trigger in supabase/schema.sql, which creates the
+      // profiles row automatically as SECURITY DEFINER (bypasses RLS).
       data: { full_name: fullName },
+      // After email confirmation the user lands back on the login page.
+      emailRedirectTo: window.location.origin + '/members/',
     },
   });
 
   if (authError) {
     return { user: null, session: null, error: authError };
-  }
-
-  // Create profile row
-  if (authData.user) {
-    const { error: profileError } = await sb
-      .from('profiles')
-      .insert({
-        id: authData.user.id,
-        email,
-        full_name: fullName,
-        role: 'member',
-        status: 'pending',
-      });
-
-    if (profileError) {
-      console.error('Error creating profile:', profileError.message);
-      return { user: authData.user, session: authData.session, error: profileError };
-    }
   }
 
   return {
