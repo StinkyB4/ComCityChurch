@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account Pending — Commissioned City Church</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400&family=Montserrat:wght@600;700;800&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/members.css">
+  <link rel="icon" type="image/png" href="/assets/logo.png">
+</head>
+<body>
+
+<main style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f9f6f4;">
+  <div class="mp-pending-wrap" id="pending-wrap" style="display:none;">
+    <div class="mp-pending-icon">&#9203;</div>
+    <h2 class="mp-pending-title">Your account is pending approval</h2>
+    <p class="mp-pending-body">
+      Thank you for registering, <strong id="pending-name"></strong>!
+      Your account is awaiting review by a site administrator.
+    </p>
+    <p class="mp-pending-body">
+      You will receive an email at <strong id="pending-email"></strong> once approved.
+      This usually happens within one business day.
+    </p>
+    <a href="#" id="pending-logout" class="mp-pending-logout">Log Out</a>
+  </div>
+</main>
+
+<script async src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  window.SUPABASE_URL      = '{{ SUPABASE_URL }}';
+  window.SUPABASE_ANON_KEY = '{{ SUPABASE_ANON_KEY }}';
+</script>
+<script src="/js/supabase.js" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+  // Wait for Supabase to be ready
+  await new Promise(r => setTimeout(r, 300));
+
+  try {
+    var CCS = window.CommissionedCityChurchSupabase;
+    await CCS.initSupabase();
+
+    var user = await CCS.getCurrentUser();
+    if (!user) {
+      window.location.href = '/members/';
+      return;
+    }
+
+    var profile = await CCS.getProfile();
+    if (!profile) {
+      window.location.href = '/members/';
+      return;
+    }
+
+    // Already approved — send to dashboard
+    if (profile.status === 'approved') {
+      window.location.href = '/members/dashboard.html';
+      return;
+    }
+
+    // Show pending UI
+    var firstName = profile.first_name || profile.full_name || user.email;
+    document.getElementById('pending-name').textContent  = firstName;
+    document.getElementById('pending-email').textContent = user.email;
+    document.getElementById('pending-wrap').style.display = '';
+
+    document.getElementById('pending-logout').addEventListener('click', async function(e) {
+      e.preventDefault();
+      await CCS.signOut();
+      window.location.href = '/members/';
+    });
+
+  } catch (err) {
+    console.error('Pending page error:', err);
+    window.location.href = '/members/';
+  }
+});
+</script>
+
+</body>
+</html>

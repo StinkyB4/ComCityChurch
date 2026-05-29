@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account — Commissioned City Church</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400&family=Montserrat:wght@600;700;800&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/members.css">
+  <link rel="icon" type="image/png" href="/assets/logo.png">
+</head>
+<body>
+
+<!-- ===== NAVIGATION ===== -->
+<nav class="navbar" aria-label="Main navigation">
+  <div class="nav-inner">
+    <a class="nav-logo" href="/index.html" aria-label="Commissioned City Church home">
+      <img src="/assets/logo.png" alt="Commissioned City Church"
+        onerror="this.parentElement.innerHTML='<div class=\'nav-logo-placeholder\'><div class=\'logo-mark\'><svg viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'white\' stroke-width=\'2\'><path d=\'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5\'/></svg></div><div class=\'logo-text\'>COMMISSIONED<br>CITY CHURCH</div></div>'">
+    </a>
+    <ul class="nav-links" role="list">
+      <li><a href="/index.html">Home</a></li>
+      <li><a href="/about.html">About</a></li>
+      <li><a href="/communities.html">Communities</a></li>
+      <li><a href="/gatherings.html">Gatherings</a></li>
+      <li><a href="/give.html">Give</a></li>
+      <li><a href="/members/">Log In</a></li>
+    </ul>
+    <a href="/visit.html" class="btn btn-primary nav-cta">Plan Your Visit →</a>
+    <button class="nav-hamburger" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+<div class="nav-mobile" role="dialog" aria-modal="true" aria-label="Mobile navigation">
+  <button class="nav-mobile-close" aria-label="Close menu">✕</button>
+  <a href="/index.html">Home</a>
+  <a href="/about.html">About</a>
+  <a href="/communities.html">Communities</a>
+  <a href="/gatherings.html">Gatherings</a>
+  <a href="/give.html">Give</a>
+  <a href="/members/">Log In</a>
+  <a href="/visit.html" class="btn btn-primary">Plan Your Visit →</a>
+</div>
+
+<main>
+
+<!-- ===== PAGE HERO ===== -->
+<section class="page-hero page-hero--navy" data-media="heroes.communities" aria-labelledby="page-heading">
+  <span class="eyebrow fade-in-up">Members</span>
+  <h1 id="page-heading" class="fade-in-up delay-1">Create an Account</h1>
+  <p class="page-hero-sub fade-in-up delay-2">Registration is open to members of Commissioned City Church. All accounts are reviewed before access is granted.</p>
+</section>
+
+<!-- ===== REGISTRATION FORM ===== -->
+<section class="section">
+  <div class="container" style="max-width:680px;">
+
+    <div id="reg-alert" class="mp-alert" style="display:none;margin-bottom:24px;"></div>
+
+    <form id="register-form" class="mp-form" enctype="multipart/form-data" novalidate>
+
+      <!-- Honeypot -->
+      <div style="position:absolute;left:-9999px;height:1px;overflow:hidden;" aria-hidden="true">
+        <input type="text" name="website_url" id="hp-field" value="" autocomplete="off" tabindex="-1">
+      </div>
+      <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
+
+      <!-- ── Name ── -->
+      <div class="mp-form-row">
+        <div class="mp-form-group">
+          <label for="reg-first">First Name <span class="mp-required">*</span></label>
+          <input type="text" id="reg-first" name="first_name" required autocomplete="given-name" oninput="mpRegGenUsername()">
+        </div>
+        <div class="mp-form-group">
+          <label for="reg-last">Last Name <span class="mp-required">*</span></label>
+          <input type="text" id="reg-last" name="last_name" required autocomplete="family-name" oninput="mpRegGenUsername()">
+        </div>
+      </div>
+
+      <!-- ── Username preview ── -->
+      <div class="mp-form-group">
+        <label>Username</label>
+        <input type="text" id="reg-username-preview" readonly placeholder="Auto-generated from your name" class="mp-username-preview">
+        <span class="mp-hint">Automatically generated from your name. Used for login.</span>
+      </div>
+
+      <!-- ── Email ── -->
+      <div class="mp-form-group">
+        <label for="reg-email">Email Address <span class="mp-required">*</span></label>
+        <input type="email" id="reg-email" name="email" required autocomplete="email">
+      </div>
+
+      <!-- ── Phone 1 ── -->
+      <div class="mp-form-group">
+        <label for="reg-phone1">Phone Number <span class="mp-required">*</span></label>
+        <div class="mp-phone-wrap">
+          <select name="phone1_type" class="mp-phone-type" id="reg-phone1-type">
+            <option value="Cell">Cell</option>
+            <option value="Home">Home</option>
+            <option value="Work">Work</option>
+          </select>
+          <input type="tel" id="reg-phone1" name="phone1" required placeholder="204-555-0100"
+                 class="mp-phone-input" maxlength="12" autocomplete="tel"
+                 oninput="mpRegFormatPhone(this)">
+        </div>
+        <span class="mp-hint">Format: 204-555-0100</span>
+      </div>
+
+      <!-- ── Phone 2 ── -->
+      <div class="mp-form-group">
+        <label for="reg-phone2">Second Phone <span class="mp-optional">(Optional)</span></label>
+        <div class="mp-phone-wrap">
+          <select name="phone2_type" class="mp-phone-type" id="reg-phone2-type">
+            <option value="Cell">Cell</option>
+            <option value="Home" selected>Home</option>
+            <option value="Work">Work</option>
+          </select>
+          <input type="tel" id="reg-phone2" name="phone2" placeholder="204-555-0101"
+                 class="mp-phone-input" maxlength="12"
+                 oninput="mpRegFormatPhone(this)">
+        </div>
+      </div>
+
+      <!-- ── Address ── -->
+      <div class="mp-form-group">
+        <label for="reg-street">Street Address <span class="mp-required">*</span></label>
+        <input type="text" id="reg-street" name="addr_street" required placeholder="123 Main Street" autocomplete="street-address">
+      </div>
+      <div class="mp-form-row">
+        <div class="mp-form-group">
+          <label for="reg-city">City <span class="mp-required">*</span></label>
+          <input type="text" id="reg-city" name="addr_city" required value="Winnipeg">
+        </div>
+        <div class="mp-form-group">
+          <label for="reg-province">Province <span class="mp-required">*</span></label>
+          <select id="reg-province" name="addr_province" required>
+            <option value="">— Select —</option>
+            <option value="AB">Alberta</option>
+            <option value="BC">British Columbia</option>
+            <option value="MB" selected>Manitoba</option>
+            <option value="NB">New Brunswick</option>
+            <option value="NL">Newfoundland and Labrador</option>
+            <option value="NS">Nova Scotia</option>
+            <option value="NT">Northwest Territories</option>
+            <option value="NU">Nunavut</option>
+            <option value="ON">Ontario</option>
+            <option value="PE">Prince Edward Island</option>
+            <option value="QC">Quebec</option>
+            <option value="SK">Saskatchewan</option>
+            <option value="YT">Yukon</option>
+          </select>
+        </div>
+      </div>
+      <div class="mp-form-row">
+        <div class="mp-form-group">
+          <label for="reg-postal">Postal Code <span class="mp-required">*</span></label>
+          <input type="text" id="reg-postal" name="addr_postal" required placeholder="R3C 0A1" maxlength="7">
+        </div>
+        <div class="mp-form-group">
+          <label for="reg-country">Country <span class="mp-required">*</span></label>
+          <input type="text" id="reg-country" name="addr_country" required value="Canada">
+        </div>
+      </div>
+
+      <!-- ── Birthday / Anniversary ── -->
+      <div class="mp-form-row">
+        <div class="mp-form-group">
+          <label for="reg-birthday">Birthday <span class="mp-required">*</span></label>
+          <input type="date" id="reg-birthday" name="birthday" required id="reg-birthday">
+          <span class="mp-hint">You must be at least 18 years old to register.</span>
+        </div>
+        <div class="mp-form-group">
+          <label for="reg-anniversary">Anniversary <span class="mp-optional">(Optional)</span></label>
+          <input type="date" id="reg-anniversary" name="anniversary">
+        </div>
+      </div>
+
+      <!-- ── Password ── -->
+      <div class="mp-form-row">
+        <div class="mp-form-group">
+          <label for="reg-password">Password <span class="mp-required">*</span></label>
+          <div class="mp-password-wrap">
+            <input type="password" id="reg-password" name="password" required autocomplete="new-password"
+                   minlength="8" oninput="mpUpdateStrength(this,'pw-bar','pw-label')">
+            <button type="button" class="mp-toggle-pw" aria-label="Show password"
+                    onclick="mpTogglePassword('reg-password',this)">
+              <svg class="mp-eye-show" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="mp-eye-hide" style="display:none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            </button>
+          </div>
+          <div class="mp-pw-strength-wrap">
+            <div class="mp-pw-strength-track"><div class="mp-pw-strength-bar" id="pw-bar"></div></div>
+            <span class="mp-pw-strength-label" id="pw-label"></span>
+          </div>
+          <span class="mp-hint">Min 8 characters. Mix uppercase, numbers and symbols for a stronger password.</span>
+        </div>
+        <div class="mp-form-group">
+          <label for="reg-confirm">Confirm Password <span class="mp-required">*</span></label>
+          <div class="mp-password-wrap">
+            <input type="password" id="reg-confirm" name="confirm" required autocomplete="new-password">
+            <button type="button" class="mp-toggle-pw" aria-label="Show password"
+                    onclick="mpTogglePassword('reg-confirm',this)">
+              <svg class="mp-eye-show" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="mp-eye-hide" style="display:none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Gender ── -->
+      <div class="mp-form-group">
+        <label>Gender <span class="mp-required">*</span></label>
+        <div class="mp-gender-group">
+          <label class="mp-gender-option">
+            <input type="radio" name="gender" value="male" required>
+            <span class="mp-gender-label">Male</span>
+          </label>
+          <label class="mp-gender-option">
+            <input type="radio" name="gender" value="female">
+            <span class="mp-gender-label">Female</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- ── Bio ── -->
+      <div class="mp-form-group">
+        <label for="reg-bio">About You <span class="mp-optional">(Optional)</span></label>
+        <textarea id="reg-bio" name="bio" rows="4" placeholder="Tell other members about yourself"></textarea>
+      </div>
+
+      <!-- ── Profile Photo ── -->
+      <div class="mp-form-group">
+        <label>Profile Photo <span class="mp-optional">(Optional)</span></label>
+        <div class="mp-photo-upload-wrap">
+          <div class="mp-photo-preview" id="reg-photo-preview">
+            <span style="font-size:1.8em;">&#128100;</span>
+          </div>
+          <div class="mp-photo-upload-controls">
+            <label class="mp-btn mp-btn--secondary mp-btn--small" for="reg-photo" style="cursor:pointer;">
+              Choose Photo
+            </label>
+            <input type="file" id="reg-photo" name="profile_photo"
+                   accept="image/jpeg,image/png,image/gif,image/webp"
+                   style="display:none;"
+                   onchange="mpPreviewPhoto(this,'reg-photo-preview')">
+            <span class="mp-hint">JPG, PNG, GIF or WebP. Max 10MB.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Submit ── -->
+      <div style="margin-top:8px;">
+        <button type="submit" class="mp-btn mp-btn--primary" id="reg-submit-btn">
+          Submit Registration
+        </button>
+        <p style="text-align:center;font-size:0.75em;color:#aaa;margin:12px 0 4px;">
+          This site is protected by reCAPTCHA.
+          <a href="https://policies.google.com/privacy" target="_blank" style="color:#aaa;">Privacy</a> &amp;
+          <a href="https://policies.google.com/terms" target="_blank" style="color:#aaa;">Terms</a> apply.
+        </p>
+        <p style="text-align:center;margin-top:16px;font-size:0.9em;">
+          Already a member? <a href="/members/" style="color:var(--mp-accent);font-weight:600;">Log in here</a>
+        </p>
+      </div>
+
+    </form>
+  </div>
+</section>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <a href="/index.html" aria-label="Commissioned City Church">
+        <img src="/assets/logo.png" alt="Commissioned City Church" class="footer-logo-img"
+          style="height:120px;background:white;border-radius:10px;padding:8px 12px;margin-bottom:var(--space-md);"
+          onerror="this.outerHTML='<div style=\'font-family:Montserrat,sans-serif;font-weight:800;font-size:18px;color:white;margin-bottom:var(--space-md);\'>COMMISSIONED<br>CITY CHURCH</div>'">
+      </a>
+      <p class="footer-tagline">For the Good of the City<br>For the Glory of Christ</p>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <ul>
+        <li><a href="/index.html">Home</a></li>
+        <li><a href="/about.html">About</a></li>
+        <li><a href="/communities.html">Communities</a></li>
+        <li><a href="/gatherings.html">Gatherings</a></li>
+        <li><a href="/give.html">Give</a></li>
+        <li><a href="/contact.html">Connect</a></li>
+      </ul>
+    </div>
+    <div class="footer-col footer-contact">
+      <h4>Find Us</h4>
+      <p>205 Roseberry St<br>Winnipeg, MB R3J 1T3</p>
+      <p style="margin-top:var(--space-sm);">Coffee — 10:00am Sunday<br>Worship — 10:30am Sunday</p>
+      <p style="margin-top:var(--space-sm);"><a href="mailto:info@commissionedcity.church">info@commissionedcity.church</a></p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>Matthew 28:18–20 · © 2025 Commissioned City Church</span>
+    <span>Winnipeg, Manitoba</span>
+  </div>
+</footer>
+
+<!-- reCAPTCHA v3 — key injected at runtime from environment -->
+<script id="recaptcha-script"></script>
+
+<!-- Supabase CDN -->
+<script async src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  window.SUPABASE_URL      = '{{ SUPABASE_URL }}';
+  window.SUPABASE_ANON_KEY = '{{ SUPABASE_ANON_KEY }}';
+  window.RECAPTCHA_SITE_KEY = '{{ RECAPTCHA_SITE_KEY }}';
+</script>
+
+<script src="/js/media.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/supabase.js" defer></script>
+<script src="/js/register.js" defer></script>
+
+<script>
+// ── Inline utilities (needed before register.js loads) ──────────────────
+
+function mpRegGenUsername() {
+  var f = (document.getElementById('reg-first').value || '').trim();
+  var l = (document.getElementById('reg-last').value  || '').trim();
+  function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase().replace(/[^\w]/g,''); }
+  var u = (f && l) ? cap(f)+'_'+cap(l) : (f ? cap(f) : (l ? cap(l) : ''));
+  var el = document.getElementById('reg-username-preview');
+  if (el) el.value = u;
+}
+
+function mpRegFormatPhone(input) {
+  var raw = input.value.replace(/\D/g,'');
+  if (raw.length > 10) raw = raw.slice(0,10);
+  var out = raw;
+  if (raw.length >= 7) out = raw.slice(0,3)+'-'+raw.slice(3,6)+'-'+raw.slice(6);
+  else if (raw.length >= 4) out = raw.slice(0,3)+'-'+raw.slice(3);
+  input.value = out;
+}
+
+function mpTogglePassword(id, btn) {
+  var inp  = document.getElementById(id);
+  var show = inp.type === 'password';
+  inp.type = show ? 'text' : 'password';
+  var s = btn.querySelector('.mp-eye-show');
+  var h = btn.querySelector('.mp-eye-hide');
+  if (s) s.style.display = show ? 'none' : '';
+  if (h) h.style.display = show ? '' : 'none';
+}
+
+function mpUpdateStrength(inp, barId, labelId) {
+  var pw  = inp.value;
+  var bar = document.getElementById(barId);
+  var lbl = document.getElementById(labelId);
+  if (!bar || !lbl) return;
+  var score = 0;
+  if (pw.length >= 8)  score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  var labels = ['','Weak','Fair','Good','Strong'];
+  var colors = ['','#e74c3c','#e67e22','#f1c40f','#27ae60'];
+  bar.style.width  = (score * 25) + '%';
+  bar.style.background = colors[score] || '#ccc';
+  lbl.textContent  = labels[score] || '';
+  lbl.style.color  = colors[score] || '#ccc';
+}
+
+function mpPreviewPhoto(input, previewId) {
+  var preview = document.getElementById(previewId);
+  if (!preview || !input.files || !input.files[0]) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    preview.innerHTML = '<img src="'+e.target.result+'" alt="Preview" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+// Set birthday max to 18 years ago
+(function(){
+  var bd = document.getElementById('reg-birthday');
+  if (!bd) return;
+  var d = new Date();
+  d.setFullYear(d.getFullYear()-18);
+  bd.max = d.toISOString().split('T')[0];
+})();
+
+// Load reCAPTCHA once RECAPTCHA_SITE_KEY is available
+window.addEventListener('DOMContentLoaded', function(){
+  var key = window.RECAPTCHA_SITE_KEY;
+  if (key && key !== '{{ RECAPTCHA_SITE_KEY }}') {
+    var s = document.getElementById('recaptcha-script');
+    s.src = 'https://www.google.com/recaptcha/api.js?render='+key;
+  }
+});
+</script>
+
+</body>
+</html>

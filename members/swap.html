@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Serving Contact List — Commissioned City Church</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400&family=Montserrat:wght@600;700;800&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/members.css">
+  <link rel="icon" type="image/png" href="/assets/logo.png">
+</head>
+<body style="background:#f0ece8;min-height:100vh;">
+
+<main style="padding:32px 16px;display:flex;justify-content:center;">
+  <div style="background:#fff;border-radius:12px;overflow:hidden;max-width:600px;width:100%;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+
+    <!-- Header bar -->
+    <div style="background:var(--mp-accent,#7a4a35);padding:28px 40px;text-align:center;">
+      <h1 style="margin:0;color:#fff;font-size:24px;font-weight:normal;letter-spacing:0.02em;font-family:Montserrat,sans-serif;">
+        Commissioned City Church
+      </h1>
+    </div>
+
+    <!-- Content -->
+    <div id="swap-content" style="padding:32px 40px;">
+      <div id="swap-loading" style="text-align:center;color:#888;padding:40px 0;">
+        Loading contact list…
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="background:#f9f6f4;padding:20px 40px;border-top:1px solid #e8e0db;text-align:center;">
+      <p style="margin:0 0 4px;font-size:12px;color:#aaa;font-family:sans-serif;">Commissioned City Church</p>
+      <p style="margin:0;font-size:12px;color:#bbb;font-family:sans-serif;">
+        <a href="mailto:info@commissionedcity.church" style="color:#bbb;text-decoration:none;">info@commissionedcity.church</a>
+      </p>
+    </div>
+
+  </div>
+</main>
+
+<script async src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  window.SUPABASE_URL      = '{{ SUPABASE_URL }}';
+  window.SUPABASE_ANON_KEY = '{{ SUPABASE_ANON_KEY }}';
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+  var content = document.getElementById('swap-content');
+
+  function showError(msg) {
+    content.innerHTML =
+      '<div style="text-align:center;padding:32px 0;">' +
+      '<p style="font-size:2em;margin-bottom:16px;">&#9888;</p>' +
+      '<h2 style="color:#7a4a35;font-family:Montserrat,sans-serif;font-size:20px;margin-bottom:12px;">Link Expired</h2>' +
+      '<p style="color:#666;font-size:15px;line-height:1.6;">' + msg + '</p>' +
+      '<p style="margin-top:20px;font-size:13px;color:#aaa;">Questions? Contact us at ' +
+      '<a href="mailto:info@commissionedcity.church" style="color:#7a4a35;">info@commissionedcity.church</a></p>' +
+      '</div>';
+  }
+
+  // Read token from URL
+  var params = new URLSearchParams(window.location.search);
+  var token  = params.get('token');
+  if (!token) {
+    showError('No token provided. This link may be malformed.');
+    return;
+  }
+
+  // Wait for Supabase CDN
+  await new Promise(r => setTimeout(r, 400));
+
+  if (!window.supabase) {
+    showError('Could not load page. Please try again.');
+    return;
+  }
+
+  var url = window.SUPABASE_URL;
+  var key = window.SUPABASE_ANON_KEY;
+  if (!url || url === '{{ SUPABASE_URL }}') {
+    showError('Configuration error. Please contact an administrator.');
+    return;
+  }
+
+  var sb = window.supabase.createClient(url, key);
+
+  // Fetch token record
+  var { data: tokenRow, error: tokenErr } = await sb
+    .from('swap_tokens')
+    .select('*')
+    .eq('token', token)
+    .single();
+
+  if (tokenErr || !tokenRow) {
+    showError('This link could not be found. It may have already expired or been used.');
+    return;
+  }
+
+  // Check expiry
+  if (new Date(tokenRow.expires_at) < new Date()) {
+    showError('This link has expired. Links are valid for 7 days. Please contact your team directly to arrange a swap.');
+    return;
+  }
+
+  // Fetch the roster for this date
+  var { data: roster, error: rosterErr } = await sb
+    .from('schedule_rosters')
+    .select('*')
+    .eq('date', tokenRow.date)
+    .single();
+
+  // Format date
+  var dateObj    = new Date(tokenRow.date + 'T12:00:00');
+  var dateLabel  = dateObj.toLocaleDateString('en-CA', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  var eventTitle = roster ? (roster.title || 'Sunday Service') : 'Sunday Service';
+  var slots      = (roster && roster.slots) ? roster.slots : [];
+
+  // Build assignee name map from profile IDs in slots
+  var profileIds = [];
+  slots.forEach(function(slot) {
+    if (slot.assignee_type === 'member'  && slot.assignee_id)   profileIds.push(slot.assignee_id);
+    if (slot.assignee_type === 'couple'  && slot.assignee_id)   profileIds.push(slot.assignee_id);
+    if (slot.assignee_type === 'couple'  && slot.assignee_id_b) profileIds.push(slot.assignee_id_b);
+  });
+  profileIds = [...new Set(profileIds)];
+
+  var profileMap = {};
+  if (profileIds.length) {
+    var { data: profiles } = await sb
+      .from('profiles')
+      .select('id, first_name, last_name, full_name, email, phone1, phone1_type')
+      .in('id', profileIds);
+    (profiles || []).forEach(function(p) { profileMap[p.id] = p; });
+  }
+
+  // Fetch guest names
+  var guestIds = slots.filter(s => s.assignee_type === 'guest' && s.guest_id).map(s => s.guest_id);
+  var guestMap = {};
+  if (guestIds.length) {
+    var { data: guests } = await sb.from('guests').select('id, name, email').in('id', guestIds);
+    (guests || []).forEach(function(g) { guestMap[g.id] = g; });
+  }
+
+  function getAssigneeName(slot) {
+    var t = slot.assignee_type || '';
+    if (t === 'member' && slot.assignee_id) {
+      var p = profileMap[slot.assignee_id];
+      if (!p) return '';
+      return (p.first_name && p.last_name) ? (p.first_name + ' ' + p.last_name) : (p.full_name || '');
+    }
+    if (t === 'couple' && slot.assignee_id) {
+      var a = profileMap[slot.assignee_id];
+      var b = slot.assignee_id_b ? profileMap[slot.assignee_id_b] : null;
+      var an = a ? ((a.first_name || a.full_name || '')) : '';
+      var bn = b ? ((b.first_name || b.full_name || '')) : '';
+      var al = a ? (a.last_name || '') : '';
+      var bl = b ? (b.last_name || '') : '';
+      if (al && bl && al.toLowerCase() === bl.toLowerCase()) return an + ' & ' + bn + ' ' + al;
+      return (an + (al ? ' ' + al : '')) + ' & ' + (bn + (bl ? ' ' + bl : ''));
+    }
+    if (t === 'guest' && slot.guest_id) {
+      var g = guestMap[slot.guest_id];
+      return g ? g.name : '';
+    }
+    return '';
+  }
+
+  function getAssigneeContact(slot) {
+    var t = slot.assignee_type || '';
+    if (t === 'member' && slot.assignee_id) {
+      var p = profileMap[slot.assignee_id];
+      if (!p) return '';
+      var parts = [];
+      if (p.email) parts.push('<a href="mailto:'+esc(p.email)+'" style="color:#7a4a35;">'+esc(p.email)+'</a>');
+      if (p.phone1) parts.push(esc((p.phone1_type || 'Cell') + ': ' + p.phone1));
+      return parts.join('<br>');
+    }
+    if (t === 'couple' && slot.assignee_id) {
+      var lines = [];
+      [slot.assignee_id, slot.assignee_id_b].forEach(function(pid) {
+        if (!pid) return;
+        var p = profileMap[pid];
+        if (!p) return;
+        var name = p.first_name || (p.full_name || '').split(' ')[0] || p.email;
+        var contact = p.email ? '<a href="mailto:'+esc(p.email)+'" style="color:#7a4a35;">'+esc(p.email)+'</a>' : '';
+        if (p.phone1) contact += (contact ? ' · ' : '') + esc((p.phone1_type||'Cell')+': '+p.phone1);
+        if (contact) lines.push('<strong>'+esc(name)+':</strong> ' + contact);
+      });
+      return lines.join('<br>');
+    }
+    if (t === 'guest' && slot.guest_id) {
+      var g = guestMap[slot.guest_id];
+      return (g && g.email) ? '<a href="mailto:'+esc(g.email)+'" style="color:#7a4a35;">'+esc(g.email)+'</a>' : '';
+    }
+    return '';
+  }
+
+  function esc(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // Build HTML
+  var html = '';
+  html += '<div class="mp-swap-header" style="text-align:center;margin-bottom:24px;">';
+  html += '<h2 style="font-family:Montserrat,sans-serif;color:#333;font-size:20px;margin:0 0 6px;">Serving Contact List</h2>';
+  html += '<p style="margin:0 0 4px;font-family:sans-serif;font-size:15px;color:#333;"><strong>' + esc(eventTitle) + '</strong> &mdash; ' + esc(dateLabel) + '</p>';
+  html += '<p style="margin:0;font-family:sans-serif;font-size:14px;color:#666;line-height:1.6;">Hi <strong>' + esc(tokenRow.person_name) + '</strong>! You\'re listed as <strong>' + esc(tokenRow.role) + '</strong>. Here\'s everyone serving that day &mdash; reach out directly to arrange a swap.</p>';
+  html += '</div>';
+
+  var assignedSlots = slots.filter(function(s) { return getAssigneeName(s); });
+
+  if (!assignedSlots.length) {
+    html += '<p style="text-align:center;color:#888;font-family:sans-serif;">No roster assignments found for this date.</p>';
+  } else {
+    html += '<table style="width:100%;border-collapse:collapse;font-family:sans-serif;font-size:14px;">';
+    html += '<thead><tr>';
+    html += '<th style="text-align:left;padding:10px 12px;background:#f5f0ec;color:#7a4a35;font-weight:600;border-bottom:2px solid #e8e0db;">Role</th>';
+    html += '<th style="text-align:left;padding:10px 12px;background:#f5f0ec;color:#7a4a35;font-weight:600;border-bottom:2px solid #e8e0db;">Name</th>';
+    html += '<th style="text-align:left;padding:10px 12px;background:#f5f0ec;color:#7a4a35;font-weight:600;border-bottom:2px solid #e8e0db;">Contact</th>';
+    html += '</tr></thead><tbody>';
+    assignedSlots.forEach(function(slot, i) {
+      var bg = i % 2 === 0 ? '#fff' : '#faf7f5';
+      html += '<tr style="background:' + bg + ';">';
+      html += '<td style="padding:10px 12px;border-bottom:1px solid #f0ebe8;color:#555;vertical-align:top;">' + esc(slot.role || '') + '</td>';
+      html += '<td style="padding:10px 12px;border-bottom:1px solid #f0ebe8;font-weight:600;color:#333;vertical-align:top;">' + esc(getAssigneeName(slot)) + '</td>';
+      html += '<td style="padding:10px 12px;border-bottom:1px solid #f0ebe8;color:#555;vertical-align:top;">' + getAssigneeContact(slot) + '</td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+  }
+
+  html += '<p style="margin-top:24px;font-size:12px;color:#aaa;text-align:center;font-family:sans-serif;">This link expires after 7 days. Questions? Email <a href="mailto:info@commissionedcity.church" style="color:#aaa;">info@commissionedcity.church</a>.</p>';
+
+  content.innerHTML = html;
+});
+</script>
+
+</body>
+</html>

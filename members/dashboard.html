@@ -3,233 +3,191 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Member Dashboard | Commissioned City Church</title>
-  <link rel="preload" href="/css/styles.css" as="style">
-  <link rel="preload" href="/css/members.css" as="style">
-  <link rel="stylesheet" href="/css/styles.css">
+  <title>Dashboard — Commissioned City Church</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400&family=Montserrat:wght@600;700;800&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/members.css">
   <link rel="icon" type="image/png" href="/assets/logo.png">
 </head>
-<body class="members-portal">
+<body class="mp-body">
 
-  <!-- NAVIGATION -->
-  <nav class="navbar">
-    <div class="nav-container">
-      <div class="nav-logo">
-        <a href="/"><img src="/assets/logo.png" alt="Commissioned City Church" class="logo-img"></a>
-      </div>
-      <ul class="nav-menu">
-        <li><a href="/" class="nav-link">Home</a></li>
-        <li><a href="/about" class="nav-link">About</a></li>
-        <li><a href="/believe" class="nav-link">What We Believe</a></li>
-        <li><a href="/communities" class="nav-link">Communities</a></li>
-        <li><a href="/gatherings" class="nav-link">Gatherings</a></li>
-        <li><a href="/sermons" class="nav-link">Sermons</a></li>
-        <li><a href="/give" class="nav-link">Give</a></li>
-        <li><a href="/contact" class="nav-link">Contact</a></li>
-      </ul>
-      <div class="hamburger"><span></span><span></span><span></span></div>
-    </div>
-  </nav>
+<div class="mp-portal" id="mp-portal">
 
-  <!-- PORTAL SUB-NAV -->
-  <div class="members-sub-nav">
-    <div class="members-sub-nav-content">
-      <a href="#" id="subnav-home"       class="active" onclick="navigateTo('home');      return false;">Dashboard</a>
-      <a href="#" id="subnav-profile"               onclick="navigateTo('profile');   return false;">My Profile</a>
-      <a href="#" id="subnav-community"             onclick="navigateTo('community'); return false;">My Community</a>
-      <a href="#" id="subnav-directory"             onclick="navigateTo('directory'); return false;">Member Directory</a>
-      <a href="#" id="subnav-teams"                 onclick="navigateTo('teams');     return false;">My Teams</a>
-      <a href="#" id="subnav-signout"               onclick="signOutUser();           return false;">Sign Out</a>
-    </div>
-  </div>
+  <!-- ── Sidebar (desktop) ─────────────────────────────────── -->
+  <aside class="mp-sidebar" id="mp-sidebar">
+    <div class="mp-sidebar-top">
 
-  <main class="members-main">
-    <div class="dashboard-container">
-
-      <!-- WELCOME BANNER -->
-      <section class="dashboard-welcome">
-        <div class="welcome-content">
-          <h1>Welcome, <span id="member-name">Member</span></h1>
-          <p>You're part of the Commissioned City Church family. Stay connected below.</p>
-        </div>
-      </section>
-
-      <!-- INFO CARDS (always visible) -->
-      <div class="dashboard-cards">
-        <div class="info-card" onclick="navigateTo('community')" style="cursor:pointer;">
-          <h3>My Community</h3>
-          <p id="community-name" class="info-value-text">Loading…</p>
-          <span class="info-link">View Details →</span>
-        </div>
-        <div class="info-card" onclick="navigateTo('teams')" style="cursor:pointer;">
-          <h3>My Teams</h3>
-          <p id="teams-count" class="info-value">–</p>
-          <span class="info-link">View All →</span>
-        </div>
-        <div class="info-card" onclick="navigateTo('home')" style="cursor:pointer;">
-          <h3>Announcements</h3>
-          <p id="announcement-count" class="info-value">–</p>
-          <span class="info-link">View All →</span>
-        </div>
-        <div class="info-card" onclick="navigateTo('directory')" style="cursor:pointer;">
-          <h3>Members</h3>
-          <p id="members-count" class="info-value">–</p>
-          <span class="info-link">Browse →</span>
-        </div>
-      </div>
-
-      <!-- ── SECTION: HOME / ANNOUNCEMENTS (default) ── -->
-      <section id="announcements-section" class="dashboard-section">
-        <div class="section-header">
-          <h2>Announcements</h2>
-        </div>
-        <div id="announcements-list" class="announcement-list">
-          <p class="loading" style="color:var(--color-text-muted);">Loading…</p>
-        </div>
-      </section>
-
-      <!-- ── SECTION: MY PROFILE ── -->
-      <section id="profile-section" class="dashboard-section" style="display:none;">
-        <div class="section-header">
-          <h2>My Profile</h2>
-        </div>
-
-        <!-- VIEW MODE -->
-        <div id="profile-view" class="profile-card">
-          <div class="profile-header">
-            <div class="profile-avatar-wrap">
-              <img id="profile-avatar" src="/assets/logo.png" alt="Avatar" class="profile-avatar">
-            </div>
-            <div class="profile-info">
-              <h3 id="profile-name">–</h3>
-              <p id="profile-email">–</p>
-              <span id="profile-status" class="profile-status status-approved">Approved</span>
-            </div>
+      <div class="mp-sidebar-user">
+        <a href="?tab=profile" class="mp-sidebar-avatar-link" title="My Profile" onclick="mpNavTo('profile',event)">
+          <div class="mp-sidebar-avatar" id="sidebar-avatar">
+            <span class="mp-sidebar-initials" id="sidebar-initials">?</span>
           </div>
-          <div class="profile-details">
-            <p><strong>Phone:</strong> <span id="profile-phone">Not provided</span></p>
-            <p><strong>Community:</strong> <span id="profile-community">Not assigned</span></p>
-            <p><strong>Member Since:</strong> <span id="profile-joined">–</span></p>
-            <p id="profile-bio-row" style="display:none;"><strong>Bio:</strong> <span id="profile-bio">–</span></p>
-          </div>
-          <button class="btn btn-primary" onclick="showProfileEdit()">Edit Profile</button>
-        </div>
-
-        <!-- EDIT MODE (hidden by default) -->
-        <div id="profile-edit" class="profile-card" style="display:none;">
-          <h3 style="margin:0 0 1.5rem; font-family:var(--font-serif); color:var(--color-navy);">Edit Profile</h3>
-          <form id="profile-edit-form" class="auth-form">
-            <div class="form-group">
-              <label for="edit-name">Full Name</label>
-              <input type="text" id="edit-name" name="full_name" required>
-            </div>
-            <div class="form-group">
-              <label for="edit-phone">Phone Number</label>
-              <input type="tel" id="edit-phone" name="phone" placeholder="204-555-1234">
-            </div>
-            <div class="form-group">
-              <label for="edit-bio">Short Bio <small>(optional — visible in member directory)</small></label>
-              <textarea id="edit-bio" name="bio" rows="3"
-                style="padding:.75rem; border:1px solid #e0e0e0; border-radius:6px; font-family:var(--font-sans); font-size:1rem; resize:vertical;"></textarea>
-            </div>
-            <div class="form-group">
-              <label for="edit-avatar">Profile Photo <small>(JPG or PNG, max 2 MB)</small></label>
-              <input type="file" id="edit-avatar" name="avatar" accept="image/jpeg,image/png"
-                style="padding:.5rem 0; border:none; background:none;">
-            </div>
-            <div class="form-message" id="profile-edit-message"></div>
-            <div style="display:flex; gap:1rem; flex-wrap:wrap;">
-              <button type="submit" class="btn btn-primary">Save Changes</button>
-              <button type="button" class="btn btn-outline" onclick="cancelProfileEdit()">Cancel</button>
-            </div>
-          </form>
-        </div>
-      </section>
-
-      <!-- ── SECTION: MY COMMUNITY ── -->
-      <section id="community-section" class="dashboard-section" style="display:none;">
-        <div class="section-header">
-          <h2>My Community</h2>
-        </div>
-        <div id="community-content">
-          <p class="loading" style="color:var(--color-text-muted);">Loading…</p>
-        </div>
-      </section>
-
-      <!-- ── SECTION: MEMBER DIRECTORY ── -->
-      <section id="directory-section" class="dashboard-section" style="display:none;">
-        <div class="section-header" style="flex-wrap:wrap; gap:1rem;">
-          <h2>Member Directory</h2>
-          <input type="search" id="directory-search" placeholder="Search by name…"
-            style="padding:.6rem 1rem; border:1px solid #e0e0e0; border-radius:6px;
-                   font-family:var(--font-sans); font-size:.95rem; width:220px;"
-            oninput="filterDirectory(this.value)">
-        </div>
-        <div id="directory-grid" class="members-grid">
-          <p class="loading" style="color:var(--color-text-muted);">Loading…</p>
-        </div>
-      </section>
-
-      <!-- ── SECTION: MY TEAMS ── -->
-      <section id="teams-section" class="dashboard-section" style="display:none;">
-        <div class="section-header">
-          <h2>My Teams</h2>
-        </div>
-        <div id="teams-content">
-          <p class="loading" style="color:var(--color-text-muted);">Loading…</p>
-        </div>
-      </section>
-
-      <!-- ERROR STATE -->
-      <div id="error-indicator" style="display:none;" class="notice notice-error">
-        <strong>Error</strong>
-        <p id="error-text">An error occurred. Please try refreshing the page.</p>
+        </a>
       </div>
 
+      <nav class="mp-sidebar-nav" id="mp-sidebar-nav" aria-label="Dashboard navigation">
+
+        <a href="?tab=welcome" class="mp-nav-item" data-tab="welcome" onclick="mpNavTo('welcome',event)">
+          <span class="mp-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12L12 3l9 9"/><path d="M9 21V12h6v9"/></svg></span>
+          <span class="mp-nav-label">Welcome</span>
+        </a>
+
+        <a href="?tab=profile" class="mp-nav-item" data-tab="profile" onclick="mpNavTo('profile',event)">
+          <span class="mp-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></span>
+          <span class="mp-nav-label">My Profile</span>
+        </a>
+
+        <a href="?tab=directory" class="mp-nav-item" data-tab="directory" onclick="mpNavTo('directory',event)">
+          <span class="mp-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 20c0-3 2.7-5 6-5s6 2 6 5"/><circle cx="17" cy="9" r="2.5"/><path d="M17 15c2.5 0 4.5 1.6 4.5 4"/></svg></span>
+          <span class="mp-nav-label">Directory</span>
+        </a>
+
+        <div class="mp-nav-group" id="mp-nav-group-mcs">
+          <div class="mp-nav-item mp-nav-item--parent" data-tab="mcs">
+            <span class="mp-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></span>
+            <a href="?tab=mcs" class="mp-nav-label mp-nav-label--link" onclick="mpNavTo('mcs',event)">MCs</a>
+            <span class="mp-nav-chevron" onclick="mpNavToggleGroup('mcs')">›</span>
+          </div>
+          <div class="mp-nav-submenu" id="mp-nav-sub-mcs">
+            <a href="?tab=mcs" class="mp-nav-subitem mp-nav-subitem--all" onclick="mpNavTo('mcs',event)">All MCs</a>
+          </div>
+        </div>
+
+        <div class="mp-nav-group" id="mp-nav-group-teams">
+          <div class="mp-nav-item mp-nav-item--parent" data-tab="teams">
+            <span class="mp-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
+            <a href="?tab=teams" class="mp-nav-label mp-nav-label--link" onclick="mpNavTo('teams',event)">Teams</a>
+            <span class="mp-nav-chevron" onclick="mpNavToggleGroup('teams')">›</span>
+          </div>
+          <div class="mp-nav-submenu" id="mp-nav-sub-teams">
+            <a href="?tab=teams" class="mp-nav-subitem mp-nav-subitem--all" onclick="mpNavTo('teams',event)">All Teams</a>
+          </div>
+        </div>
+
+        <a href="?tab=schedule" class="mp-nav-item" data-tab="schedule" onclick="mpNavTo('schedule',event)">
+          <span class="mp-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>
+          <span class="mp-nav-label">Schedule</span>
+        </a>
+
+        <a href="?tab=files" class="mp-nav-item" data-tab="files" onclick="mpNavTo('files',event)">
+          <span class="mp-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/></svg></span>
+          <span class="mp-nav-label">Files</span>
+        </a>
+
+        <a href="?tab=email" class="mp-nav-item mp-admin-only" data-tab="email" onclick="mpNavTo('email',event)" style="display:none;">
+          <span class="mp-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
+          <span class="mp-nav-label">Email</span>
+        </a>
+
+        <a href="?tab=admin" class="mp-nav-item mp-admin-only" data-tab="admin" onclick="mpNavTo('admin',event)" style="display:none;">
+          <span class="mp-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></span>
+          <span class="mp-nav-label">Admin</span>
+          <span class="mp-nav-badge" id="admin-badge" style="display:none;">0</span>
+        </a>
+
+      </nav>
+    </div>
+
+    <div class="mp-sidebar-bottom">
+      <a href="#" id="sidebar-logout" class="mp-nav-item mp-nav-item--logout">
+        <span class="mp-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
+        <span class="mp-nav-label">Log Out</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ── Main content ──────────────────────────────────────── -->
+  <main class="mp-main" id="mp-main">
+
+    <div class="mp-topbar">
+      <button class="mp-topbar-hamburger" id="mp-hamburger" aria-label="Open menu" onclick="mpToggleSidebar()">
+        <span></span><span></span><span></span>
+      </button>
+      <span class="mp-topbar-title" id="mp-topbar-title">Welcome</span>
+      <div class="mp-topbar-avatar" id="topbar-avatar" onclick="mpNavTo('profile')">
+        <span id="topbar-initials">?</span>
+      </div>
+    </div>
+
+    <div class="mp-content" id="mp-content">
+      <div style="padding:60px 40px;text-align:center;color:#aaa;">
+        <div class="mp-spinner"></div>
+        <p style="margin-top:16px;font-size:0.9em;">Loading…</p>
+      </div>
     </div>
   </main>
 
-  <!-- FOOTER -->
-  <footer class="footer">
-    <div class="footer-content">
-      <div class="footer-section">
-        <img src="/assets/logo.png" alt="Commissioned City Church" class="footer-logo">
-      </div>
-      <div class="footer-section">
-        <h4>Quick Links</h4>
-        <ul>
-          <li><a href="/about">About Us</a></li>
-          <li><a href="/believe">What We Believe</a></li>
-          <li><a href="/communities">Missional Communities</a></li>
-          <li><a href="/contact">Contact Us</a></li>
-        </ul>
-      </div>
-      <div class="footer-section">
-        <h4>Service Times</h4>
-        <p>Sunday 10:00 AM<br>Location TBD</p>
-      </div>
-      <div class="footer-section">
-        <h4>Follow Us</h4>
-        <ul class="social-links">
-          <li><a href="#" aria-label="Facebook">f</a></li>
-          <li><a href="#" aria-label="Instagram">@</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <p>&copy; 2025 Commissioned City Church. All rights reserved.</p>
-    </div>
-  </footer>
+  <!-- ── Bottom nav (mobile) ──────────────────────────────── -->
+  <nav class="mp-bottom-nav" aria-label="Mobile navigation">
+    <a href="?tab=welcome"   class="mp-bottom-nav-item" data-tab="welcome"   onclick="mpNavTo('welcome',event)">
+      <span class="mp-bottom-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12L12 3l9 9"/><path d="M9 21V12h6v9"/></svg></span>
+      <span class="mp-bottom-nav-label">Home</span>
+    </a>
+    <a href="?tab=profile"   class="mp-bottom-nav-item" data-tab="profile"   onclick="mpNavTo('profile',event)">
+      <span class="mp-bottom-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></span>
+      <span class="mp-bottom-nav-label">Profile</span>
+    </a>
+    <a href="?tab=directory" class="mp-bottom-nav-item" data-tab="directory" onclick="mpNavTo('directory',event)">
+      <span class="mp-bottom-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 20c0-3 2.7-5 6-5s6 2 6 5"/><circle cx="17" cy="9" r="2.5"/><path d="M17 15c2.5 0 4.5 1.6 4.5 4"/></svg></span>
+      <span class="mp-bottom-nav-label">Directory</span>
+    </a>
+    <a href="?tab=schedule"  class="mp-bottom-nav-item" data-tab="schedule"  onclick="mpNavTo('schedule',event)">
+      <span class="mp-bottom-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>
+      <span class="mp-bottom-nav-label">Schedule</span>
+    </a>
+    <button class="mp-bottom-nav-item" onclick="mpToggleSidebar()" aria-label="More">
+      <span class="mp-bottom-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></span>
+      <span class="mp-bottom-nav-label">More</span>
+    </button>
+  </nav>
 
-  <script async src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    window.SUPABASE_URL = '{{ SUPABASE_URL }}';
-    window.SUPABASE_ANON_KEY = '{{ SUPABASE_ANON_KEY }}';
-  </script>
-  <script src="/js/main.js" defer></script>
-  <script src="/js/supabase.js" defer></script>
-  <script src="/js/dashboard.js" defer></script>
+  <div class="mp-sidebar-overlay" id="mp-sidebar-overlay" onclick="mpToggleSidebar()"></div>
+
+</div><!-- /.mp-portal -->
+
+<script async src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  window.SUPABASE_URL       = '{{ SUPABASE_URL }}';
+  window.SUPABASE_ANON_KEY  = '{{ SUPABASE_ANON_KEY }}';
+  window.RECAPTCHA_SITE_KEY = '{{ RECAPTCHA_SITE_KEY }}';
+</script>
+
+<script src="/js/supabase.js"></script>
+<script src="/js/dashboard.js"></script>
+
+<script>
+function mpToggleSidebar() {
+  var s = document.getElementById('mp-sidebar');
+  var o = document.getElementById('mp-sidebar-overlay');
+  if (!s) return;
+  var open = s.classList.toggle('mp-sidebar--open');
+  if (o) o.classList.toggle('mp-sidebar-overlay--visible', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+
+function mpNavToggleGroup(key) {
+  var sub = document.getElementById('mp-nav-sub-' + key);
+  var grp = document.getElementById('mp-nav-group-' + key);
+  if (!sub) return;
+  var open = sub.classList.toggle('mp-nav-submenu--open');
+  if (grp) grp.setAttribute('data-open', open ? '1' : '0');
+}
+
+function mpNavTo(tab, e) {
+  if (e) e.preventDefault();
+  var s = document.getElementById('mp-sidebar');
+  var o = document.getElementById('mp-sidebar-overlay');
+  if (s && s.classList.contains('mp-sidebar--open')) {
+    s.classList.remove('mp-sidebar--open');
+    if (o) o.classList.remove('mp-sidebar-overlay--visible');
+    document.body.style.overflow = '';
+  }
+  if (window.mpDashboard && window.mpDashboard.navigate) {
+    window.mpDashboard.navigate(tab);
+  }
+}
+</script>
 
 </body>
 </html>
