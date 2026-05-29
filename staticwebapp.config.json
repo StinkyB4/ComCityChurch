@@ -12,9 +12,12 @@
     { "route": "/sermons",           "rewrite": "/sermons.html"           },
     { "route": "/give",              "rewrite": "/give.html"              },
     { "route": "/contact",           "rewrite": "/contact.html"           },
-    { "route": "/members",           "rewrite": "/members/index.html"     },
-    { "route": "/members/dashboard", "rewrite": "/members/dashboard.html" },
-    { "route": "/members/admin",     "rewrite": "/members/admin.html"     }
+    { "route": "/members",              "rewrite": "/members/index.html"     },
+    { "route": "/members/dashboard",   "rewrite": "/members/dashboard.html" },
+    { "route": "/members/admin",       "rewrite": "/members/admin.html"     },
+    { "route": "/members/register",    "rewrite": "/members/register.html"  },
+    { "route": "/members/pending",     "rewrite": "/members/pending.html"   },
+    { "route": "/members/swap",        "rewrite": "/members/swap.html"      }
   ],
   "responseOverrides": {
     "404": {

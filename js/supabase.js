@@ -160,8 +160,9 @@ async function isAuthenticated() {
 
 /**
  * Require authentication; redirect to members login if not signed in.
+ * Redirects pending users to /members/pending.html automatically.
  * @param {string} redirectPath - Path to redirect to if not authenticated (default: '/members/')
- * @returns {Promise<Object>} Authenticated user profile
+ * @returns {Promise<Object>} Authenticated approved user profile, or null
  */
 async function requireAuth(redirectPath = '/members/') {
   const profile = await getProfile();
@@ -171,9 +172,18 @@ async function requireAuth(redirectPath = '/members/') {
     return null;
   }
 
-  // Check if approved
+  // Pending users get sent to the pending page, not the login page
+  if (profile.status === 'pending') {
+    if (!window.location.pathname.includes('/pending')) {
+      window.location.href = '/members/pending.html';
+    }
+    return null;
+  }
+
   if (profile.status !== 'approved') {
-    console.warn(`User status is "${profile.status}", not approved yet.`);
+    console.warn(`User status is "${profile.status}".`);
+    window.location.href = redirectPath;
+    return null;
   }
 
   return profile;
