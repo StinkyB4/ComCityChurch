@@ -2,28 +2,26 @@
  * COMMISSIONED CITY CHURCH — SEND EMAIL EDGE FUNCTION
  * Supabase Edge Function (Deno runtime)
  *
- * Handles all 9 email types from the members portal.
+ * Handles all transactional email types for the members portal.
  * Uses Resend (https://resend.com) for delivery.
+ * Design matches the Commissioned City Church website (navy + red).
  *
- * Setup:
- *   1. Set RESEND_API_KEY secret in Supabase dashboard
- *   2. Set ADMIN_EMAIL secret (default: info@commissionedcity.church)
- *   3. Set SITE_URL secret (e.g. https://commissionedcity.church)
- *   4. Set SITE_NAME secret (e.g. Commissioned City Church)
- *   5. Deploy: supabase functions deploy send-email
- *
- * Called via: supabase.functions.invoke('send-email', { body: { action, ...payload } })
+ * Required secrets (Supabase → Edge Functions → Secrets):
+ *   RESEND_API_KEY     — from resend.com
+ *   ADMIN_EMAIL        — e.g. info@commissionedcity.church
+ *   SITE_URL           — e.g. https://commissionedcity.church
+ *   SITE_NAME          — e.g. Commissioned City Church
+ *   SERVICE_ROLE_KEY   — from Supabase → Project Settings → API
  *
  * Supported actions:
- *   registration_admin  — notify admin of new registration
- *   account_pending     — confirm pending status to new user
- *   account_approved    — welcome email to newly approved member
- *   spouse_linked       — notify spouse + CC admin
- *   spouse_invite       — invite non-member spouse to register
+ *   registration_admin   — notify admin of new registration
+ *   account_pending      — confirm pending status to new user
+ *   account_approved     — welcome email to newly approved member
+ *   spouse_linked        — notify spouse + CC admin
+ *   spouse_invite        — invite non-member spouse to register
  *   message_notification — broadcast admin message to members
- *   serving_reminder    — personalized Wednesday serving reminder
- *   weekly_church_email — all-church weekly email
- *   special_email       — ad-hoc email to custom list
+ *   weekly_church_email  — all-church weekly email (BCC)
+ *   special_email        — ad-hoc email to custom recipient list
  */
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
@@ -36,63 +34,104 @@ const SITE_NAME      = Deno.env.get('SITE_NAME')      || 'Commissioned City Chur
 const SUPABASE_URL   = Deno.env.get('SUPABASE_URL')   || '';
 const SERVICE_KEY    = Deno.env.get('SERVICE_ROLE_KEY') || '';
 
-const BRAND  = '#7a4a35';
+/* ── Brand tokens (match styles.css) ─────────────────────── */
+const NAVY     = '#112E53';
+const RED      = '#D5393B';
+const CHARCOAL = '#30343B';
+const LOGO_URL = SITE_URL + '/assets/logo.png';
+
 const CORS = {
-  'Access-Control-Allow-Origin':  '*',
+  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-/* ─── HTML email shell ─────────────────────────────────────── */
-function emailOpen(previewText = '') {
-  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-${previewText ? `<span style="display:none;max-height:0;overflow:hidden;">${previewText}</span>` : ''}
-</head><body style="margin:0;padding:0;background:#f0ece8;font-family:Georgia,'Times New Roman',serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0ece8;padding:32px 16px;"><tr><td align="center">
-<table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;max-width:600px;width:100%;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
-<tr><td style="background:${BRAND};padding:28px 40px;text-align:center;">
-<h1 style="margin:0;color:#fff;font-size:24px;font-weight:normal;letter-spacing:0.02em;">${SITE_NAME}</h1>
-</td></tr>`;
+/* ════════════════════════════════════════════════════════════
+   EMAIL DESIGN HELPERS
+   ════════════════════════════════════════════════════════════ */
+
+function emailOpen(preview: string = ''): string {
+  const previewTag = preview
+    ? '<span style="display:none;max-height:0;overflow:hidden;mso-hide:all;">' + preview + '</span>'
+    : '';
+  return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+    + previewTag
+    + '</head><body style="margin:0;padding:0;background:#F4F5F7;font-family:Arial,Helvetica,sans-serif;">'
+    + '<table width="100%" cellpadding="0" cellspacing="0" style="background:#F4F5F7;padding:32px 16px;"><tr><td align="center">'
+    + '<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:10px;overflow:hidden;max-width:600px;width:100%;box-shadow:0 2px 12px rgba(17,46,83,0.10);">'
+    /* Header */
+    + '<tr><td style="background:' + NAVY + ';padding:28px 40px;text-align:center;">'
+    + '<img src="' + LOGO_URL + '" alt="' + SITE_NAME + '" height="72" style="display:block;margin:0 auto 12px;border-radius:8px;background:#fff;padding:6px 10px;">'
+    + '<p style="margin:8px 0 0;color:rgba(255,255,255,0.7);font-size:12px;letter-spacing:0.08em;text-transform:uppercase;font-family:Arial,sans-serif;">For the Good of the City &middot; For the Glory of Christ</p>'
+    + '</td></tr>';
 }
 
-function emailClose() {
-  return `<tr><td style="background:#f9f6f4;padding:20px 40px;border-top:1px solid #e8e0db;text-align:center;">
-<p style="margin:0 0 4px;font-size:12px;color:#aaa;">${SITE_NAME}</p>
-<p style="margin:0;font-size:12px;color:#bbb;"><a href="mailto:${ADMIN_EMAIL}" style="color:#bbb;text-decoration:none;">${ADMIN_EMAIL}</a></p>
-</td></tr></table></td></tr></table></body></html>`;
+function emailClose(): string {
+  return '<tr><td style="background:' + NAVY + ';padding:24px 40px;text-align:center;">'
+    + '<p style="margin:0 0 6px;font-size:13px;color:rgba(255,255,255,0.9);font-family:Arial,sans-serif;font-weight:bold;">' + SITE_NAME + '</p>'
+    + '<p style="margin:0 0 6px;font-size:12px;color:rgba(255,255,255,0.6);font-family:Arial,sans-serif;">205 Roseberry St, Winnipeg, MB R3J 1T3</p>'
+    + '<p style="margin:0;font-size:12px;font-family:Arial,sans-serif;"><a href="mailto:' + ADMIN_EMAIL + '" style="color:rgba(255,255,255,0.6);text-decoration:none;">' + ADMIN_EMAIL + '</a></p>'
+    + '</td></tr>'
+    + '</table></td></tr></table></body></html>';
 }
 
-function emailBody(content: string) {
-  return `<tr><td style="padding:32px 40px;font-size:15px;color:#444;line-height:1.75;">${content}</td></tr>`;
+function emailBody(content: string): string {
+  return '<tr><td style="padding:32px 40px;font-size:15px;color:' + CHARCOAL + ';line-height:1.75;font-family:Arial,Helvetica,sans-serif;">'
+    + content
+    + '</td></tr>';
 }
 
-function emailButton(label: string, url: string) {
-  return `<tr><td style="padding:8px 40px 24px;">
-<a href="${url}" style="display:inline-block;background:${BRAND};color:#fff;text-decoration:none;font-size:14px;font-weight:bold;padding:11px 24px;border-radius:6px;">${label}</a>
-</td></tr>`;
+function emailButton(label: string, url: string): string {
+  return '<tr><td style="padding:8px 40px 28px;">'
+    + '<a href="' + url + '" style="display:inline-block;background:' + RED + ';color:#ffffff;text-decoration:none;font-size:14px;font-weight:bold;padding:13px 28px;border-radius:6px;font-family:Arial,Helvetica,sans-serif;letter-spacing:0.02em;">'
+    + label
+    + '</a>'
+    + '</td></tr>';
 }
 
-/* ─── Send via Resend ─────────────────────────────────────── */
-async function sendEmail(to: string | string[], subject: string, html: string, opts?: { cc?: string; bcc?: string[] }) {
+function emailDivider(): string {
+  return '<tr><td style="padding:0 40px;"><hr style="border:none;border-top:1px solid #E8ECF0;margin:0;"></td></tr>';
+}
+
+function emailEyebrow(text: string): string {
+  return '<p style="margin:0 0 6px;font-size:12px;color:' + RED + ';text-transform:uppercase;letter-spacing:0.08em;font-weight:bold;">' + text + '</p>';
+}
+
+function emailHeading(text: string): string {
+  return '<p style="margin:0 0 20px;font-size:18px;font-weight:bold;color:' + NAVY + ';">' + text + '</p>';
+}
+
+/* ════════════════════════════════════════════════════════════
+   SEND VIA RESEND
+   ════════════════════════════════════════════════════════════ */
+
+async function sendEmail(
+  to: string | string[],
+  subject: string,
+  html: string,
+  opts?: { bcc?: string[] }
+) {
   if (!RESEND_API_KEY) {
-    console.log('[send-email] No RESEND_API_KEY — logging email instead:');
-    console.log('To:', to, 'Subject:', subject);
+    console.log('[send-email] No API key — simulating:', subject);
     return { ok: true, simulated: true };
   }
 
   const body: Record<string, unknown> = {
-    from: `${SITE_NAME} <${ADMIN_EMAIL}>`,
+    from: SITE_NAME + ' <' + ADMIN_EMAIL + '>',
     to: Array.isArray(to) ? to : [to],
     subject,
     html,
   };
-  if (opts?.cc)  body.cc  = opts.cc;
-  if (opts?.bcc) body.bcc = opts.bcc;
+  if (opts && opts.bcc && opts.bcc.length) body.bcc = opts.bcc;
 
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
-    headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+    headers: {
+      'Authorization': 'Bearer ' + RESEND_API_KEY,
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify(body),
   });
+
   if (!res.ok) {
     const err = await res.text();
     console.error('[send-email] Resend error:', err);
@@ -101,200 +140,266 @@ async function sendEmail(to: string | string[], subject: string, html: string, o
   return { ok: true };
 }
 
-/* ─── Supabase admin client ───────────────────────────────── */
+/* ════════════════════════════════════════════════════════════
+   SUPABASE ADMIN CLIENT
+   ════════════════════════════════════════════════════════════ */
+
 function getAdminSb() {
   if (!SUPABASE_URL || !SERVICE_KEY) return null;
   return createClient(SUPABASE_URL, SERVICE_KEY);
 }
 
-/* ─── Email builders ─────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════
+   EMAIL HANDLERS
+   ════════════════════════════════════════════════════════════ */
 
 async function handleRegistrationAdmin(payload: Record<string, unknown>) {
-  const { user_id, full_name, email, phone1_type, phone1, address, birthday } = payload;
-  const dashUrl = `${SITE_URL}/members/dashboard.html?tab=welcome`;
+  const full_name   = String(payload.full_name   || '');
+  const email       = String(payload.email       || '');
+  const phone1_type = String(payload.phone1_type || 'Cell');
+  const phone1      = String(payload.phone1      || '');
+  const address     = String(payload.address     || '');
+  const birthday    = String(payload.birthday    || '');
+  const dashUrl     = SITE_URL + '/members/dashboard.html?tab=welcome';
+
+  let rows = '<tr><td style="padding:6px 0;font-weight:bold;color:' + NAVY + ';width:110px;font-size:13px;">Name</td><td style="padding:6px 0;font-size:13px;color:' + CHARCOAL + ';">' + full_name + '</td></tr>';
+  rows    += '<tr><td style="padding:6px 0;font-weight:bold;color:' + NAVY + ';font-size:13px;">Email</td><td style="padding:6px 0;font-size:13px;color:' + CHARCOAL + ';">' + email + '</td></tr>';
+  if (phone1)   rows += '<tr><td style="padding:6px 0;font-weight:bold;color:' + NAVY + ';font-size:13px;">' + phone1_type + '</td><td style="padding:6px 0;font-size:13px;color:' + CHARCOAL + ';">' + phone1 + '</td></tr>';
+  if (address)  rows += '<tr><td style="padding:6px 0;font-weight:bold;color:' + NAVY + ';font-size:13px;">Address</td><td style="padding:6px 0;font-size:13px;color:' + CHARCOAL + ';">' + address + '</td></tr>';
+  if (birthday) rows += '<tr><td style="padding:6px 0;font-weight:bold;color:' + NAVY + ';font-size:13px;">Birthday</td><td style="padding:6px 0;font-size:13px;color:' + CHARCOAL + ';">' + birthday + '</td></tr>';
+
   const html = emailOpen('New member registration — action required')
-    + emailBody(`
-      <p style="margin:0 0 20px;">A new member account is awaiting your approval.</p>
-      <div style="background:#faf7f5;border-left:4px solid ${BRAND};border-radius:6px;padding:20px 24px;margin-bottom:24px;">
-        <table cellpadding="0" cellspacing="0" style="width:100%;font-size:14px;color:#444;">
-          <tr><td style="padding:4px 0;font-weight:bold;width:120px;">Name</td><td>${full_name}</td></tr>
-          <tr><td style="padding:4px 0;font-weight:bold;">Email</td><td>${email}</td></tr>
-          ${phone1 ? `<tr><td style="padding:4px 0;font-weight:bold;">${phone1_type}</td><td>${phone1}</td></tr>` : ''}
-          ${address ? `<tr><td style="padding:4px 0;font-weight:bold;">Address</td><td>${address}</td></tr>` : ''}
-          ${birthday ? `<tr><td style="padding:4px 0;font-weight:bold;">Birthday</td><td>${birthday}</td></tr>` : ''}
-        </table>
-      </div>`)
+    + emailBody(
+        emailEyebrow('Action Required')
+        + emailHeading('New Member Registration')
+        + '<p style="margin:0 0 20px;color:' + CHARCOAL + ';">A new member account is awaiting your approval:</p>'
+        + '<div style="background:#F4F5F7;border-left:4px solid ' + NAVY + ';border-radius:6px;padding:16px 20px;margin-bottom:8px;">'
+        + '<table cellpadding="0" cellspacing="0" style="width:100%;">' + rows + '</table>'
+        + '</div>'
+      )
     + emailButton('Review & Approve on Dashboard', dashUrl)
     + emailClose();
-  return sendEmail(ADMIN_EMAIL, `[${SITE_NAME}] New Member Registration: ${full_name}`, html);
+
+  return sendEmail(ADMIN_EMAIL, '[' + SITE_NAME + '] New Member Registration: ' + full_name, html);
 }
 
 async function handleAccountPending(payload: Record<string, unknown>) {
-  const { first_name, email } = payload;
-  const html = emailOpen()
-    + emailBody(`
-      <p style="margin:0 0 16px;">Hi ${first_name},</p>
-      <p style="margin:0 0 16px;">Thank you for registering with the ${SITE_NAME} member portal!</p>
-      <p style="margin:0 0 24px;">Your account has been created and is currently <strong>pending approval</strong> by a site administrator. You will receive another email as soon as your account is approved, typically within one business day.</p>
-      <p style="margin:0;font-size:13px;color:#aaa;">If you have any questions, contact us at <a href="mailto:${ADMIN_EMAIL}" style="color:${BRAND};">${ADMIN_EMAIL}</a>.</p>`)
+  const first_name = String(payload.first_name || '');
+  const email      = String(payload.email      || '');
+
+  const html = emailOpen('Your account is pending approval')
+    + emailBody(
+        emailEyebrow('Member Portal')
+        + emailHeading('Account Pending Approval')
+        + '<p style="margin:0 0 16px;">Hi <strong>' + first_name + '</strong>,</p>'
+        + '<p style="margin:0 0 16px;">Thank you for registering with the ' + SITE_NAME + ' member portal!</p>'
+        + '<p style="margin:0 0 24px;">Your account is currently <strong>pending approval</strong> by a site administrator. You\'ll receive an email as soon as it\'s approved &mdash; usually within one business day.</p>'
+        + '<p style="margin:0;font-size:13px;color:#777;">Questions? Reach us at <a href="mailto:' + ADMIN_EMAIL + '" style="color:' + RED + ';text-decoration:none;">' + ADMIN_EMAIL + '</a></p>'
+      )
     + emailClose();
-  return sendEmail(String(email), `Your ${SITE_NAME} Account is Pending Approval`, html);
+
+  return sendEmail(email, 'Your ' + SITE_NAME + ' Account is Pending Approval', html);
 }
 
 async function handleAccountApproved(payload: Record<string, unknown>) {
-  const sb = getAdminSb(); if (!sb) return { ok: false, error: 'No admin client' };
-  const { user_id } = payload;
-  const { data: prof } = await sb.from('profiles').select('first_name,full_name,email').eq('id', user_id).single();
+  const sb = getAdminSb();
+  if (!sb) return { ok: false, error: 'No admin client' };
+  const { data: prof } = await sb.from('profiles').select('first_name,full_name,email').eq('id', String(payload.user_id || '')).single();
   if (!prof) return { ok: false, error: 'Profile not found' };
   const firstName = prof.first_name || (prof.full_name || '').split(' ')[0] || 'Member';
-  const dashUrl = `${SITE_URL}/members/dashboard.html`;
-  const html = emailOpen()
-    + emailBody(`
-      <p style="margin:0 0 16px;">Hi ${firstName},</p>
-      <p style="margin:0 0 24px;">Your account has been approved! You can now log in to the ${SITE_NAME} member portal.</p>`)
+  const dashUrl   = SITE_URL + '/members/dashboard.html';
+
+  const html = emailOpen('Welcome — your account has been approved')
+    + emailBody(
+        emailEyebrow('Member Portal')
+        + emailHeading('Welcome to the Family!')
+        + '<p style="margin:0 0 16px;">Hi <strong>' + firstName + '</strong>,</p>'
+        + '<p style="margin:0 0 24px;">Your account has been approved! You now have full access to the ' + SITE_NAME + ' member portal &mdash; the directory, schedule, files, and more.</p>'
+      )
     + emailButton('Access My Dashboard', dashUrl)
     + emailClose();
-  return sendEmail(prof.email, `Welcome to ${SITE_NAME} — Your Account is Approved`, html);
+
+  return sendEmail(prof.email, 'Welcome to ' + SITE_NAME + ' — Your Account is Approved', html);
 }
 
 async function handleSpouseLinked(payload: Record<string, unknown>) {
-  const sb = getAdminSb(); if (!sb) return { ok: false, error: 'No admin client' };
-  const { linker_id, spouse_id } = payload;
+  const sb = getAdminSb();
+  if (!sb) return { ok: false, error: 'No admin client' };
   const [{ data: linker }, { data: spouse }] = await Promise.all([
-    sb.from('profiles').select('first_name,last_name,full_name,email').eq('id', linker_id).single(),
-    sb.from('profiles').select('first_name,full_name,email').eq('id', spouse_id).single(),
+    sb.from('profiles').select('first_name,last_name,full_name,email').eq('id', String(payload.linker_id || '')).single(),
+    sb.from('profiles').select('first_name,full_name,email').eq('id', String(payload.spouse_id || '')).single(),
   ]);
   if (!linker || !spouse) return { ok: false, error: 'Profile not found' };
-  const linkerName  = `${linker.first_name || ''} ${linker.last_name || ''}`.trim() || linker.full_name || '';
+  const linkerName  = (linker.first_name + ' ' + (linker.last_name || '')).trim() || linker.full_name || '';
   const spouseFirst = spouse.first_name || (spouse.full_name || '').split(' ')[0] || 'Member';
+
   const html = emailOpen()
-    + emailBody(`
-      <p style="margin:0 0 16px;">Hi ${spouseFirst},</p>
-      <p style="margin:0 0 16px;">This is a courtesy notice that <strong>${linkerName}</strong> has indicated on the ${SITE_NAME} member portal that you are married. Your profiles have been linked as a family in the directory.</p>
-      <p style="margin:0 0 24px;">If this was done in error, please reply to this email and we will correct it promptly.</p>
-      <p style="margin:0;font-size:13px;color:#aaa;">Questions? Contact us at <a href="mailto:${ADMIN_EMAIL}" style="color:${BRAND};">${ADMIN_EMAIL}</a>.</p>`)
+    + emailBody(
+        emailEyebrow('Member Portal')
+        + emailHeading('Family Profiles Linked')
+        + '<p style="margin:0 0 16px;">Hi <strong>' + spouseFirst + '</strong>,</p>'
+        + '<p style="margin:0 0 16px;"><strong>' + linkerName + '</strong> has indicated on the ' + SITE_NAME + ' member portal that you are married. Your profiles have been linked as a family in the member directory.</p>'
+        + '<p style="margin:0;font-size:13px;color:#777;">If this was done in error, simply reply to this email and we\'ll correct it right away.</p>'
+      )
     + emailClose();
-  await sendEmail(spouse.email, `${SITE_NAME} — Family Profiles Linked`, html);
-  return sendEmail(ADMIN_EMAIL, `[${SITE_NAME}] Family Link: ${linkerName} & ${spouseFirst}`, html);
+
+  await sendEmail(spouse.email, SITE_NAME + ' — Family Profiles Linked', html);
+  return sendEmail(ADMIN_EMAIL, '[' + SITE_NAME + '] Family Link: ' + linkerName + ' & ' + spouseFirst, html);
 }
 
 async function handleSpouseInvite(payload: Record<string, unknown>) {
-  const sb = getAdminSb(); if (!sb) return { ok: false, error: 'No admin client' };
-  const { inviter_id, invitee_email } = payload;
-  const { data: inv } = await sb.from('profiles').select('first_name,last_name,full_name').eq('id', inviter_id).single();
+  const sb = getAdminSb();
+  if (!sb) return { ok: false, error: 'No admin client' };
+  const { data: inv } = await sb.from('profiles').select('first_name,last_name,full_name').eq('id', String(payload.inviter_id || '')).single();
   if (!inv) return { ok: false, error: 'Inviter not found' };
-  const inviterName  = `${inv.first_name || ''} ${inv.last_name || ''}`.trim() || inv.full_name || '';
-  const inviterFirst = inv.first_name || (inv.full_name || '').split(' ')[0] || '';
-  const regUrl = `${SITE_URL}/members/register.html`;
+  const inviterName  = (inv.first_name + ' ' + (inv.last_name || '')).trim() || inv.full_name || '';
+  const inviteeEmail = String(payload.invitee_email || '');
+  const regUrl       = SITE_URL + '/members/register.html';
+
   const html = emailOpen()
-    + emailBody(`
-      <p style="margin:0 0 16px;">Hi,</p>
-      <p style="margin:0 0 16px;">You're receiving this message because <strong>${inviterName}</strong> has registered on the ${SITE_NAME} member portal and has indicated that you are their spouse.</p>
-      <p style="margin:0 0 24px;">${inviterFirst} would like to invite you to create your own member account so your family can be connected in our directory.</p>`)
+    + emailBody(
+        emailEyebrow('Member Portal')
+        + emailHeading('You\'re Invited!')
+        + '<p style="margin:0 0 16px;">Hi,</p>'
+        + '<p style="margin:0 0 16px;"><strong>' + inviterName + '</strong> has registered on the ' + SITE_NAME + ' member portal and indicated that you are their spouse.</p>'
+        + '<p style="margin:0 0 24px;">They\'d love for you to create your own account so your family can be connected in the member directory. It only takes a few minutes.</p>'
+      )
     + emailButton('Create My Member Account', regUrl)
     + emailClose();
-  return sendEmail(String(invitee_email), `${inviterName} has invited you to join the ${SITE_NAME} member portal`, html);
+
+  return sendEmail(inviteeEmail, inviterName + ' has invited you to join the ' + SITE_NAME + ' member portal', html);
 }
 
 async function handleMessageNotification(payload: Record<string, unknown>) {
-  const sb = getAdminSb(); if (!sb) return { ok: false, error: 'No admin client' };
-  const { title, body: msgBody, date } = payload;
-  const { data: members } = await sb.from('profiles').select('first_name,full_name,email').eq('status','approved');
+  const sb = getAdminSb();
+  if (!sb) return { ok: false, error: 'No admin client' };
+  const title   = String(payload.title || '');
+  const msgBody = String(payload.body  || '').slice(0, 500);
+  const date    = String(payload.date  || '');
+  const dashUrl = SITE_URL + '/members/dashboard.html';
+  const { data: members } = await sb.from('profiles').select('first_name,full_name,email').eq('status', 'approved');
   if (!members || !members.length) return { ok: true, note: 'No approved members' };
-  const dashUrl = `${SITE_URL}/members/dashboard.html`;
+
   for (const m of members) {
     const firstName = m.first_name || (m.full_name || '').split(' ')[0] || 'Member';
-    const html = emailOpen(`New message from ${SITE_NAME}`)
-      + emailBody(`
-        <p style="margin:0 0 20px;">Hi ${firstName},</p>
-        <div style="background:#faf7f5;border-left:4px solid ${BRAND};border-radius:6px;padding:20px 24px;margin-bottom:24px;">
-          <p style="margin:0 0 4px;font-size:12px;color:#999;text-transform:uppercase;">${date || ''}</p>
-          <h2 style="margin:0 0 12px;font-size:18px;color:#333;">${title}</h2>
-          <p style="margin:0;color:#555;font-size:14px;line-height:1.7;">${String(msgBody || '').slice(0, 300)}</p>
-        </div>`)
+    const dateRow   = date
+      ? '<p style="margin:0 0 8px;font-size:11px;color:' + RED + ';text-transform:uppercase;letter-spacing:0.08em;font-weight:bold;">' + date + '</p>'
+      : '';
+    const html = emailOpen('New message from ' + SITE_NAME)
+      + emailBody(
+          '<p style="margin:0 0 16px;">Hi <strong>' + firstName + '</strong>,</p>'
+          + '<div style="background:#F4F5F7;border-left:4px solid ' + NAVY + ';border-radius:6px;padding:20px 24px;margin-bottom:24px;">'
+          + dateRow
+          + '<p style="margin:0 0 10px;font-size:17px;font-weight:bold;color:' + NAVY + ';">' + title + '</p>'
+          + '<p style="margin:0;color:' + CHARCOAL + ';font-size:14px;line-height:1.7;">' + msgBody + '</p>'
+          + '</div>'
+        )
       + emailButton('View on Dashboard', dashUrl)
       + emailClose();
-    await sendEmail(m.email, `[${SITE_NAME}] New Message: ${title}`, html);
+    await sendEmail(m.email, '[' + SITE_NAME + '] ' + title, html);
   }
   return { ok: true };
 }
 
 async function handleWeeklyChurchEmail(payload: Record<string, unknown>) {
-  const sb = getAdminSb(); if (!sb) return { ok: false, error: 'No admin client' };
-  const { subject, body: emailBodyHtml, roster_date, recipients } = payload;
+  const sb = getAdminSb();
+  if (!sb) return { ok: false, error: 'No admin client' };
+  const subject       = String(payload.subject     || '');
+  const emailBodyHtml = String(payload.body         || '');
+  const roster_date   = String(payload.roster_date  || '');
+
   let recipList: string[] = [];
-  if (Array.isArray(recipients) && recipients.length) {
-    recipList = recipients as string[];
+  if (Array.isArray(payload.recipients) && payload.recipients.length) {
+    recipList = payload.recipients as string[];
   } else {
-    const { data: mems } = await sb.from('profiles').select('email').eq('status','approved');
+    const { data: mems } = await sb.from('profiles').select('email').eq('status', 'approved');
     recipList = (mems || []).map((m: { email: string }) => m.email);
   }
   if (!recipList.length) return { ok: true, note: 'No recipients' };
 
-  let scheduleHtml = '';
+  let scheduleRows = '';
   if (roster_date) {
     const { data: roster } = await sb.from('schedule_rosters').select('*').eq('date', roster_date).single();
-    if (roster && roster.slots && roster.slots.length) {
-      scheduleHtml += `<tr><td style="background:${BRAND};padding:10px 40px;"><p style="margin:0;color:#fff;font-size:11px;font-weight:bold;text-transform:uppercase;letter-spacing:0.12em;">Serving This Sunday</p></td></tr>`;
-      scheduleHtml += '<tr><td style="padding:0 40px 24px;"><table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">';
-      for (const slot of roster.slots) {
-        scheduleHtml += `<tr style="background:#fff;"><td style="padding:9px 16px 9px 0;font-size:14px;color:#888;width:45%;border-bottom:1px solid #f0ebe8;">${slot.role || ''}</td><td style="padding:9px 0;font-size:14px;color:#333;font-weight:bold;border-bottom:1px solid #f0ebe8;">${slot.assignee_type ? '(assigned)' : '<span style="color:#ccc;font-weight:normal;">TBD</span>'}</td></tr>`;
+    if (roster && Array.isArray(roster.slots) && roster.slots.length) {
+      for (const slot of roster.slots as Array<Record<string, string>>) {
+        const assignee = slot.assignee_type ? '(assigned)' : 'TBD';
+        scheduleRows += '<tr>'
+          + '<td style="padding:9px 16px 9px 0;font-size:14px;color:#777;width:45%;border-bottom:1px solid #E8ECF0;">' + (slot.role || '') + '</td>'
+          + '<td style="padding:9px 0;font-size:14px;color:' + CHARCOAL + ';font-weight:bold;border-bottom:1px solid #E8ECF0;">' + assignee + '</td>'
+          + '</tr>';
       }
-      scheduleHtml += '</table></td></tr>';
     }
   }
 
-  const fullHtml = emailOpen(`This week at ${SITE_NAME}`)
-    + `<tr><td style="padding:20px 40px;font-size:15px;color:#444;line-height:1.75;">${emailBodyHtml || ''}</td></tr>`
-    + scheduleHtml
+  let scheduleSection = '';
+  if (scheduleRows) {
+    scheduleSection = '<tr><td style="padding:0 40px 24px;">'
+      + '<p style="margin:0 0 12px;font-size:12px;color:' + RED + ';text-transform:uppercase;letter-spacing:0.08em;font-weight:bold;">Serving This Sunday</p>'
+      + '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">'
+      + scheduleRows
+      + '</table></td></tr>';
+  }
+
+  const html = emailOpen('This week at ' + SITE_NAME)
+    + '<tr><td style="padding:32px 40px 16px;font-size:15px;color:' + CHARCOAL + ';line-height:1.75;font-family:Arial,Helvetica,sans-serif;">' + emailBodyHtml + '</td></tr>'
+    + (scheduleRows ? emailDivider() : '')
+    + scheduleSection
     + emailClose();
 
-  /* send as BCC so recipients can't see each other */
-  const result = await sendEmail(ADMIN_EMAIL, String(subject), fullHtml, { bcc: recipList });
-  return result;
+  return sendEmail(ADMIN_EMAIL, subject, html, { bcc: recipList });
 }
 
 async function handleSpecialEmail(payload: Record<string, unknown>) {
-  const { subject, body: emailBodyHtml, recipients } = payload;
-  if (!Array.isArray(recipients) || !recipients.length) return { ok: false, error: 'No recipients' };
+  const subject       = String(payload.subject || '');
+  const emailBodyHtml = String(payload.body    || '');
+  if (!Array.isArray(payload.recipients) || !payload.recipients.length) {
+    return { ok: false, error: 'No recipients' };
+  }
+  const recipients = payload.recipients as string[];
   const html = emailOpen()
-    + `<tr><td style="padding:32px 40px;font-size:15px;color:#444;line-height:1.75;">${emailBodyHtml || ''}</td></tr>`
+    + '<tr><td style="padding:32px 40px;font-size:15px;color:' + CHARCOAL + ';line-height:1.75;font-family:Arial,Helvetica,sans-serif;">' + emailBodyHtml + '</td></tr>'
     + emailClose();
-  return sendEmail(ADMIN_EMAIL, String(subject), html, { bcc: recipients as string[] });
+  return sendEmail(ADMIN_EMAIL, subject, html, { bcc: recipients });
 }
 
-/* ─── Router ──────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════
+   ROUTER
+   ════════════════════════════════════════════════════════════ */
+
 serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
 
   try {
     const payload = await req.json();
     const { action, ...rest } = payload;
-
     let result: unknown;
+
     switch (action) {
-      case 'registration_admin':    result = await handleRegistrationAdmin(rest); break;
-      case 'account_pending':       result = await handleAccountPending(rest);    break;
-      case 'account_approved':      result = await handleAccountApproved(rest);   break;
-      case 'spouse_linked':         result = await handleSpouseLinked(rest);      break;
-      case 'spouse_invite':         result = await handleSpouseInvite(rest);      break;
-      case 'message_notification':  result = await handleMessageNotification(rest); break;
-      case 'weekly_church_email':   result = await handleWeeklyChurchEmail(rest); break;
-      case 'special_email':         result = await handleSpecialEmail(rest);      break;
+      case 'registration_admin':   result = await handleRegistrationAdmin(rest);   break;
+      case 'account_pending':      result = await handleAccountPending(rest);      break;
+      case 'account_approved':     result = await handleAccountApproved(rest);     break;
+      case 'spouse_linked':        result = await handleSpouseLinked(rest);        break;
+      case 'spouse_invite':        result = await handleSpouseInvite(rest);        break;
+      case 'message_notification': result = await handleMessageNotification(rest); break;
+      case 'weekly_church_email':  result = await handleWeeklyChurchEmail(rest);   break;
+      case 'special_email':        result = await handleSpecialEmail(rest);        break;
       default:
-        return new Response(JSON.stringify({ error: 'Unknown action: ' + action }), { status: 400, headers: { ...CORS, 'Content-Type': 'application/json' } });
+        return new Response(
+          JSON.stringify({ error: 'Unknown action: ' + action }),
+          { status: 400, headers: { ...CORS, 'Content-Type': 'application/json' } }
+        );
     }
 
-    return new Response(JSON.stringify(result), {
-      status: 200,
-      headers: { ...CORS, 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify(result),
+      { status: 200, headers: { ...CORS, 'Content-Type': 'application/json' } }
+    );
 
   } catch (err) {
     console.error('[send-email] Error:', err);
-    return new Response(JSON.stringify({ error: String(err) }), {
-      status: 500,
-      headers: { ...CORS, 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({ error: String(err) }),
+      { status: 500, headers: { ...CORS, 'Content-Type': 'application/json' } }
+    );
   }
 });
