@@ -93,6 +93,19 @@
         html += '<a href="' + D.esc(n.url) + '" download="' + D.esc(n.filename || n.name) + '" class="mp-btn mp-btn--small mp-btn--outline">Download</a>';
         if (isAdmin) html += '<button type="button" class="mp-btn mp-btn--small mp-btn--danger" onclick="mpDeleteNode(\'' + D.esc(String(n.id)) + '\',\'' + D.esc(n.name.replace(/'/g, "\\'")) + '\',\'file\')">Delete</button>';
         html += '</div></div></li>';
+      } else if (n.type === 'link') {
+        html += '<li class="mp-tree-file mp-tree-link" style="--indent:' + ind + 'px" data-name="' + D.esc(n.name.toLowerCase()) + '">';
+        html += '<div class="mp-tree-row mp-tree-file-row">';
+        html += '<span class="mp-tree-icon">🔗</span>';
+        html += '<span class="mp-tree-name">' + D.esc(n.name) + '</span>';
+        html += '<span class="mp-tree-filename mp-tree-link-label">External link</span>';
+        html += '<div class="mp-tree-file-actions">';
+        html += '<a href="' + D.esc(n.url) + '" target="_blank" rel="noopener" class="mp-btn mp-btn--small">Open</a>';
+        if (isAdmin) {
+          html += '<button type="button" class="mp-btn mp-btn--small mp-tree-btn" onclick="mpShowRename(\'' + D.esc(n.id) + '\',\'' + D.esc(n.name.replace(/'/g, "\\'")) + '\')">Rename</button>';
+          html += '<button type="button" class="mp-btn mp-btn--small mp-btn--danger" onclick="mpDeleteNode(\'' + D.esc(String(n.id)) + '\',\'' + D.esc(n.name.replace(/'/g, "\\'")) + '\',\'link\')">Delete</button>';
+        }
+        html += '</div></div></li>';
       }
     });
     return html;
@@ -132,6 +145,13 @@
       html += '<div class="mp-form-group" style="flex:1;margin:0;"><label>Upload To</label><select name="upload_folder_id"><option value="">-- Root level --</option>' + folderOpts + '</select></div>';
       html += '<div class="mp-form-group" style="flex:1;margin:0;"><label>File <span class="mp-required">*</span></label><input type="file" name="upload_file" id="upload-file-inp" required></div>';
       html += '<button type="submit" class="mp-btn mp-btn--primary" style="width:auto;">Upload</button></form></div>';
+      /* add external link */
+      html += '<div class="mp-admin-section" style="margin-top:16px;"><h4>Add External Link</h4>';
+      html += '<form id="link-form" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">';
+      html += '<div class="mp-form-group" style="flex:1;margin:0;"><label>Display Name <span class="mp-required">*</span></label><input type="text" name="link_label" required placeholder="e.g. 2024 Annual Report"></div>';
+      html += '<div class="mp-form-group" style="flex:1;margin:0;"><label>URL <span class="mp-required">*</span></label><input type="url" name="link_url" required placeholder="https://drive.google.com/…"></div>';
+      html += '<div class="mp-form-group" style="flex:1;margin:0;"><label>Inside Folder <span class="mp-optional">(root if blank)</span></label><select name="link_folder_id"><option value="">-- Root level --</option>' + folderOpts + '</select></div>';
+      html += '<button type="submit" class="mp-btn mp-btn--primary" style="width:auto;">Add Link</button></form></div>';
       html += '</div></details>';
     }
 
@@ -218,6 +238,31 @@
           tree3.push(fileNode);
         }
         await saveTree(_sb, tree3);
+        renderFilesTab();
+      });
+    }
+
+    /* ── wire link form ── */
+    var lform = document.getElementById('link-form');
+    if (lform) {
+      lform.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var fd = new FormData(lform);
+        var name = (fd.get('link_label') || '').trim();
+        var url  = (fd.get('link_url')   || '').trim();
+        var folderId = fd.get('link_folder_id') || '';
+        if (!name) { alert('Display name is required.'); return; }
+        if (!url)  { alert('URL is required.'); return; }
+        var linkNode = { type: 'link', id: 'link_' + Date.now(), name: name, url: url, added_at: Math.floor(Date.now() / 1000), added_by: D.getProfile().id };
+        var treeL = window._fileTree || [];
+        if (folderId) {
+          var pL = findNode(treeL, folderId);
+          if (pL && pL.type === 'folder') { pL.children = pL.children || []; pL.children.push(linkNode); }
+          else treeL.push(linkNode);
+        } else {
+          treeL.push(linkNode);
+        }
+        await saveTree(_sb, treeL);
         renderFilesTab();
       });
     }

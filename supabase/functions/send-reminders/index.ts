@@ -25,7 +25,7 @@ const ADMIN_EMAIL    = Deno.env.get('ADMIN_EMAIL')    || 'info@commissionedcity.
 const SITE_URL       = Deno.env.get('SITE_URL')       || 'https://commissionedcity.church';
 const SITE_NAME      = Deno.env.get('SITE_NAME')      || 'Commissioned City Church';
 const SUPABASE_URL   = Deno.env.get('SUPABASE_URL')   || '';
-const SERVICE_KEY    = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
+const SERVICE_KEY    = Deno.env.get('SERVICE_ROLE_KEY') || '';
 const BRAND = '#7a4a35';
 
 const CORS = {
