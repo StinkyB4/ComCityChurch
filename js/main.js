@@ -41,14 +41,54 @@
   const closeBtn  = document.querySelector('.nav-mobile-close');
   if (!hamburger || !mobileNav) return;
 
+  // Inject chevron toggle buttons next to each group parent link
+  mobileNav.querySelectorAll('.nav-mobile-group').forEach(group => {
+    const sub = group.querySelector('.nav-mobile-sub');
+    if (!sub) return;
+    const parentLink = group.querySelector(':scope > a');
+    if (!parentLink) return;
+
+    const header = document.createElement('div');
+    header.className = 'nav-mobile-group-header';
+
+    const chevronSVG = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    const toggleBtn = document.createElement('button');
+    toggleBtn.className = 'nav-mobile-toggle';
+    toggleBtn.setAttribute('aria-label', 'Toggle submenu');
+    toggleBtn.setAttribute('aria-expanded', 'false');
+    toggleBtn.innerHTML = chevronSVG;
+
+    group.insertBefore(header, parentLink);
+    header.appendChild(parentLink);
+    header.appendChild(toggleBtn);
+
+    toggleBtn.addEventListener('click', () => {
+      const isOpen = group.classList.toggle('open');
+      toggleBtn.setAttribute('aria-expanded', String(isOpen));
+    });
+  });
+
   hamburger.addEventListener('click', () => {
     const isOpen = mobileNav.classList.toggle('open');
     document.body.style.overflow = isOpen ? 'hidden' : '';
+    if (!isOpen) {
+      // Collapse all sub-menus when closing
+      mobileNav.querySelectorAll('.nav-mobile-group.open').forEach(g => {
+        g.classList.remove('open');
+        const btn = g.querySelector('.nav-mobile-toggle');
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+      });
+    }
   });
 
   function closeMenu() {
     mobileNav.classList.remove('open');
     document.body.style.overflow = '';
+    mobileNav.querySelectorAll('.nav-mobile-group.open').forEach(g => {
+      g.classList.remove('open');
+      const btn = g.querySelector('.nav-mobile-toggle');
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+    });
   }
 
   if (closeBtn) closeBtn.addEventListener('click', closeMenu);
