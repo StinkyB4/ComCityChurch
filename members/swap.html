@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Serving Contact List — Commissioned City Church</title>
+  <title>Serving Contact List â€” Commissioned City Church</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400&family=Montserrat:wght@600;700;800&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
@@ -26,7 +26,7 @@
     <!-- Content -->
     <div id="swap-content" style="padding:32px 40px;">
       <div id="swap-loading" style="text-align:center;color:#888;padding:40px 0;">
-        Loading contact list…
+        Loading contact listâ€¦
       </div>
     </div>
 
@@ -41,7 +41,7 @@
   </div>
 </main>
 
-<script async src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   window.SUPABASE_URL      = 'https://lkmphayrithxkmhvfiep.supabase.co';
   window.SUPABASE_ANON_KEY = 'sb_publishable_GO6ATIZLQftqjoBHTU8EKQ_5RR1397W';
@@ -185,7 +185,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (!p) return;
         var name = p.first_name || (p.full_name || '').split(' ')[0] || p.email;
         var contact = p.email ? '<a href="mailto:'+esc(p.email)+'" style="color:#7a4a35;">'+esc(p.email)+'</a>' : '';
-        if (p.phone1) contact += (contact ? ' · ' : '') + esc((p.phone1_type||'Cell')+': '+p.phone1);
+        if (p.phone1) contact += (contact ? ' Â· ' : '') + esc((p.phone1_type||'Cell')+': '+p.phone1);
         if (contact) lines.push('<strong>'+esc(name)+':</strong> ' + contact);
       });
       return lines.join('<br>');
@@ -239,3 +239,4 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 </body>
 </html>
+

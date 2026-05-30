@@ -315,6 +315,16 @@
     html += '</div><span class="mp-hint">Click Remove to delete, or fill in the blank row and click + Add.</span></div>';
 
     /* password reset */
+    /* Role assignment */
+    html += '<div class="mp-section-divider">Role</div>';
+    html += '<div class="mp-form-group"><label>Portal Role</label>';
+    html += '<select name="role">';
+    html += '<option value="member"' + (ep.role === 'member' ? ' selected' : '') + '>Member — standard access</option>';
+    html += '<option value="team"'   + (ep.role === 'team'   ? ' selected' : '') + '>Team Leader — can edit their MC/Team, manage schedule, upload files, send team emails</option>';
+    html += '<option value="admin"'  + (ep.role === 'admin'  ? ' selected' : '') + '>Admin — full access</option>';
+    html += '</select>';
+    html += '<span class="mp-hint">Changing role takes effect on their next login.</span></div>';
+
     html += '<div class="mp-form-group"><label>Reset Password <span class="mp-optional">(Optional)</span></label><input type="password" name="new_password" placeholder="New password (min 8 chars)" minlength="8" autocomplete="new-password"><span class="mp-hint">Leave blank to keep current password.</span></div>';
 
     html += '<input type="hidden" name="stay_edit" id="admin-stay-edit" value="">';
@@ -339,7 +349,8 @@
           addr_country: fd.get('addr_country') || 'Canada',
           birthday: fd.get('birthday') || null, anniversary: fd.get('anniversary') || null,
           gender: fd.get('gender') || '', bio: fd.get('bio') || '',
-          show_in_directory: fd.get('show_in_directory') === '1'
+          show_in_directory: fd.get('show_in_directory') === '1',
+          role: ['member','team','admin'].indexOf(fd.get('role') || 'member') !== -1 ? fd.get('role') : 'member'
         };
         updates.address = [updates.addr_street, updates.addr_city, updates.addr_province, updates.addr_postal, updates.addr_country].filter(Boolean).join(', ');
         var { error } = await _sb.from('profiles').update(updates).eq('id', uid);
@@ -390,7 +401,10 @@
      ══════════════════════════════════════════════════════════════ */
   async function renderEmailTab() {
     var D = window.mpDashboard;
-    if (!D.isAdmin()) { D.setContent('<p class="mp-empty">Access denied.</p>'); return; }
+    var _isAdmin  = D.isAdmin();
+    var _isLeader = D.isLeader();
+    var _ledTeamIds = D.getLedTeams();
+    if (!_isLeader) { D.setContent('<p class="mp-empty">Access denied.</p>'); return; }
     var _sb = D.getSb();
 
     var [rostersRes, membersRes, mcsRes, teamsRes, logRes] = await Promise.all([
@@ -398,10 +412,12 @@
       _sb.from('profiles').select('id,first_name,last_name,full_name,email').eq('status', 'approved').order('last_name'),
       _sb.from('missional_communities').select('id,name'),
       _sb.from('teams').select('id,name'),
-      _sb.from('sent_email_log').select('*').order('sent_at', { ascending: false }).limit(30)
+      _isAdmin ? _sb.from('sent_email_log').select('*').order('sent_at', { ascending: false }).limit(30) : Promise.resolve({ data: [] })
     ]);
     var rosters = rostersRes.data || [];
-    var members = membersRes.data || [];
+    /* leaders only see their team members by default */
+    var allMembers = membersRes.data || [];
+    var members = _isAdmin ? allMembers : allMembers; /* leaders see all for now, chips default to team */
     var mcs     = mcsRes.data || [];
     var teams   = teamsRes.data || [];
     var sentLog = logRes.data || [];

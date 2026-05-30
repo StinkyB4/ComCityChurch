@@ -264,12 +264,14 @@
   async function renderMCsTab() {
     var D = window.mpDashboard;
     var _sb = D.getSb(), _profile = D.getProfile(), _isAdmin = D.isAdmin();
+    var _isLeader = D.isLeader(), _ledMCIds = D.getLedMCs();
+    var _canEdit  = _isAdmin || _isLeader;
     var uid = _profile.id;
 
     var [mcsRes, memRes, approvedRes] = await Promise.all([
       _sb.from('missional_communities').select('*').order('name'),
       _sb.from('mc_members').select('mc_id, profile_id, is_leader'),
-      _isAdmin ? _sb.from('profiles').select('id,first_name,last_name,full_name,email').eq('status','approved').order('last_name') : Promise.resolve({ data: [] })
+      _canEdit ? _sb.from('profiles').select('id,first_name,last_name,full_name,email').eq('status','approved').order('last_name') : Promise.resolve({ data: [] })
     ]);
     var mcs      = mcsRes.data || [];
     var mcMems   = memRes.data || [];
@@ -288,11 +290,15 @@
 
     var html = '<h2 class="mp-tab-title">Missional Communities</h2>';
 
-    /* admin create/edit panel */
-    if (_isAdmin) {
+    /* admin: create or edit any MC; leader: edit only their own MC */
+    if (_canEdit) {
       var editMc = editId ? mcs.find(function (mc) { return mc.id === editId; }) : null;
+      /* leaders can only edit MCs they lead — skip the panel if editing a non-led MC */
+      if (!_isAdmin && editMc && _ledMCIds.indexOf(editMc.id) === -1) editMc = null;
+      var panelLabel = editMc ? 'Edit MC: ' + D.esc(editMc.name) : (_isAdmin ? 'Add New MC' : null);
+      if (panelLabel) {
       html += '<details class="mp-admin-panel"' + (editMc ? ' open' : '') + '>';
-      html += '<summary class="mp-admin-toggle">' + (editMc ? 'Edit MC: ' + D.esc(editMc.name) : 'Add New MC') + ' <span class="mp-admin-badge">Admin</span></summary>';
+      html += '<summary class="mp-admin-toggle">' + panelLabel + ' <span class="mp-admin-badge">' + (_isAdmin ? 'Admin' : 'Leader') + '</span></summary>';
       html += '<div class="mp-admin-body"><form id="mc-form">';
       html += '<input type="hidden" name="action_type" value="' + (editMc ? 'edit' : 'create') + '">';
       if (editMc) html += '<input type="hidden" name="mc_id" value="' + D.esc(editMc.id) + '">';
@@ -334,10 +340,11 @@
         if (lName) html += '<span class="mp-group-accordion-leader">Leader: ' + D.esc(lName) + '</span>';
         html += '<span class="mp-group-accordion-count">' + mems.length + ' member' + (mems.length !== 1 ? 's' : '') + '</span>';
         html += '</span>';
-        if (_isAdmin) {
+        var canEditThisMC = _isAdmin || (_isLeader && _ledMCIds.indexOf(mc.id) !== -1);
+        if (canEditThisMC) {
           html += '<span class="mp-group-accordion-actions" onclick="event.stopPropagation();">';
           html += '<a href="#" class="mp-btn mp-btn--small mp-btn--outline" onclick="mpMcEdit(\'' + D.esc(mc.id) + '\');event.stopPropagation();return false;">Edit</a>';
-          html += '<button class="mp-btn mp-btn--small mp-btn--danger" onclick="mpMcDelete(\'' + D.esc(mc.id) + '\',\'' + D.esc(mc.name) + '\');event.stopPropagation();">Delete</button>';
+          if (_isAdmin) html += '<button class="mp-btn mp-btn--small mp-btn--danger" onclick="mpMcDelete(\'' + D.esc(mc.id) + '\',\'' + D.esc(mc.name) + '\');event.stopPropagation();">Delete</button>';
           html += '</span>';
         }
         html += '</div></summary>';
@@ -409,12 +416,14 @@
   async function renderTeamsTab() {
     var D = window.mpDashboard;
     var _sb = D.getSb(), _profile = D.getProfile(), _isAdmin = D.isAdmin();
+    var _isLeader = D.isLeader(), _ledTeamIds = D.getLedTeams();
+    var _canEdit  = _isAdmin || _isLeader;
     var uid = _profile.id;
 
     var [teamsRes, memsRes, approvedRes] = await Promise.all([
       _sb.from('teams').select('*').order('name'),
       _sb.from('team_members').select('team_id, member_id, role'),
-      _isAdmin ? _sb.from('profiles').select('id,first_name,last_name,full_name,email,phone1,phone1_type').eq('status','approved').order('last_name') : Promise.resolve({ data: [] })
+      _canEdit ? _sb.from('profiles').select('id,first_name,last_name,full_name,email,phone1,phone1_type').eq('status','approved').order('last_name') : Promise.resolve({ data: [] })
     ]);
     var teams    = teamsRes.data || [];
     var tmMems   = memsRes.data || [];
@@ -431,10 +440,14 @@
 
     var html = '<h2 class="mp-tab-title">Teams</h2>';
 
-    if (_isAdmin) {
+    if (_canEdit) {
       var editTeam = editId ? teams.find(function (t) { return t.id === editId; }) : null;
+      /* leaders can only edit their own teams */
+      if (!_isAdmin && editTeam && _ledTeamIds.indexOf(editTeam.id) === -1) editTeam = null;
+      var panelLabel = editTeam ? 'Edit Team: ' + D.esc(editTeam.name) : (_isAdmin ? 'Add New Team' : null);
+      if (panelLabel) {
       html += '<details class="mp-admin-panel"' + (editTeam ? ' open' : '') + '>';
-      html += '<summary class="mp-admin-toggle">' + (editTeam ? 'Edit Team: ' + D.esc(editTeam.name) : 'Add New Team') + ' <span class="mp-admin-badge">Admin</span></summary>';
+      html += '<summary class="mp-admin-toggle">' + panelLabel + ' <span class="mp-admin-badge">' + (_isAdmin ? 'Admin' : 'Leader') + '</span></summary>';
       html += '<div class="mp-admin-body"><form id="team-form">';
       html += '<input type="hidden" name="action_type" value="' + (editTeam ? 'edit' : 'create') + '">';
       if (editTeam) html += '<input type="hidden" name="team_id" value="' + D.esc(editTeam.id) + '">';
@@ -449,6 +462,7 @@
       html += '<div style="display:flex;gap:10px;margin-top:16px;"><button type="submit" class="mp-btn mp-btn--primary" style="flex:1;">' + (editTeam ? 'Save Changes' : 'Create Team') + '</button>';
       if (editTeam) html += '<a href="#" class="mp-btn mp-btn--secondary" onclick="window.mpDashboard.navigate(\'teams\');return false;">Cancel</a>';
       html += '</div></form></div></details>';
+      }
     }
 
     if (!teams.length) {
@@ -463,11 +477,12 @@
         html += '<span class="mp-group-accordion-title">' + D.esc(team.name) + '</span>';
         if (isMine) html += '<span class="mp-group-mine-badge">My Team</span>';
         html += '<span class="mp-group-accordion-chevron">›</span></div>';
+        var canEditThisTeam = _isAdmin || (_isLeader && _ledTeamIds.indexOf(team.id) !== -1);
         html += '<div class="mp-group-accordion-bottom"><span class="mp-group-accordion-meta"><span class="mp-group-accordion-count">' + mems.length + ' member' + (mems.length !== 1 ? 's' : '') + '</span></span>';
-        if (_isAdmin) {
+        if (canEditThisTeam) {
           html += '<span class="mp-group-accordion-actions" onclick="event.stopPropagation();">';
           html += '<a href="#" class="mp-btn mp-btn--small mp-btn--outline" onclick="mpTeamEdit(\'' + D.esc(team.id) + '\');event.stopPropagation();return false;">Edit</a>';
-          html += '<button class="mp-btn mp-btn--small mp-btn--danger" onclick="mpTeamDelete(\'' + D.esc(team.id) + '\',\'' + D.esc(team.name) + '\');event.stopPropagation();">Delete</button>';
+          if (_isAdmin) html += '<button class="mp-btn mp-btn--small mp-btn--danger" onclick="mpTeamDelete(\'' + D.esc(team.id) + '\',\'' + D.esc(team.name) + '\');event.stopPropagation();">Delete</button>';
           html += '</span>';
         }
         html += '</div></summary>';

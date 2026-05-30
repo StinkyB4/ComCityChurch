@@ -117,6 +117,9 @@
   async function renderFilesTab() {
     var D = window.mpDashboard;
     var _sb = D.getSb(), _isAdmin = D.isAdmin();
+    var _isLeader = D.isLeader();
+    /* leaders can upload files but not delete folders/files */
+    var _canUpload = _isAdmin || _isLeader;
 
     var { data: treeRow } = await _sb.from('file_tree').select('*').limit(1).maybeSingle();
     var tree = (treeRow && treeRow.tree) ? treeRow.tree : [];
@@ -129,17 +132,20 @@
     var folderOpts = gatherFolderOptions(tree, 0);
     var html = '<h2 class="mp-tab-title">Files</h2>';
 
-    /* admin management panel */
-    if (_isAdmin) {
-      html += '<details class="mp-admin-panel"><summary class="mp-admin-toggle">Manage Files &amp; Folders <span class="mp-admin-badge">Admin</span></summary><div class="mp-admin-body">';
-      /* create folder */
+    /* management panel — admins get full control, leaders get upload only */
+    if (_canUpload) {
+      var panelBadge = _isAdmin ? 'Admin' : 'Leader';
+      html += '<details class="mp-admin-panel"><summary class="mp-admin-toggle">Manage Files &amp; Folders <span class="mp-admin-badge">' + panelBadge + '</span></summary><div class="mp-admin-body">';
+      /* create folder — admins only */
+      if (_isAdmin) {
       html += '<div class="mp-admin-section"><h4>Create New Folder</h4>';
       html += '<form id="folder-form" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">';
       html += '<div class="mp-form-group" style="flex:1;margin:0;"><label>Folder Name</label><input type="text" name="folder_name" required placeholder="e.g. Meeting Minutes"></div>';
       html += '<div class="mp-form-group" style="flex:1;margin:0;"><label>Inside Folder <span class="mp-optional">(root if blank)</span></label><select name="folder_parent_id"><option value="">-- Root level --</option>' + folderOpts + '</select></div>';
       html += '<button type="submit" class="mp-btn mp-btn--primary" style="width:auto;">Create Folder</button></form></div>';
-      /* upload file */
-      html += '<div class="mp-admin-section" style="margin-top:16px;"><h4>Upload File</h4>';
+      }
+      /* upload file — all leaders */
+      html += '<div class="mp-admin-section"' + (_isAdmin ? ' style="margin-top:16px;"' : '') + '><h4>Upload File</h4>';
       html += '<form id="upload-form" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">';
       html += '<div class="mp-form-group" style="flex:1;margin:0;"><label>Display Name</label><input type="text" name="upload_label" placeholder="Defaults to filename"></div>';
       html += '<div class="mp-form-group" style="flex:1;margin:0;"><label>Upload To</label><select name="upload_folder_id"><option value="">-- Root level --</option>' + folderOpts + '</select></div>';

@@ -83,6 +83,9 @@
   async function renderScheduleTab() {
     var D = window.mpDashboard;
     var _sb = D.getSb(), _profile = D.getProfile(), _isAdmin = D.isAdmin();
+    var _isLeader = D.isLeader();
+    /* leaders get full schedule editing — they need to manage rosters */
+    if (_isLeader) _isAdmin = true;
     var uid = _profile.id;
     var qs = new URLSearchParams(window.location.search);
     var editDate = qs.get('sched_edit') || '';

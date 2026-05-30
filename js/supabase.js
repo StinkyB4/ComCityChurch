@@ -502,25 +502,3 @@ window.CommissionedCityChurchSupabase = {
   getAnnouncements,
 };
 
-// Also export for ES6 imports
-export {
-  initSupabase,
-  getSupabase,
-  getCurrentUser,
-  getProfile,
-  signUp,
-  signIn,
-  signOut,
-  isAuthenticated,
-  requireAuth,
-  requireAdmin,
-  updateProfile,
-  uploadAvatar,
-  getTeamRoster,
-  getTeamMembers,
-  getCommunities,
-  getTeams,
-  getPrayerRequests,
-  submitPrayerRequest,
-  getAnnouncements,
-};

@@ -9,10 +9,13 @@
   'use strict';
 
   /* ── shared state (exposed for sub-modules) ─────────────────── */
-  var _sb      = null;
-  var _profile = null;
-  var _user    = null;
-  var _isAdmin = false;
+  var _sb       = null;
+  var _profile  = null;
+  var _user     = null;
+  var _isAdmin  = false;
+  var _isLeader = false;   // true for role='team' OR role='admin'
+  var _ledMCIds    = [];   // missional_community IDs this user leads
+  var _ledTeamIds  = [];   // team IDs this user leads
 
   /* ── tab labels ─────────────────────────────────────────────── */
   var TAB_LABELS = {
@@ -146,8 +149,12 @@
     var { data:prof } = await _sb.from('profiles').select('*').eq('id',user.id).single();
     if(!prof){ window.location.href='/members/'; return; }
     if(prof.status!=='approved'){ window.location.href='/members/pending.html'; return; }
-    _profile = prof;
-    _isAdmin = (prof.role==='admin');
+    _profile  = prof;
+    _isAdmin  = (prof.role==='admin');
+    _isLeader = (prof.role==='team' || prof.role==='admin');
+
+    /* load which MCs/Teams this user leads */
+    await loadLeaderContext();
 
     setupShell();
     setupLogout();
@@ -164,6 +171,21 @@
     });
   }
 
+  async function loadLeaderContext(){
+    /* Find MCs this user leads */
+    var { data:ledMCs } = await _sb.from('missional_communities').select('id').eq('leader_id',_user.id);
+    _ledMCIds = (ledMCs||[]).map(function(r){ return r.id; });
+
+    /* Find Teams this user leads (via team_members role='leader' OR teams.leader_id) */
+    var [{ data:ledTeams1 }, { data:ledTeams2 }] = await Promise.all([
+      _sb.from('teams').select('id').eq('leader_id',_user.id),
+      _sb.from('team_members').select('team_id').eq('member_id',_user.id).eq('role','leader')
+    ]);
+    var ids1 = (ledTeams1||[]).map(function(r){ return r.id; });
+    var ids2 = (ledTeams2||[]).map(function(r){ return r.team_id; });
+    _ledTeamIds = ids1.concat(ids2.filter(function(id){ return ids1.indexOf(id)===-1; }));
+  }
+
   function setupShell(){
     var initials=getInitials(_profile), photo=_profile.avatar_url||'';
     /* sidebar avatar */
@@ -176,9 +198,11 @@
     if(ta) ta.innerHTML = photo
       ? '<img src="'+esc(photo)+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">'
       : '<span>'+esc(initials)+'</span>';
-    /* admin-only tabs */
+    /* show tabs: admin-only for admins, leader-only for leaders + admins */
     if(_isAdmin)
       document.querySelectorAll('.mp-admin-only').forEach(function(el){ el.style.display=''; });
+    if(_isLeader)
+      document.querySelectorAll('.mp-leader-only').forEach(function(el){ el.style.display=''; });
   }
 
   function setupLogout(){
@@ -318,8 +342,8 @@
       html+='</div></div>';
     }
 
-    /* ── admin message composer ── */
-    if(_isAdmin){
+    /* ── message composer (admin + leaders) ── */
+    if(_isLeader){
       html+='<details class="mp-admin-panel" id="msg-composer"><summary class="mp-admin-toggle">Post a New Message <span class="mp-admin-badge">Admin</span></summary>';
       html+='<div class="mp-admin-body"><form id="msg-form">';
       html+='<div class="mp-form-row">';
@@ -756,12 +780,15 @@
      PUBLIC API
      ══════════════════════════════════════════════════════════════ */
   window.mpDashboard = {
-    navigate:   navigate,
-    init:       init,
-    getSb:      function(){ return _sb; },
-    getProfile: function(){ return _profile; },
-    getUser:    function(){ return _user; },
-    isAdmin:    function(){ return _isAdmin; },
+    navigate:    navigate,
+    init:        init,
+    getSb:       function(){ return _sb; },
+    getProfile:  function(){ return _profile; },
+    getUser:     function(){ return _user; },
+    isAdmin:     function(){ return _isAdmin; },
+    isLeader:    function(){ return _isLeader; },
+    getLedMCs:   function(){ return _ledMCIds; },
+    getLedTeams: function(){ return _ledTeamIds; },
     /* shared utilities for sub-modules */
     esc:                esc,
     fmtDate:            fmtDate,
