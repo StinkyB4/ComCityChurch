@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Account Pending â€” Commissioned City Church</title>
+  <title>Account Pending &ndash; Commissioned City Church</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400&family=Montserrat:wght@600;700;800&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
@@ -40,47 +40,90 @@ document.addEventListener('DOMContentLoaded', async function() {
   // Wait for Supabase to be ready
   await new Promise(r => setTimeout(r, 300));
 
+  // Grab registration data saved by register.js before the redirect.
+  // This is the fallback when Supabase requires email confirmation and
+  // returns no session, which means getCurrentUser() would be null.
+  var storedName  = '';
+  var storedEmail = '';
+  try {
+    storedName  = sessionStorage.getItem('mp_pending_name')  || '';
+    storedEmail = sessionStorage.getItem('mp_pending_email') || '';
+  } catch (e) {}
+
+  function showPendingUI(name, email, hasSession) {
+    document.getElementById('pending-name').textContent  = name;
+    document.getElementById('pending-email').textContent = email;
+    document.getElementById('pending-wrap').style.display = '';
+
+    // Clear storage now that it has been displayed
+    try {
+      sessionStorage.removeItem('mp_pending_name');
+      sessionStorage.removeItem('mp_pending_email');
+    } catch (e) {}
+
+    var logoutLink = document.getElementById('pending-logout');
+    if (!hasSession) {
+      // No active session (email-confirmation flow) -- nothing to sign out of
+      logoutLink.style.display = 'none';
+    } else {
+      logoutLink.addEventListener('click', async function(e) {
+        e.preventDefault();
+        await window.CommissionedCityChurchSupabase.signOut();
+        window.location.href = '/members/';
+      });
+    }
+  }
+
   try {
     var CCS = window.CommissionedCityChurchSupabase;
     await CCS.initSupabase();
 
     var user = await CCS.getCurrentUser();
+
     if (!user) {
-      window.location.href = '/members/';
+      // No active session -- normal when Supabase requires email confirmation.
+      // Use the data register.js stored before redirecting here.
+      if (storedName || storedEmail) {
+        showPendingUI(storedName, storedEmail || '(check your inbox)', false);
+      } else {
+        window.location.href = '/members/';
+      }
       return;
     }
 
     var profile = await CCS.getProfile();
+
     if (!profile) {
-      window.location.href = '/members/';
+      // Profile row not yet created (DB trigger may still be running).
+      if (storedName || storedEmail) {
+        showPendingUI(storedName, storedEmail || user.email, true);
+      } else {
+        window.location.href = '/members/';
+      }
       return;
     }
 
-    // Already approved â€” send to dashboard
+    // Already approved -- send to dashboard
     if (profile.status === 'approved') {
       window.location.href = '/members/dashboard.html';
       return;
     }
 
-    // Show pending UI
+    // Show pending UI with live profile data
     var firstName = profile.first_name || profile.full_name || user.email;
-    document.getElementById('pending-name').textContent  = firstName;
-    document.getElementById('pending-email').textContent = user.email;
-    document.getElementById('pending-wrap').style.display = '';
-
-    document.getElementById('pending-logout').addEventListener('click', async function(e) {
-      e.preventDefault();
-      await CCS.signOut();
-      window.location.href = '/members/';
-    });
+    showPendingUI(firstName, user.email, true);
 
   } catch (err) {
     console.error('Pending page error:', err);
-    window.location.href = '/members/';
+    // Last resort: show the page if we have stored registration data
+    if (storedName || storedEmail) {
+      showPendingUI(storedName, storedEmail, false);
+    } else {
+      window.location.href = '/members/';
+    }
   }
 });
 </script>
 
 </body>
 </html>
-

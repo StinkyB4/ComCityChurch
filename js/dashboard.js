@@ -676,7 +676,7 @@
   window.mpSaveChild = function(btn){
     var row=btn.closest('.mp-child-row'), n=row.querySelector('.mp-child-name');
     if(!n||!n.value.trim()){ n.focus(); n.style.borderColor='#c0392b'; setTimeout(function(){n.style.borderColor='';},2000); return; }
-    document.getElementById('pp-stay').value='1'; btn.closest('form').dispatchEvent(new Event('submit',{bubbles:true}));
+    document.getElementById('pp-stay').value='1'; btn.closest('form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
   };
   window.mpAddChildRow = function(){
     var list=document.getElementById('children-list'); if(!list) return;

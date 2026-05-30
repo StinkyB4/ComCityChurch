@@ -30,10 +30,27 @@ CREATE INDEX IF NOT EXISTS idx_profiles_community ON profiles(preferred_communit
 
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
+-- Security definer functions bypass RLS on the profiles table, preventing
+-- infinite recursion in policies that need to check role/status.
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS BOOLEAN LANGUAGE SQL SECURITY DEFINER STABLE SET search_path = public AS $$
+  SELECT EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+$$;
+
+CREATE OR REPLACE FUNCTION public.is_approved_member()
+RETURNS BOOLEAN LANGUAGE SQL SECURITY DEFINER STABLE SET search_path = public AS $$
+  SELECT EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND status = 'approved')
+$$;
+
 -- RLS: Members see their own profile
 CREATE POLICY "members_view_own_profile"
   ON profiles FOR SELECT
   USING (auth.uid() = id);
+
+-- RLS: Members see other approved members
+CREATE POLICY "members_view_approved_members"
+  ON profiles FOR SELECT
+  USING (status = 'approved' AND public.is_approved_member());
 
 -- RLS: Members see approved team members (roster visibility)
 CREATE POLICY "members_view_team_roster"
@@ -45,9 +62,7 @@ CREATE POLICY "members_view_team_roster"
 -- RLS: Admins see all profiles
 CREATE POLICY "admins_view_all_profiles"
   ON profiles FOR SELECT
-  USING (
-    auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin')
-  );
+  USING (public.is_admin());
 
 -- RLS: Members update their own profile
 CREATE POLICY "members_update_own_profile"
@@ -62,12 +77,13 @@ CREATE POLICY "members_update_own_profile"
 -- RLS: Admins update any profile
 CREATE POLICY "admins_update_all_profiles"
   ON profiles FOR UPDATE
-  USING (
-    auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin')
-  )
-  WITH CHECK (
-    auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin')
-  );
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
+
+-- RLS: Admins delete profiles
+CREATE POLICY "admins_delete_profiles"
+  ON profiles FOR DELETE
+  USING (public.is_admin());
 
 -- RLS: Authenticated users can insert their own initial profile (signup)
 CREATE POLICY "members_insert_own_profile"

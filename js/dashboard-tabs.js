@@ -34,7 +34,7 @@
     var uid = _profile.id;
 
     /* fetch all approved members + their children */
-    var q = _sb.from('profiles').select('*').eq('status', 'approved').order('last_name');
+    var q = _sb.from('profiles').select('*').eq('status', 'approved').order('last_name', { nullsFirst: false }).order('full_name');
     if (!_isAdmin) q = q.eq('show_in_directory', true);
     var { data: members } = await q;
     members = members || [];

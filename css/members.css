@@ -1249,11 +1249,11 @@ body.members-portal {
 
 /* ── Variables ─────────────────────────────────────────────────────────── */
 :root {
-  --mp-accent:   #7a4a35;
-  --mp-accent-d: #5e3828;
-  --mp-bg:       #f7f4f1;
+  --mp-accent:   #112E53;
+  --mp-accent-d: #0c2240;
+  --mp-bg:       #F4F5F7;
   --mp-surface:  #fff;
-  --mp-border:   #e8e2dc;
+  --mp-border:   #dde3eb;
   --mp-text-1:   #222;
   --mp-text-2:   #555;
   --mp-text-3:   #999;
@@ -1287,7 +1287,7 @@ body.mp-body {
 .mp-sidebar {
   width: var(--mp-sidebar-w);
   flex-shrink: 0;
-  background: #2a1a10;
+  background: #0c2240;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -1340,6 +1340,7 @@ body.mp-body {
   display: flex; align-items: center; gap: 10px;
   padding: 10px 12px; border-radius: 6px;
   color: rgba(255,255,255,0.65);
+  cursor: pointer;
 }
 .mp-nav-item--parent:hover { background: rgba(255,255,255,0.08); }
 .mp-nav-item--parent.mp-nav-item--active { background: var(--mp-accent); }

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard â€” Commissioned City Church</title>
+  <title>Dashboard - Commissioned City Church</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400&family=Montserrat:wght@600;700;800&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
@@ -44,10 +44,10 @@
         </a>
 
         <div class="mp-nav-group" id="mp-nav-group-mcs">
-          <div class="mp-nav-item mp-nav-item--parent" data-tab="mcs">
+          <div class="mp-nav-item mp-nav-item--parent" data-tab="mcs" onclick="mpNavToggleGroup('mcs')">
             <span class="mp-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></span>
             <a href="?tab=mcs" class="mp-nav-label mp-nav-label--link" onclick="mpNavTo('mcs',event)">MCs</a>
-            <span class="mp-nav-chevron" onclick="mpNavToggleGroup('mcs')">â€º</span>
+            <span class="mp-nav-chevron">›</span>
           </div>
           <div class="mp-nav-submenu" id="mp-nav-sub-mcs">
             <a href="?tab=mcs" class="mp-nav-subitem mp-nav-subitem--all" onclick="mpNavTo('mcs',event)">All MCs</a>
@@ -55,10 +55,10 @@
         </div>
 
         <div class="mp-nav-group" id="mp-nav-group-teams">
-          <div class="mp-nav-item mp-nav-item--parent" data-tab="teams">
+          <div class="mp-nav-item mp-nav-item--parent" data-tab="teams" onclick="mpNavToggleGroup('teams')">
             <span class="mp-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
             <a href="?tab=teams" class="mp-nav-label mp-nav-label--link" onclick="mpNavTo('teams',event)">Teams</a>
-            <span class="mp-nav-chevron" onclick="mpNavToggleGroup('teams')">â€º</span>
+            <span class="mp-nav-chevron">›</span>
           </div>
           <div class="mp-nav-submenu" id="mp-nav-sub-teams">
             <a href="?tab=teams" class="mp-nav-subitem mp-nav-subitem--all" onclick="mpNavTo('teams',event)">All Teams</a>
@@ -113,7 +113,7 @@
     <div class="mp-content" id="mp-content">
       <div style="padding:60px 40px;text-align:center;color:#aaa;">
         <div class="mp-spinner"></div>
-        <p style="margin-top:16px;font-size:0.9em;">Loadingâ€¦</p>
+        <p style="margin-top:16px;font-size:0.9em;">Loading...</p>
       </div>
     </div>
   </main>

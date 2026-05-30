@@ -209,6 +209,13 @@ document.addEventListener('DOMContentLoaded', async function () {
       } catch (e) { console.warn('Edge function not available:', e.message); }
     }
 
+    /* store info for pending page — needed when email confirmation is enabled
+       and Supabase returns no session, so getCurrentUser() would be null */
+    try {
+      sessionStorage.setItem('mp_pending_name',  firstName);
+      sessionStorage.setItem('mp_pending_email', email);
+    } catch (e) { /* storage blocked — pending page falls back gracefully */ }
+
     /* redirect to pending page */
     window.location.href = '/members/pending.html';
   });

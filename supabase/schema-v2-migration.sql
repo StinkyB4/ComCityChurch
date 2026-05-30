@@ -90,12 +90,9 @@ CREATE POLICY "members_view_own_children"
   USING (profile_id = auth.uid());
 
 -- Approved members see children of profiles they can see
--- (allows directory to show children under family cards)
 CREATE POLICY "members_view_all_children"
   ON children FOR SELECT
-  USING (
-    auth.uid() IN (SELECT id FROM profiles WHERE status = 'approved')
-  );
+  USING (public.is_approved_member());
 
 -- Members manage their own children
 CREATE POLICY "members_manage_own_children"
@@ -106,9 +103,7 @@ CREATE POLICY "members_manage_own_children"
 -- Admins manage all children
 CREATE POLICY "admins_manage_all_children"
   ON children FOR ALL
-  USING (
-    auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin')
-  );
+  USING (public.is_admin());
 
 
 -- ──────────────────────────────────────────────────────────────────────────
@@ -131,15 +126,11 @@ ALTER TABLE mc_members ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "members_view_mc_members"
   ON mc_members FOR SELECT
-  USING (
-    auth.uid() IN (SELECT id FROM profiles WHERE status = 'approved')
-  );
+  USING (public.is_approved_member());
 
 CREATE POLICY "admins_manage_mc_members"
   ON mc_members FOR ALL
-  USING (
-    auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin')
-  );
+  USING (public.is_admin());
 
 
 -- ──────────────────────────────────────────────────────────────────────────
@@ -177,15 +168,11 @@ ALTER TABLE schedule_rosters ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "members_view_rosters"
   ON schedule_rosters FOR SELECT
-  USING (
-    auth.uid() IN (SELECT id FROM profiles WHERE status = 'approved')
-  );
+  USING (public.is_approved_member());
 
 CREATE POLICY "admins_manage_rosters"
   ON schedule_rosters FOR ALL
-  USING (
-    auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin')
-  );
+  USING (public.is_admin());
 
 CREATE TRIGGER rosters_timestamp BEFORE UPDATE ON schedule_rosters
   FOR EACH ROW EXECUTE FUNCTION update_timestamp();
@@ -212,15 +199,11 @@ ALTER TABLE schedule_templates ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "members_view_templates"
   ON schedule_templates FOR SELECT
-  USING (
-    auth.uid() IN (SELECT id FROM profiles WHERE status = 'approved')
-  );
+  USING (public.is_approved_member());
 
 CREATE POLICY "admins_manage_templates"
   ON schedule_templates FOR ALL
-  USING (
-    auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin')
-  );
+  USING (public.is_admin());
 
 CREATE TRIGGER templates_timestamp BEFORE UPDATE ON schedule_templates
   FOR EACH ROW EXECUTE FUNCTION update_timestamp();
@@ -261,15 +244,11 @@ ALTER TABLE guests ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "members_view_guests"
   ON guests FOR SELECT
-  USING (
-    auth.uid() IN (SELECT id FROM profiles WHERE status = 'approved')
-  );
+  USING (public.is_approved_member());
 
 CREATE POLICY "admins_manage_guests"
   ON guests FOR ALL
-  USING (
-    auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin')
-  );
+  USING (public.is_admin());
 
 
 -- ──────────────────────────────────────────────────────────────────────────
@@ -288,15 +267,11 @@ ALTER TABLE schedule_log ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "admins_view_schedule_log"
   ON schedule_log FOR SELECT
-  USING (
-    auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin')
-  );
+  USING (public.is_admin());
 
 CREATE POLICY "admins_insert_schedule_log"
   ON schedule_log FOR INSERT
-  WITH CHECK (
-    auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin')
-  );
+  WITH CHECK (public.is_admin());
 
 
 -- ──────────────────────────────────────────────────────────────────────────
@@ -341,15 +316,11 @@ ALTER TABLE sent_email_log ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "admins_view_sent_log"
   ON sent_email_log FOR SELECT
-  USING (
-    auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin')
-  );
+  USING (public.is_admin());
 
 CREATE POLICY "admins_insert_sent_log"
   ON sent_email_log FOR INSERT
-  WITH CHECK (
-    auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin')
-  );
+  WITH CHECK (public.is_admin());
 
 
 -- ──────────────────────────────────────────────────────────────────────────
@@ -391,15 +362,11 @@ ALTER TABLE file_tree ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "members_view_file_tree"
   ON file_tree FOR SELECT
-  USING (
-    auth.uid() IN (SELECT id FROM profiles WHERE status = 'approved')
-  );
+  USING (public.is_approved_member());
 
 CREATE POLICY "admins_manage_file_tree"
   ON file_tree FOR ALL
-  USING (
-    auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin')
-  );
+  USING (public.is_admin());
 
 -- Seed one row so there is always exactly one tree document
 INSERT INTO file_tree (tree) VALUES ('[]') ON CONFLICT DO NOTHING;
@@ -474,10 +441,7 @@ BEGIN
   ) THEN
     CREATE POLICY "members_view_approved_members"
       ON profiles FOR SELECT
-      USING (
-        status = 'approved'
-        AND auth.uid() IN (SELECT id FROM profiles WHERE status = 'approved')
-      );
+      USING (status = 'approved' AND public.is_approved_member());
   END IF;
 END$$;
 
@@ -489,9 +453,7 @@ BEGIN
   ) THEN
     CREATE POLICY "admins_delete_profiles"
       ON profiles FOR DELETE
-      USING (
-        auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin')
-      );
+      USING (public.is_admin());
   END IF;
 END$$;
 
@@ -503,9 +465,7 @@ BEGIN
   ) THEN
     CREATE POLICY "admins_delete_teams"
       ON teams FOR DELETE
-      USING (
-        auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin')
-      );
+      USING (public.is_admin());
   END IF;
 END$$;
 
@@ -517,9 +477,7 @@ BEGIN
   ) THEN
     CREATE POLICY "admins_delete_communities"
       ON missional_communities FOR DELETE
-      USING (
-        auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin')
-      );
+      USING (public.is_admin());
   END IF;
 END$$;
 
@@ -531,9 +489,7 @@ BEGIN
   ) THEN
     CREATE POLICY "admins_delete_messages"
       ON admin_messages FOR DELETE
-      USING (
-        auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin')
-      );
+      USING (public.is_admin());
   END IF;
 END$$;
 
@@ -552,6 +508,57 @@ END$$;
 --   Policy expression: auth.uid() IN (SELECT id FROM profiles WHERE status='approved')
 --
 -- The 'avatars' bucket from v1 remains unchanged.
+
+
+-- ──────────────────────────────────────────────────────────────────────────
+-- 14. EVENTS TABLE
+-- Church events created by admins or team leaders, with visibility controls.
+-- visibility = 'all'  → shown to all approved members
+-- visibility = 'team' → shown only to members of target_team_id
+-- visibility = 'mc'   → shown only to members of target_mc_id
+-- ──────────────────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS events (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title          TEXT NOT NULL,
+  description    TEXT DEFAULT '',
+  event_date     DATE NOT NULL,
+  event_time     TEXT DEFAULT '',
+  visibility     TEXT NOT NULL DEFAULT 'all' CHECK (visibility IN ('all','team','mc')),
+  target_team_id UUID REFERENCES teams(id) ON DELETE SET NULL,
+  target_mc_id   UUID REFERENCES missional_communities(id) ON DELETE SET NULL,
+  created_by     UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  created_at     TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  updated_at     TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_events_date       ON events(event_date);
+CREATE INDEX IF NOT EXISTS idx_events_visibility ON events(visibility);
+
+ALTER TABLE events ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "members_view_events"
+  ON events FOR SELECT
+  USING (
+    public.is_approved_member() AND (
+      visibility = 'all'
+      OR (visibility = 'team' AND target_team_id IN (
+        SELECT team_id FROM team_members WHERE member_id = auth.uid()
+      ))
+      OR (visibility = 'mc' AND target_mc_id IN (
+        SELECT mc_id FROM mc_members WHERE profile_id = auth.uid()
+      ))
+    )
+  );
+
+CREATE POLICY "leaders_manage_events"
+  ON events FOR ALL
+  USING (
+    auth.uid() IN (SELECT id FROM profiles WHERE role IN ('admin','team'))
+  );
+
+CREATE TRIGGER events_timestamp BEFORE UPDATE ON events
+  FOR EACH ROW EXECUTE FUNCTION update_timestamp();
 
 
 -- ──────────────────────────────────────────────────────────────────────────
