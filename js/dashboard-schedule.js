@@ -61,7 +61,27 @@
       '.mp-cal-export-btn:hover{border-color:#112E53;color:#112E53;}',
       '.mp-cal-detail-serving .mp-cal-export-label{color:rgba(255,255,255,0.65);}',
       '.mp-cal-detail-serving .mp-cal-export-btn{border-color:rgba(255,255,255,0.35);color:rgba(255,255,255,0.9);background:rgba(255,255,255,0.12);}',
-      '.mp-cal-detail-serving .mp-cal-export-btn:hover{background:rgba(255,255,255,0.25);border-color:#fff;color:#fff;}'
+      '.mp-cal-detail-serving .mp-cal-export-btn:hover{background:rgba(255,255,255,0.25);border-color:#fff;color:#fff;}',
+      '.mp-tpl-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:16px;}',
+      '.mp-tpl-card{background:#f7f9fc;border:1px solid #dde3eb;border-radius:6px;overflow:hidden;}',
+      '.mp-tpl-card-hd{display:flex;align-items:center;gap:8px;padding:10px 12px;background:#fff;border-bottom:1px solid #eef2f8;}',
+      '.mp-tpl-card-name{font-weight:700;font-size:0.88rem;color:#222;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
+      '.mp-tpl-card-actions{display:flex;gap:5px;flex-shrink:0;}',
+      '.mp-tpl-slots{padding:8px 12px;}',
+      '.mp-tpl-slot-row{display:flex;align-items:center;justify-content:space-between;padding:3px 0;font-size:0.82rem;color:#444;border-bottom:1px solid #f0f4f8;}',
+      '.mp-tpl-slot-row:last-child{border-bottom:none;}',
+      '.mp-tpl-slot-count{background:#e5ecf8;color:#112E53;border-radius:3px;padding:1px 6px;font-size:0.75rem;font-weight:700;white-space:nowrap;}',
+      '.mp-tpl-role-row{display:flex;align-items:center;gap:6px;margin-bottom:8px;padding:7px 10px;background:#f7f9fc;border:1px solid #e8ecf2;border-radius:5px;}',
+      '.mp-tpl-role-input{flex:1;min-width:0;}',
+      '.mp-tpl-count-wrap{display:flex;align-items:center;gap:4px;flex-shrink:0;}',
+      '.mp-tpl-count-label{font-size:0.78rem;color:#888;}',
+      '.mp-tpl-count-input{width:52px;text-align:center;}',
+      '.mp-tpl-order-btns{display:flex;flex-direction:column;gap:2px;flex-shrink:0;}',
+      '.mp-tpl-order-btn{background:none;border:1px solid #dde3eb;border-radius:3px;padding:0 5px;cursor:pointer;font-size:0.78rem;line-height:1.6;color:#555;transition:background .1s;}',
+      '.mp-tpl-order-btn:hover{background:#eef2f8;}',
+      '.mp-tpl-load-bar{display:flex;align-items:center;gap:8px;background:#f0f4f8;border-radius:6px;padding:9px 12px;margin-bottom:4px;}',
+      '.mp-tpl-load-label{font-size:0.83rem;color:#555;white-space:nowrap;font-weight:600;}',
+      '.mp-tpl-load-select{flex:1;min-width:0;}'
     ].join('');
     document.head.appendChild(s);
   })();
@@ -274,9 +294,11 @@
       var dateVal   = rosterToEdit ? rosterToEdit.date  : '';
       var slots     = rosterToEdit ? (rosterToEdit.slots || []) : [];
 
+      var autoTplId = '';
       if (!rosterToEdit && !slots.length) {
         var defTpl = templates.find(function (t) { return t.is_default; }) || templates[0];
         if (defTpl) {
+          autoTplId = defTpl.id;
           (defTpl.slots || []).forEach(function (row) {
             for (var ci = 0; ci < (row.count || 1); ci++) {
               slots.push({ id: 'new_' + Math.random().toString(36).slice(2), role: row.role, assignee_type: '', assignee_id: '', assignee_id_b: '', guest_id: '' });
@@ -296,6 +318,18 @@
       html += '<div class="mp-form-group"><label>Event Type</label><select name="roster_type" id="roster-type" onchange="mpSchedTypeChange(this.value)"><option value="sunday"' + (typeVal === 'sunday' ? ' selected' : '') + '>Sunday Service</option><option value="event"' + (typeVal === 'event' ? ' selected' : '') + '>Special Event</option></select></div>';
       html += '</div>';
       html += '<div class="mp-form-group" id="roster-title-group"' + (typeVal === 'sunday' ? ' style="display:none;"' : '') + '><label>Event Title</label><input type="text" name="roster_title" value="' + D.esc(titleVal) + '" placeholder="e.g. Easter Service 2026"></div>';
+      if (templates.length) {
+        html += '<div class="mp-tpl-load-bar">';
+        html += '<span class="mp-tpl-load-label">Template:</span>';
+        html += '<select id="roster-tpl-select" class="mp-tpl-load-select">';
+        html += '<option value="">— none —</option>';
+        templates.forEach(function (t) {
+          html += '<option value="' + D.esc(t.id) + '"' + (t.id === autoTplId ? ' selected' : '') + '>' + D.esc(t.name) + (t.is_default ? ' ✓' : '') + '</option>';
+        });
+        html += '</select>';
+        html += '<button type="button" class="mp-btn mp-btn--secondary mp-btn--small" onclick="mpRosterLoadTemplate(document.getElementById(\'roster-tpl-select\').value)">Apply</button>';
+        html += '</div>';
+      }
       html += '<div class="mp-section-divider">Volunteer Slots</div>';
       html += '<div id="slots-wrap">';
       slots.forEach(function (slot, i) {
@@ -325,6 +359,7 @@
       /* set globals BEFORE setContent — script tags inside innerHTML are never executed */
       window._schedAssigneeOpts = assigneeOptsHtml;
       window._mpSchedSlotIdx = slots.length;
+      window._mpSchedTemplates = templates;
 
       D.setContent(html);
 
@@ -385,6 +420,18 @@
       html += '<button id="sched-bulk-del" class="mp-btn mp-btn--danger mp-btn--small" style="display:none;width:auto;" onclick="mpSchedBulk(\'delete\')">&#10005; Delete Selected</button>';
       html += '<button class="mp-btn mp-btn--outline mp-btn--small" style="width:auto;" onclick="mpSchedSendReminders()">&#9993; Send Reminders Now</button>';
       html += '</div>';
+
+      /* ── template management panel ── */
+      html += '<details class="mp-admin-panel" id="mp-tpl-mgmt"><summary class="mp-admin-toggle">Roster Templates <span class="mp-admin-badge">Admin</span></summary><div class="mp-admin-body">';
+      if (templates.length) {
+        html += '<div class="mp-tpl-list">';
+        templates.forEach(function (t) { html += buildTemplateCardHtml(D, t); });
+        html += '</div>';
+      } else {
+        html += '<p class="mp-empty" style="margin:0 0 14px;">No templates yet. Create one to quickly pre-fill volunteer slots when building rosters.</p>';
+      }
+      html += '<button class="mp-btn mp-btn--primary mp-btn--small" onclick="mpTplNew()">+ New Template</button>';
+      html += '</div></details>';
 
       if (!rosters.length) {
         html += '<p class="mp-empty" style="text-align:center;padding:24px 0;">No rosters yet. Click <strong>+ New Roster</strong> to create one.</p>';
@@ -477,6 +524,7 @@
       html += '</div></details>';
     }
 
+    window._mpSchedTemplates = templates;
     D.setContent(html);
 
     /* scroll sync */
@@ -740,6 +788,148 @@
     var tg = document.getElementById('mp-event-team-group'), mg = document.getElementById('mp-event-mc-group');
     if (tg) tg.style.display = val === 'team' ? '' : 'none';
     if (mg) mg.style.display = val === 'mc'   ? '' : 'none';
+  };
+
+  /* ── template builder helpers ───────────────────────────────── */
+  function buildTemplateCardHtml(D, t) {
+    var html = '<div class="mp-tpl-card">';
+    html += '<div class="mp-tpl-card-hd">';
+    html += '<span class="mp-tpl-card-name" title="' + D.esc(t.name) + '">' + D.esc(t.name) + '</span>';
+    if (t.is_default) html += '<span class="mp-admin-badge" style="font-size:0.7rem;padding:1px 6px;margin-right:2px;flex-shrink:0;">Default</span>';
+    html += '<div class="mp-tpl-card-actions">';
+    if (!t.is_default) html += '<button class="mp-btn mp-btn--small mp-btn--outline" onclick="mpTplSetDefault(\'' + D.esc(t.id) + '\')">Set Default</button>';
+    html += '<button class="mp-btn mp-btn--small mp-btn--secondary" onclick="mpTplEdit(\'' + D.esc(t.id) + '\')">Edit</button>';
+    html += '<button class="mp-btn mp-btn--small mp-btn--danger" onclick="mpTplDelete(\'' + D.esc(t.id) + '\',\'' + D.esc(t.name) + '\')">Delete</button>';
+    html += '</div></div>';
+    var tSlots = t.slots || [];
+    if (tSlots.length) {
+      html += '<div class="mp-tpl-slots">';
+      tSlots.forEach(function (s) {
+        html += '<div class="mp-tpl-slot-row"><span>' + D.esc(s.role || '') + '</span><span class="mp-tpl-slot-count">×' + (s.count || 1) + '</span></div>';
+      });
+      html += '</div>';
+    } else {
+      html += '<p class="mp-empty" style="padding:8px 12px;margin:0;font-size:0.82rem;">No roles defined.</p>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function buildTplRoleRow(role, count) {
+    var esc = window.mpDashboard ? window.mpDashboard.esc : function (s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
+    return '<div class="mp-tpl-role-row">'
+      + '<input type="text" class="mp-tpl-role-input" placeholder="Role name (e.g. Music Leader)" value="' + esc(role || '') + '">'
+      + '<div class="mp-tpl-count-wrap"><span class="mp-tpl-count-label">×</span>'
+      + '<input type="number" class="mp-tpl-count-input" min="1" max="20" value="' + (parseInt(count, 10) || 1) + '"></div>'
+      + '<div class="mp-tpl-order-btns">'
+      + '<button type="button" class="mp-tpl-order-btn" onclick="mpTplMoveRow(this,-1)" title="Move up">↑</button>'
+      + '<button type="button" class="mp-tpl-order-btn" onclick="mpTplMoveRow(this,1)" title="Move down">↓</button>'
+      + '</div>'
+      + '<button type="button" class="mp-btn mp-btn--danger mp-btn--small" onclick="this.closest(\'.mp-tpl-role-row\').remove()" title="Remove">&#10005;</button>'
+      + '</div>';
+  }
+
+  function openTplModal(D, tpl) {
+    var isEdit = !!tpl;
+    var tSlots = isEdit ? (tpl.slots || []) : [];
+    var html = '<div class="mp-event-modal-overlay" id="mp-tpl-modal-overlay" onclick="if(event.target===this)mpTplCloseModal()">';
+    html += '<div class="mp-event-modal" style="width:min(520px,94vw);">';
+    html += '<div class="mp-event-modal-title">' + (isEdit ? 'Edit: ' + D.esc(tpl.name) : 'New Roster Template') + '</div>';
+    html += '<form id="mp-tpl-form">';
+    if (isEdit) html += '<input type="hidden" name="tpl_id" value="' + D.esc(tpl.id) + '">';
+    html += '<div class="mp-form-group"><label>Template Name <span class="mp-required">*</span></label>';
+    html += '<input type="text" name="tpl_name" value="' + D.esc(isEdit ? tpl.name : '') + '" required placeholder="e.g. Sunday Service"></div>';
+    html += '<div class="mp-section-divider" style="margin:14px 0 10px;">Roles — listed in order, each with a count</div>';
+    html += '<div id="mp-tpl-roles">';
+    tSlots.forEach(function (s) { html += buildTplRoleRow(s.role, s.count); });
+    html += '</div>';
+    html += '<button type="button" class="mp-btn mp-btn--secondary mp-btn--small" style="margin-bottom:14px;" onclick="mpTplAddRoleRow()">+ Add Role</button>';
+    html += '<div class="mp-event-modal-footer">';
+    html += '<button type="submit" class="mp-btn mp-btn--primary" style="flex:1;">' + (isEdit ? 'Save Changes' : 'Create Template') + '</button>';
+    html += '<button type="button" class="mp-btn mp-btn--secondary" onclick="mpTplCloseModal()">Cancel</button>';
+    html += '</div></form></div></div>';
+
+    var existing = document.getElementById('mp-tpl-modal-overlay');
+    if (existing) existing.remove();
+    var el = document.createElement('div'); el.innerHTML = html;
+    document.body.appendChild(el.firstChild);
+
+    document.getElementById('mp-tpl-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var fd = new FormData(e.target);
+      var name = (fd.get('tpl_name') || '').trim();
+      if (!name) { alert('Template name is required.'); return; }
+      var tplId = fd.get('tpl_id') || '';
+      var newSlots = [];
+      document.querySelectorAll('#mp-tpl-roles .mp-tpl-role-row').forEach(function (row) {
+        var ri = row.querySelector('.mp-tpl-role-input'), ci = row.querySelector('.mp-tpl-count-input');
+        var role = (ri ? ri.value.trim() : '');
+        var count = ci ? (parseInt(ci.value, 10) || 1) : 1;
+        if (role) newSlots.push({ role: role, count: count });
+      });
+      var sb = window.mpDashboard.getSb();
+      if (tplId) {
+        await sb.from('schedule_templates').update({ name: name, slots: newSlots }).eq('id', tplId);
+      } else {
+        var firstEver = !(window._mpSchedTemplates && window._mpSchedTemplates.length);
+        await sb.from('schedule_templates').insert({ name: name, slots: newSlots, is_default: firstEver });
+      }
+      mpTplCloseModal();
+      renderScheduleTab();
+    });
+  }
+
+  window.mpTplNew = function () { openTplModal(window.mpDashboard, null); };
+  window.mpTplEdit = function (id) {
+    var tpl = (window._mpSchedTemplates || []).find(function (t) { return t.id === id; });
+    if (tpl) openTplModal(window.mpDashboard, tpl);
+  };
+  window.mpTplDelete = async function (id, name) {
+    if (!confirm('Delete the template "' + name + '"?')) return;
+    await window.mpDashboard.getSb().from('schedule_templates').delete().eq('id', id);
+    renderScheduleTab();
+  };
+  window.mpTplSetDefault = async function (id) {
+    var sb = window.mpDashboard.getSb();
+    await sb.from('schedule_templates').update({ is_default: false }).neq('id', id);
+    await sb.from('schedule_templates').update({ is_default: true }).eq('id', id);
+    renderScheduleTab();
+  };
+  window.mpTplCloseModal = function () {
+    var el = document.getElementById('mp-tpl-modal-overlay'); if (el) el.remove();
+  };
+  window.mpTplMoveRow = function (btn, dir) {
+    var row = btn.closest('.mp-tpl-role-row');
+    var list = document.getElementById('mp-tpl-roles');
+    if (!row || !list) return;
+    if (dir < 0) { var prev = row.previousElementSibling; if (prev) list.insertBefore(row, prev); }
+    else         { var nxt  = row.nextElementSibling;     if (nxt)  list.insertBefore(nxt, row); }
+  };
+  window.mpTplAddRoleRow = function () {
+    var list = document.getElementById('mp-tpl-roles'); if (!list) return;
+    var tmp = document.createElement('div'); tmp.innerHTML = buildTplRoleRow('', 1);
+    var newRow = tmp.firstChild; list.appendChild(newRow);
+    var inp = newRow.querySelector('.mp-tpl-role-input'); if (inp) inp.focus();
+  };
+  window.mpRosterLoadTemplate = function (tplId) {
+    if (!tplId) return;
+    var tpl = (window._mpSchedTemplates || []).find(function (t) { return t.id === tplId; });
+    if (!tpl || !tpl.slots) return;
+    var wrap = document.getElementById('slots-wrap'); if (!wrap) return;
+    var esc = window.mpDashboard.esc;
+    wrap.innerHTML = ''; var i = 0;
+    tpl.slots.forEach(function (row) {
+      for (var ci = 0; ci < (row.count || 1); ci++) {
+        var d = document.createElement('div');
+        d.className = 'mp-sched-slot-row'; d.dataset.idx = i;
+        d.innerHTML = '<input type="hidden" name="slots[' + i + '][id]" value="new_' + i + '">'
+          + '<input type="text" name="slots[' + i + '][role]" value="' + esc(row.role || '') + '" placeholder="Role" class="mp-sched-role-input">'
+          + '<select name="slots[' + i + '][assignee]" class="mp-sched-select">' + (window._schedAssigneeOpts || '') + '</select>'
+          + '<button type="button" class="mp-btn mp-btn--danger mp-btn--small mp-sched-remove-btn" onclick="this.closest(\'.mp-sched-slot-row\').remove()" title="Remove">&#10005;</button>';
+        wrap.appendChild(d); i++;
+      }
+    });
+    window._mpSchedSlotIdx = i;
   };
 
   /* ── roster edit-form globals ────────────────────────────────── */
