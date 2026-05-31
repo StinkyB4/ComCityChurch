@@ -1,17 +1,21 @@
 /**
  * SEND-REMINDERS EDGE FUNCTION
- * Sends personalized Wednesday serving reminder emails.
- * Called manually ("Send Reminders Now" button) or via pg_cron.
+ * Sends personalized serving reminder emails.
  *
- * pg_cron schedule (run in Supabase SQL editor):
+ * Runs hourly via pg_cron. Checks portal_settings for the configured
+ * day (0=Sun … 6=Sat) and hour (0–23, Central time) before sending.
+ * Pass { force: true } in the request body to bypass the schedule check
+ * (used by the "Send Reminders Now" admin button).
+ *
+ * pg_cron setup (run once in Supabase SQL editor):
  *   SELECT cron.schedule(
- *     'wed-reminders',
- *     '0 9 * * 3',   -- Every Wednesday at 9am UTC
+ *     'check-reminders',
+ *     '0 * * * *',
  *     $$
  *       SELECT net.http_post(
- *         url := 'https://<project-ref>.supabase.co/functions/v1/send-reminders',
+ *         url     := 'https://lkmphayrithxkmhvfiep.supabase.co/functions/v1/send-reminders',
  *         headers := '{"Authorization": "Bearer <service_role_key>"}'::jsonb,
- *         body := '{}'::jsonb
+ *         body    := '{}'::jsonb
  *       )
  *     $$
  *   );
@@ -87,6 +91,22 @@ async function buildSwapToken(sb: ReturnType<typeof createClient>, date: string,
   return `${SITE_URL}/members/swap.html?token=${token}`;
 }
 
+/* ── Schedule check ──────────────────────────────────────────── */
+function getCentralTime(now: Date): { day: number; hour: number } {
+  // Returns day-of-week (0=Sun) and hour (0–23) in America/Winnipeg
+  const central = new Date(now.toLocaleString('en-US', { timeZone: 'America/Winnipeg' }));
+  return { day: central.getDay(), hour: central.getHours() };
+}
+
+function formatHour(h: number): string {
+  if (h === 0)  return '12:00 AM';
+  if (h < 12)   return `${h}:00 AM`;
+  if (h === 12) return '12:00 PM';
+  return `${h - 12}:00 PM`;
+}
+
+const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
 serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
 
@@ -95,17 +115,52 @@ serve(async (req: Request) => {
   }
 
   const sb = createClient(SUPABASE_URL, SERVICE_KEY);
+
+  /* parse body — safe even for empty/non-JSON bodies */
+  let body: Record<string, unknown> = {};
+  try { body = await req.json(); } catch (_) { /* empty body from pg_cron */ }
+  const forceRun = body.force === true;
+
+  /* ── Schedule check (skipped when force: true) ── */
+  if (!forceRun) {
+    const { data: settingsRows } = await sb.from('portal_settings').select('key,value');
+    const settings: Record<string, string> = {};
+    (settingsRows || []).forEach((r: { key: string; value: string }) => { settings[r.key] = r.value; });
+
+    const reminderDay  = parseInt(settings.reminder_day  ?? '3', 10); // default Wednesday
+    const reminderHour = parseInt(settings.reminder_hour ?? '9', 10); // default 9am
+
+    const now = new Date();
+    const { day: currentDay, hour: currentHour } = getCentralTime(now);
+
+    if (currentDay !== reminderDay || currentHour !== reminderHour) {
+      return new Response(JSON.stringify({
+        ok: true, skipped: true,
+        reason: `Not the scheduled time. Current: ${DAY_NAMES[currentDay]} ${formatHour(currentHour)} Central. Scheduled: ${DAY_NAMES[reminderDay]} ${formatHour(reminderHour)} Central.`
+      }), { status: 200, headers: { ...CORS, 'Content-Type': 'application/json' } });
+    }
+
+    /* prevent duplicate sends in the same hour */
+    const thisDate = nextSunday(now);
+    const { data: alreadySent } = await sb.from('schedule_log')
+      .select('id').eq('this_date', thisDate).maybeSingle();
+    if (alreadySent) {
+      return new Response(JSON.stringify({ ok: true, skipped: true, reason: `Reminders for ${thisDate} already sent.` }), {
+        status: 200, headers: { ...CORS, 'Content-Type': 'application/json' }
+      });
+    }
+  }
+
+  /* ── Main send logic ─────────────────────────────────────── */
   const now = new Date();
   const thisDate = nextSunday(now);
   const nextDate = sundayAfter(thisDate);
 
-  /* fetch both rosters */
   const [{ data: thisRoster }, { data: nextRoster }] = await Promise.all([
     sb.from('schedule_rosters').select('*').eq('date', thisDate).maybeSingle(),
     sb.from('schedule_rosters').select('*').eq('date', nextDate).maybeSingle(),
   ]);
 
-  /* collect all assignee IDs */
   const profileIds = new Set<string>();
   const guestIds   = new Set<string>();
 
@@ -123,8 +178,8 @@ serve(async (req: Request) => {
   collectIds(nextRoster as Record<string, unknown>);
 
   const [{ data: profiles }, { data: guests }] = await Promise.all([
-    sb.from('profiles').select('id,first_name,full_name,email,phone1,phone1_type').in('id', [...profileIds]),
-    guestIds.size ? sb.from('guests').select('id,name,email').in('id', [...guestIds]) : Promise.resolve({ data: [] }),
+    profileIds.size ? sb.from('profiles').select('id,first_name,full_name,email,phone1,phone1_type').in('id', [...profileIds]) : Promise.resolve({ data: [] }),
+    guestIds.size   ? sb.from('guests').select('id,name,email').in('id', [...guestIds])                                        : Promise.resolve({ data: [] }),
   ]);
 
   const profMap: Record<string, { first_name: string; full_name: string; email: string; phone1: string; phone1_type: string }> = {};
@@ -132,7 +187,6 @@ serve(async (req: Request) => {
   const guestMap: Record<string, { name: string; email: string }> = {};
   ((guests || []) as Array<{ id: string; name: string; email: string }>).forEach((g) => { guestMap[g.id] = g; });
 
-  /* build assignee map: key → { type, id/email, this:[], next:[] } */
   type AssigneeEntry = { type: 'member' | 'guest'; key: string; email: string; firstName: string; this: unknown[]; next: unknown[] };
   const assigneeMap: Record<string, AssigneeEntry> = {};
 
@@ -144,14 +198,12 @@ serve(async (req: Request) => {
       if (!atype) return;
 
       if (atype === 'couple') {
-        /* split couple into two individual entries */
         const ids = [String(slot.assignee_id || ''), String(slot.assignee_id_b || '')].filter(Boolean);
         ids.forEach((mid) => {
           const prof = profMap[mid]; if (!prof || !prof.email) return;
           const k = 'member:' + mid;
           if (!assigneeMap[k]) assigneeMap[k] = { type: 'member', key: k, email: prof.email, firstName: prof.first_name || (prof.full_name || '').split(' ')[0] || '', this: [], next: [] };
-          const personalSlot = { ...slot, assignee_type: 'member', assignee_id: mid, assignee_id_b: null };
-          assigneeMap[k][which].push(personalSlot);
+          assigneeMap[k][which].push({ ...slot, assignee_type: 'member', assignee_id: mid, assignee_id_b: null });
         });
       } else if (atype === 'member') {
         const mid = String(slot.assignee_id || ''); const prof = profMap[mid]; if (!prof || !prof.email) return;
@@ -182,7 +234,6 @@ serve(async (req: Request) => {
     const thisRoles = entry.this.map((s) => (s as Record<string, unknown>).role || '').filter(Boolean).join(' & ');
     const nextRoles = entry.next.map((s) => (s as Record<string, unknown>).role || '').filter(Boolean).join(' & ');
 
-    /* build swap buttons */
     let swapButtons = '';
     for (const slot of entry.this) {
       const role = String((slot as Record<string, unknown>).role || '');
@@ -209,7 +260,7 @@ serve(async (req: Request) => {
 
     if (entry.this.length && swapButtons) {
       html += `<tr><td style="height:20px;"></td></tr>`;
-      html += `<tr><td style="padding:0 40px 8px;font-size:14px;color:#666;line-height:1.7;">If for some reason you need to switch with someone, click below for your team's contact info:</td></tr>`;
+      html += `<tr><td style="padding:0 40px 8px;font-size:14px;color:#666;line-height:1.7;">If you need to swap with someone, click below for your team's contact info:</td></tr>`;
       html += swapButtons;
     }
 
@@ -224,7 +275,6 @@ serve(async (req: Request) => {
     sentCount++;
   }
 
-  /* log to schedule_log */
   await sb.from('schedule_log').insert({ this_date: thisDate, next_date: nextDate, count: sentCount });
 
   return new Response(JSON.stringify({ ok: true, sent: sentCount }), {

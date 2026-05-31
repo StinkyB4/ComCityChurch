@@ -8,7 +8,7 @@
   /* wait for core module then register renderers */
   var MAX_WAIT = 60, waited = 0;
   function tryRegister() {
-    if (window.mpDashboard && window.mpDashboard.getSb) {
+    if (window.mpDashboard) {
       register();
     } else if (waited < MAX_WAIT) {
       waited++;
@@ -35,7 +35,7 @@
 
     /* fetch all approved members + their children */
     var q = _sb.from('profiles').select('*').eq('status', 'approved').order('last_name', { nullsFirst: false }).order('full_name');
-    if (!_isAdmin) q = q.eq('show_in_directory', true);
+    if (!_isAdmin) q = q.neq('show_in_directory', false);
     var { data: members } = await q;
     members = members || [];
 

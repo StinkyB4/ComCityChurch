@@ -7,7 +7,7 @@
 
   var MAX_WAIT = 60, waited = 0;
   function tryRegister() {
-    if (window.mpDashboard && window.mpDashboard.getSb) { register(); }
+    if (window.mpDashboard) { register(); }
     else if (waited < MAX_WAIT) { waited++; setTimeout(tryRegister, 100); }
   }
   function register() { window.mpDashboard.render_files = renderFilesTab; }
@@ -202,7 +202,8 @@
           tree2.push(folder);
         }
         await saveTree(_sb, tree2);
-        renderFilesTab();
+        await renderFilesTab();
+        var panel = document.querySelector('.mp-admin-panel'); if (panel) panel.open = true;
       });
     }
 
@@ -230,7 +231,7 @@
           var node2 = { type: 'file', id: 'file_' + Date.now(), name: label, filename: f.name, url: url2, uploaded_at: Math.floor(Date.now() / 1000), uploaded_by: D.getProfile().id };
           var t2 = window._fileTree || [];
           if (folderId) { var p2 = findNode(t2, folderId); if (p2 && p2.type === 'folder') { p2.children = p2.children || []; p2.children.push(node2); } else t2.push(node2); } else t2.push(node2);
-          await saveTree(_sb, t2); renderFilesTab(); return;
+          await saveTree(_sb, t2); await renderFilesTab(); var panel2 = document.querySelector('.mp-admin-panel'); if (panel2) panel2.open = true; return;
         }
         var { data: ud } = _sb.storage.from('member-files').getPublicUrl(path);
         var fileUrl = ud ? ud.publicUrl : '';
@@ -244,7 +245,8 @@
           tree3.push(fileNode);
         }
         await saveTree(_sb, tree3);
-        renderFilesTab();
+        await renderFilesTab();
+        var panel3 = document.querySelector('.mp-admin-panel'); if (panel3) panel3.open = true;
       });
     }
 
@@ -269,7 +271,8 @@
           treeL.push(linkNode);
         }
         await saveTree(_sb, treeL);
-        renderFilesTab();
+        await renderFilesTab();
+        var panel4 = document.querySelector('.mp-admin-panel'); if (panel4) panel4.open = true;
       });
     }
 

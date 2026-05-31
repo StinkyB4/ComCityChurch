@@ -17,6 +17,10 @@
   var _ledMCIds    = [];   // missional_community IDs this user leads
   var _ledTeamIds  = [];   // team IDs this user leads
 
+  /* ── avatar cropper state ───────────────────────────────────── */
+  var _cropperInstance = null;
+  var _cropCallback    = null;
+
   /* ── tab labels ─────────────────────────────────────────────── */
   var TAB_LABELS = {
     welcome:'Welcome', profile:'My Profile', directory:'Directory',
@@ -121,6 +125,34 @@
   async function callEdge(name, payload){
     try{ await _sb.functions.invoke(name,{body:payload}); }
     catch(e){ console.warn('Edge fn '+name+':', e.message); }
+  }
+
+  /* ── Avatar crop helpers ─────────────────────────────────────── */
+  function loadCropperJS(cb){
+    if(window.Cropper){ cb(); return; }
+    var link=document.createElement('link');
+    link.rel='stylesheet';
+    link.href='https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css';
+    document.head.appendChild(link);
+    var sc=document.createElement('script');
+    sc.src='https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js';
+    sc.onload=cb;
+    document.head.appendChild(sc);
+  }
+
+  function ensureCropModal(){
+    if(document.getElementById('mp-crop-modal')) return;
+    var m=document.createElement('div');
+    m.id='mp-crop-modal'; m.className='mp-modal-overlay'; m.style.display='none';
+    m.innerHTML='<div class="mp-modal-box mp-crop-box">'
+      +'<h3 class="mp-modal-title" style="margin:0 0 16px;">Adjust Photo</h3>'
+      +'<div class="mp-crop-wrap"><img id="mp-crop-img" src="" alt=""></div>'
+      +'<p class="mp-hint" style="text-align:center;margin:10px 0 0;">Drag to reposition &nbsp;·&nbsp; scroll or pinch to zoom</p>'
+      +'<div style="display:flex;gap:10px;margin-top:16px;">'
+      +'<button type="button" class="mp-btn mp-btn--primary" style="flex:1;" onclick="mpCropApply()">Use This Photo</button>'
+      +'<button type="button" class="mp-btn mp-btn--secondary" onclick="mpCropCancel()">Cancel</button>'
+      +'</div></div>';
+    document.body.appendChild(m);
   }
 
   /* ══════════════════════════════════════════════════════════════
@@ -264,7 +296,10 @@
     /* check if sub-module registered a renderer */
     var key='render_'+tab;
     if(window.mpDashboard && typeof window.mpDashboard[key]==='function'){
-      window.mpDashboard[key]();
+      Promise.resolve(window.mpDashboard[key]()).catch(function(err){
+        setContent('<p class="mp-empty">Error loading '+esc(TAB_LABELS[tab]||tab)+': '+esc(err&&err.message||String(err))+'</p>');
+        console.error('Tab render error ('+tab+'):', err);
+      });
       return;
     }
     /* built-in renderers */
@@ -272,7 +307,18 @@
       case 'welcome': renderWelcomeTab(); break;
       case 'profile': renderProfileTab(); break;
       default:
-        setContent('<p class="mp-empty">Loading '+esc(TAB_LABELS[tab]||tab)+'…<br><small>Make sure dashboard-tabs.js and other module files are loaded.</small></p>');
+        /* Sub-module not yet registered — retry once after a short delay */
+        setTimeout(function(){
+          if(window.mpDashboard && typeof window.mpDashboard[key]==='function'){
+            Promise.resolve(window.mpDashboard[key]()).catch(function(err){
+              setContent('<p class="mp-empty">Error loading '+esc(TAB_LABELS[tab]||tab)+': '+esc(err&&err.message||String(err))+'</p>');
+              console.error('Tab render error ('+tab+'):', err);
+            });
+          } else {
+            setContent('<p class="mp-empty">Could not load the '+esc(TAB_LABELS[tab]||tab)+' tab.<br><small>Check the browser console — /js/dashboard-tabs.js may have a loading error.</small></p>');
+            console.error('Tab module not registered: '+key+'. Ensure /js/dashboard-tabs.js loads without errors (check Network/Console tabs in DevTools).');
+          }
+        }, 400);
     }
   }
 
@@ -292,10 +338,12 @@
     var initials=getInitials(_profile), photo=_profile.avatar_url||'';
 
     /* parallel data fetches */
-    var [msgsRes, treeRes, pendRes] = await Promise.all([
+    var todayStr = new Date().toISOString().split('T')[0];
+    var [msgsRes, treeRes, pendRes, rosterRes] = await Promise.all([
       _sb.from('admin_messages').select('*').order('published_at',{ascending:false}).limit(20),
       _sb.from('file_tree').select('tree').limit(1).maybeSingle(),
-      _isAdmin ? _sb.from('profiles').select('*').eq('status','pending').order('created_at') : Promise.resolve({data:[]})
+      _isAdmin ? _sb.from('profiles').select('*').eq('status','pending').order('created_at') : Promise.resolve({data:[]}),
+      _sb.from('schedule_rosters').select('date,title,type,slots').gte('date',todayStr).order('date').limit(52)
     ]);
     var msgs    = msgsRes.data  || [];
     var pending = pendRes.data  || [];
@@ -305,6 +353,16 @@
       allF.sort(function(a,b){return (b.uploaded_at||0)-(a.uploaded_at||0);});
       recentFiles = allF.slice(0,3);
     }
+
+    /* find upcoming serving slots for this user */
+    var upcomingServing = [];
+    (rosterRes.data || []).forEach(function(r){
+      var myRoles = (r.slots || []).filter(function(s){
+        return (s.assignee_type==='member' && s.assignee_id===_user.id) ||
+               (s.assignee_type==='couple' && (s.assignee_id===_user.id || s.assignee_id_b===_user.id));
+      }).map(function(s){ return s.role||''; }).filter(Boolean);
+      if(myRoles.length) upcomingServing.push({date:r.date, title:r.title||'Sunday Service', roles:myRoles});
+    });
 
     var html='';
     html += '<div class="mp-welcome-header">';
@@ -316,6 +374,55 @@
     var qs=new URLSearchParams(window.location.search);
     if(qs.get('approved')==='1') html+=alertHtml('Account approved — member notified by email.','success');
     if(qs.get('rejected')==='1') html+=alertHtml('Account rejected and removed.','warning');
+
+    /* ── upcoming serving card ── */
+    if(upcomingServing.length){
+      if(!document.getElementById('mp-serving-css')){
+        var ss=document.createElement('style'); ss.id='mp-serving-css';
+        ss.textContent=[
+          '.mp-serving-card{background:#fff;border-radius:8px;border:1px solid #dde3eb;box-shadow:0 2px 10px rgba(0,0,0,0.07);overflow:hidden;margin-bottom:24px;}',
+          '.mp-serving-card-hd{background:#112E53;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:9px;}',
+          '.mp-serving-card-hd-title{font-weight:700;font-size:0.93rem;letter-spacing:.01em;}',
+          '.mp-serving-list{list-style:none;margin:0;padding:0;}',
+          '.mp-serving-row{display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid #f0f4f8;transition:background .1s;}',
+          '.mp-serving-row:last-child{border-bottom:none;}',
+          '.mp-serving-row:hover{background:#f7f9fc;}',
+          '.mp-serving-date-pill{background:#e5ecf8;color:#112E53;border-radius:4px;padding:3px 9px;font-size:0.76rem;font-weight:700;white-space:nowrap;min-width:74px;text-align:center;flex-shrink:0;}',
+          '.mp-serving-date-pill--next{background:#112E53;color:#fff;}',
+          '.mp-serving-info{flex:1;min-width:0;}',
+          '.mp-serving-event-title{font-size:0.87rem;font-weight:600;color:#222;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
+          '.mp-serving-roles{font-size:0.81rem;color:#5C718E;margin-top:2px;}',
+          '.mp-serving-card-ft{padding:9px 16px;border-top:1px solid #f0f4f8;text-align:right;}',
+          '.mp-serving-card-ft a{font-size:0.82rem;color:#112E53;text-decoration:none;font-weight:600;}',
+          '.mp-serving-card-ft a:hover{text-decoration:underline;}'
+        ].join('');
+        document.head.appendChild(ss);
+      }
+      var calSvg='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;opacity:.85"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>';
+      html+='<div class="mp-serving-card">';
+      html+='<div class="mp-serving-card-hd">'+calSvg+'<span class="mp-serving-card-hd-title">Your Upcoming Serving</span></div>';
+      html+='<ul class="mp-serving-list">';
+      var displayServing = upcomingServing.slice(0,8);
+      displayServing.forEach(function(ev, i){
+        var d = new Date(ev.date+'T12:00:00');
+        var dateLbl = isNaN(d.getTime()) ? ev.date : d.toLocaleDateString('en-CA',{weekday:'short',month:'short',day:'numeric'});
+        var isNext = (i===0);
+        html+='<li class="mp-serving-row">';
+        html+='<span class="mp-serving-date-pill'+(isNext?' mp-serving-date-pill--next':'')+'">';
+        html+=esc(dateLbl)+'</span>';
+        html+='<div class="mp-serving-info">';
+        html+='<div class="mp-serving-event-title">'+esc(ev.title)+'</div>';
+        html+='<div class="mp-serving-roles">'+esc(ev.roles.join(', '))+'</div>';
+        html+='</div>';
+        html+='</li>';
+      });
+      html+='</ul>';
+      html+='<div class="mp-serving-card-ft">';
+      if(upcomingServing.length>8) html+='<a href="#" onclick="window.mpDashboard.navigate(\'schedule\');return false;">+'+(upcomingServing.length-8)+' more &mdash; View full schedule &rarr;</a>';
+      else html+='<a href="#" onclick="window.mpDashboard.navigate(\'schedule\');return false;">View full schedule &rarr;</a>';
+      html+='</div>';
+      html+='</div>';
+    }
 
     /* ── pending approvals (admin) ── */
     if(_isAdmin && pending.length){
@@ -653,10 +760,49 @@
     var lbl=document.getElementById('sp-selected-lbl');
     if(lbl) lbl.textContent='"'+(o.dataset.name||o.textContent)+'" selected — click Link Profiles.';
   };
-  window.mpPrvPhoto = function(inp, id){
-    var el=document.getElementById(id); if(!el||!inp.files||!inp.files[0]) return;
-    var r=new FileReader(); r.onload=function(e){el.innerHTML='<img src="'+e.target.result+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';};
-    r.readAsDataURL(inp.files[0]);
+  window.mpPrvPhoto = function(inp, previewId){
+    if(!inp.files||!inp.files[0]) return;
+    var file=inp.files[0];
+    inp.value=''; /* reset so same file can trigger change again */
+    loadCropperJS(function(){
+      ensureCropModal();
+      var reader=new FileReader();
+      reader.onload=function(e){
+        var img=document.getElementById('mp-crop-img');
+        img.src=e.target.result;
+        document.getElementById('mp-crop-modal').style.display='flex';
+        if(_cropperInstance){ _cropperInstance.destroy(); _cropperInstance=null; }
+        _cropperInstance=new Cropper(img,{
+          aspectRatio:1, viewMode:1, autoCropArea:0.9,
+          cropBoxResizable:false, cropBoxMovable:false, dragMode:'move',
+          guides:false, center:false, highlight:false, background:true,
+          minContainerHeight:300
+        });
+        _cropCallback=function(blob){
+          var el=document.getElementById(previewId);
+          if(el) el.innerHTML='<img src="'+URL.createObjectURL(blob)+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+          window._avatarCropBlob=blob;
+          window._avatarCropOrigName=file.name;
+        };
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  window.mpCropApply=function(){
+    if(!_cropperInstance) return;
+    _cropperInstance.getCroppedCanvas({width:400,height:400,imageSmoothingQuality:'high'}).toBlob(function(blob){
+      if(blob&&typeof _cropCallback==='function') _cropCallback(blob);
+      document.getElementById('mp-crop-modal').style.display='none';
+      if(_cropperInstance){ _cropperInstance.destroy(); _cropperInstance=null; }
+      _cropCallback=null;
+    },'image/jpeg',0.92);
+  };
+
+  window.mpCropCancel=function(){
+    document.getElementById('mp-crop-modal').style.display='none';
+    if(_cropperInstance){ _cropperInstance.destroy(); _cropperInstance=null; }
+    _cropCallback=null;
   };
   window.mpFmtPh = formatPhone;
   window.mpTglPw = function(id,btn){
@@ -676,7 +822,16 @@
   window.mpSaveChild = function(btn){
     var row=btn.closest('.mp-child-row'), n=row.querySelector('.mp-child-name');
     if(!n||!n.value.trim()){ n.focus(); n.style.borderColor='#c0392b'; setTimeout(function(){n.style.borderColor='';},2000); return; }
-    document.getElementById('pp-stay').value='1'; btn.closest('form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
+    /* Lock the row visually — actual DB save happens on "Save Changes" */
+    n.readOnly=true; n.style.background='rgba(17,46,83,0.06)'; n.style.fontWeight='600';
+    var bday=row.querySelector('.mp-child-birthday');
+    if(bday){ bday.readOnly=true; bday.style.background='rgba(17,46,83,0.06)'; }
+    /* Swap button to Remove */
+    btn.textContent='✕ Remove';
+    btn.className='mp-btn mp-btn--danger mp-btn--small';
+    btn.onclick=function(){ row.remove(); };
+    /* Add a fresh empty row for the next child */
+    window.mpAddChildRow();
   };
   window.mpAddChildRow = function(){
     var list=document.getElementById('children-list'); if(!list) return;
@@ -745,12 +900,13 @@
       /* password */
       if(npw) await _sb.auth.updateUser({password:npw});
 
-      /* avatar */
-      var ppFile=document.getElementById('pp-file');
-      if(ppFile&&ppFile.files&&ppFile.files[0]){
-        var f=ppFile.files[0], ext=f.name.split('.').pop(), path=_user.id+'/'+Date.now()+'.'+ext;
-        var { data:up, error:upErr }=await _sb.storage.from('avatars').upload(path,f,{upsert:true});
-        if(!upErr){ var { data:ud }=_sb.storage.from('avatars').getPublicUrl(path); await _sb.from('profiles').update({avatar_url:ud.publicUrl}).eq('id',_user.id); }
+      /* avatar — use cropped blob if available, otherwise raw file */
+      var cropBlob=window._avatarCropBlob;
+      if(cropBlob){
+        var avatarPath=_user.id+'/'+Date.now()+'.jpg';
+        var { error:upErr }=await _sb.storage.from('avatars').upload(avatarPath,cropBlob,{upsert:true,contentType:'image/jpeg'});
+        if(!upErr){ var { data:ud }=_sb.storage.from('avatars').getPublicUrl(avatarPath); await _sb.from('profiles').update({avatar_url:ud.publicUrl}).eq('id',_user.id); }
+        window._avatarCropBlob=null; window._avatarCropOrigName=null;
       }
 
       /* refresh profile */
@@ -760,7 +916,8 @@
       if(error){ window._profileResult={errors:[error.message]}; var url2=new URL(window.location.href); url2.searchParams.set('edit','1'); window.history.replaceState({},'',url2.toString()); renderProfileTab(); return; }
 
       window._profileResult={success:true};
-      var url3=new URL(window.location.href); url3.searchParams.delete('edit');
+      var url3=new URL(window.location.href);
+      if(stayEdit){ url3.searchParams.set('edit','1'); } else { url3.searchParams.delete('edit'); }
       window.history.replaceState({},'',url3.toString());
       renderProfileTab();
     });

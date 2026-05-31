@@ -7,7 +7,7 @@
 
   var MAX_WAIT = 60, waited = 0;
   function tryRegister() {
-    if (window.mpDashboard && window.mpDashboard.getSb) { register(); }
+    if (window.mpDashboard) { register(); }
     else if (waited < MAX_WAIT) { waited++; setTimeout(tryRegister, 100); }
   }
   function register() { window.mpDashboard.render_schedule = renderScheduleTab; }
@@ -54,7 +54,14 @@
       '.mp-event-modal{background:#fff;border-radius:10px;padding:24px;width:min(480px,92vw);max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.18);}',
       '.mp-event-modal-title{font-weight:700;font-size:1.1rem;margin:0 0 18px;color:#112E53;}',
       '.mp-event-modal-footer{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;}',
-      '@media(max-width:540px){.mp-cal-day{min-height:48px;}.mp-cal-chip{display:none;}.mp-cal-day--has-event::after{content:"•";display:block;text-align:center;font-size:0.9rem;color:#112E53;}.mp-cal-day--serving::after{content:"•";display:block;text-align:center;font-size:0.9rem;color:#112E53;}}'
+      '@media(max-width:540px){.mp-cal-day{min-height:48px;}.mp-cal-chip{display:none;}.mp-cal-day--has-event::after{content:"•";display:block;text-align:center;font-size:0.9rem;color:#112E53;}.mp-cal-day--serving::after{content:"•";display:block;text-align:center;font-size:0.9rem;color:#112E53;}}',
+      '.mp-cal-export-row{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;}',
+      '.mp-cal-export-label{font-size:0.77rem;color:#aaa;white-space:nowrap;}',
+      '.mp-cal-export-btn{display:inline-flex;align-items:center;gap:4px;font-size:0.77rem;padding:3px 9px;border-radius:4px;text-decoration:none;border:1px solid #dde3eb;cursor:pointer;font-family:inherit;background:#fff;color:#555;line-height:1.5;transition:border-color .12s,color .12s;}',
+      '.mp-cal-export-btn:hover{border-color:#112E53;color:#112E53;}',
+      '.mp-cal-detail-serving .mp-cal-export-label{color:rgba(255,255,255,0.65);}',
+      '.mp-cal-detail-serving .mp-cal-export-btn{border-color:rgba(255,255,255,0.35);color:rgba(255,255,255,0.9);background:rgba(255,255,255,0.12);}',
+      '.mp-cal-detail-serving .mp-cal-export-btn:hover{background:rgba(255,255,255,0.25);border-color:#fff;color:#fff;}'
     ].join('');
     document.head.appendChild(s);
   })();
@@ -506,6 +513,59 @@
     }
   }
 
+  /* ── calendar export helpers ─────────────────────────────────── */
+  var _icsSeq = 0;
+  window._mpIcsData = {};
+
+  function buildCalExportHtml(D, title, dateStr, timeStr, description) {
+    var key = 'ics' + (++_icsSeq);
+    window._mpIcsData[key] = { title: title, date: dateStr, time: timeStr || '', desc: description || '' };
+    var gcDate = dateStr.replace(/-/g, '');
+    var gcEndD = new Date(dateStr + 'T12:00:00'); gcEndD.setDate(gcEndD.getDate() + 1);
+    var gcEnd = gcEndD.toISOString().split('T')[0].replace(/-/g, '');
+    var gcDetails = timeStr ? ('Time: ' + timeStr + (description ? '\n' + description : '')) : (description || '');
+    var gcUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+      + '&text=' + encodeURIComponent(title)
+      + '&dates=' + gcDate + '/' + gcEnd
+      + (gcDetails ? '&details=' + encodeURIComponent(gcDetails) : '');
+    var svg = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>';
+    return '<div class="mp-cal-export-row">'
+      + '<span class="mp-cal-export-label">Add to calendar:</span>'
+      + '<a href="' + D.esc(gcUrl) + '" target="_blank" rel="noopener" class="mp-cal-export-btn">' + svg + ' Google</a>'
+      + '<button type="button" class="mp-cal-export-btn" onclick="mpCalDownloadIcs(\'' + key + '\')">' + svg + ' Apple&nbsp;/&nbsp;iCal</button>'
+      + '</div>';
+  }
+
+  window.mpCalDownloadIcs = function (key) {
+    var data = window._mpIcsData[key]; if (!data) return;
+    var icsDate = data.date.replace(/-/g, '');
+    var endD = new Date(data.date + 'T12:00:00'); endD.setDate(endD.getDate() + 1);
+    var icsEnd = endD.toISOString().split('T')[0].replace(/-/g, '');
+    var stamp = new Date().toISOString().replace(/[-:.]/g, '').slice(0, 15) + 'Z';
+    var uid = icsDate + '-' + key + '@commissionedcitychurch.ca';
+    function icsEsc(s) { return String(s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n'); }
+    var desc = data.time ? ('Time: ' + data.time + (data.desc ? '\n' + data.desc : '')) : data.desc;
+    var lines = [
+      'BEGIN:VCALENDAR', 'VERSION:2.0',
+      'PRODID:-//Commissioned City Church//Members Portal//EN',
+      'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
+      'BEGIN:VEVENT',
+      'UID:' + uid, 'DTSTAMP:' + stamp,
+      'DTSTART;VALUE=DATE:' + icsDate,
+      'DTEND;VALUE=DATE:' + icsEnd,
+      'SUMMARY:' + icsEsc(data.title)
+    ];
+    if (desc) lines.push('DESCRIPTION:' + icsEsc(desc));
+    lines.push('END:VEVENT', 'END:VCALENDAR');
+    var blob = new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = (data.title.replace(/[^a-zA-Z0-9 ]/g, '').trim() || 'event').replace(/\s+/g, '-') + '.ics';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  };
+
   /* ── calendar day click ─────────────────────────────────────── */
   window.mpCalDayClick = function (dateStr) {
     var cd = window._mpCalData; if (!cd) return;
@@ -541,12 +601,17 @@
         return (s.assignee_type === 'member' && s.assignee_id === cd.uid) ||
                (s.assignee_type === 'couple' && (s.assignee_id === cd.uid || s.assignee_id_b === cd.uid));
       });
+      var servingRoles = mySlots.map(function (s) { return s.role || ''; }).join(', ');
       html += '<div class="mp-cal-detail-serving">You are serving — ';
-      html += mySlots.map(function (s) { return D.esc(s.role || ''); }).join(', ');
-      html += ' (' + D.esc(dayRoster.title || 'Sunday Service') + ')</div>';
+      html += D.esc(servingRoles);
+      html += ' (' + D.esc(dayRoster.title || 'Sunday Service') + ')';
+      html += buildCalExportHtml(D, dayRoster.title || 'Sunday Service', dateStr, null, 'Serving: ' + servingRoles);
+      html += '</div>';
     } else if (dayRoster) {
       html += '<div class="mp-cal-detail-event"><div class="mp-cal-detail-event-title">' + D.esc(dayRoster.title || 'Sunday Service') + '</div>';
-      html += '<div class="mp-cal-detail-event-meta">Church roster event</div></div>';
+      html += '<div class="mp-cal-detail-event-meta">Church roster event</div>';
+      html += buildCalExportHtml(D, dayRoster.title || 'Sunday Service', dateStr, null, null);
+      html += '</div>';
     }
 
     dayEvents.forEach(function (ev) {
@@ -555,6 +620,7 @@
       html += '<div class="mp-cal-detail-event-title">' + D.esc(ev.title) + (ev.event_time ? ' &mdash; ' + D.esc(ev.event_time) : '') + '</div>';
       html += '<div class="mp-cal-detail-event-meta">' + visLabel + '</div>';
       if (ev.description) html += '<div class="mp-cal-detail-event-desc">' + D.esc(ev.description) + '</div>';
+      html += buildCalExportHtml(D, ev.title, ev.event_date, ev.event_time || null, ev.description || null);
       if (cd.canManage) {
         html += '<div style="margin-top:8px;display:flex;gap:8px;">';
         html += '<button class="mp-btn mp-btn--secondary mp-btn--small" onclick="mpCalEditEvent(\'' + D.esc(ev.id) + '\')">Edit</button>';
@@ -718,7 +784,7 @@
   };
   window.mpSchedSendReminders = async function () {
     if (!confirm('Send serving reminder emails now?')) return;
-    await window.mpDashboard.callEdge('send-reminders', {});
+    await window.mpDashboard.callEdge('send-reminders', { force: true });
     var url = new URL(window.location.href); url.searchParams.set('reminders_sent', '1');
     window.history.replaceState({}, '', url.toString());
     renderScheduleTab();

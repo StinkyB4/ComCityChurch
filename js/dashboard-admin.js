@@ -7,7 +7,7 @@
 
   var MAX_WAIT = 60, waited = 0;
   function tryRegister() {
-    if (window.mpDashboard && window.mpDashboard.getSb) { register(); }
+    if (window.mpDashboard) { register(); }
     else if (waited < MAX_WAIT) { waited++; setTimeout(tryRegister, 100); }
   }
   function register() {
@@ -407,12 +407,13 @@
     if (!_isLeader) { D.setContent('<p class="mp-empty">Access denied.</p>'); return; }
     var _sb = D.getSb();
 
-    var [rostersRes, membersRes, mcsRes, teamsRes, logRes] = await Promise.all([
+    var [rostersRes, membersRes, mcsRes, teamsRes, logRes, settingsRes] = await Promise.all([
       _sb.from('schedule_rosters').select('date,title').order('date', { ascending: false }).limit(20),
       _sb.from('profiles').select('id,first_name,last_name,full_name,email').eq('status', 'approved').order('last_name'),
       _sb.from('missional_communities').select('id,name'),
       _sb.from('teams').select('id,name'),
-      _isAdmin ? _sb.from('sent_email_log').select('*').order('sent_at', { ascending: false }).limit(30) : Promise.resolve({ data: [] })
+      _isAdmin ? _sb.from('sent_email_log').select('*').order('sent_at', { ascending: false }).limit(30) : Promise.resolve({ data: [] }),
+      _isAdmin ? _sb.from('portal_settings').select('key,value') : Promise.resolve({ data: [] })
     ]);
     var rosters = rostersRes.data || [];
     /* leaders only see their team members by default */
@@ -421,6 +422,12 @@
     var mcs     = mcsRes.data || [];
     var teams   = teamsRes.data || [];
     var sentLog = logRes.data || [];
+
+    /* parse reminder schedule settings */
+    var settingsMap = {};
+    (settingsRes.data || []).forEach(function (r) { settingsMap[r.key] = r.value; });
+    var curReminderDay  = parseInt(settingsMap.reminder_day  || '3', 10);
+    var curReminderHour = parseInt(settingsMap.reminder_hour || '9', 10);
 
     /* build member email → name map for JS */
     var memberData = members.map(function (m) {
@@ -432,6 +439,33 @@
     var qs = new URLSearchParams(window.location.search);
     if (qs.get('weekly_sent') === '1') html += D.alertHtml('Weekly email sent successfully.', 'success');
     if (qs.get('weekly_test_sent') === '1') html += D.alertHtml('Test email sent.', 'success');
+
+    /* ── Reminder schedule settings (admin only) ── */
+    if (_isAdmin) {
+      var dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+      var dayOpts = dayNames.map(function (d, i) {
+        return '<option value="' + i + '"' + (i === curReminderDay ? ' selected' : '') + '>' + d + '</option>';
+      }).join('');
+      var hourOpts = '';
+      for (var h = 0; h < 24; h++) {
+        var hLabel = h === 0 ? '12:00 AM' : h < 12 ? h + ':00 AM' : h === 12 ? '12:00 PM' : (h - 12) + ':00 PM';
+        hourOpts += '<option value="' + h + '"' + (h === curReminderHour ? ' selected' : '') + '>' + hLabel + '</option>';
+      }
+      var nextDayLabel = dayNames[curReminderDay];
+      var nextHourLabel = curReminderHour === 0 ? '12:00 AM' : curReminderHour < 12 ? curReminderHour + ':00 AM' : curReminderHour === 12 ? '12:00 PM' : (curReminderHour - 12) + ':00 PM';
+
+      html += '<div class="mp-section-divider">Reminder Schedule</div>';
+      html += '<details class="mp-admin-panel"><summary class="mp-admin-toggle">Configure Serving Reminders <span class="mp-admin-badge">Admin</span></summary><div class="mp-admin-body">';
+      html += '<p class="mp-hint" style="margin-bottom:16px;">Reminders go out automatically each week to everyone on the schedule. Currently set for <strong>' + nextDayLabel + 's at ' + nextHourLabel + ' Central</strong>.</p>';
+      html += '<form id="reminder-settings-form"><div class="mp-form-row">';
+      html += '<div class="mp-form-group"><label>Day of Week</label><select name="reminder_day">' + dayOpts + '</select></div>';
+      html += '<div class="mp-form-group"><label>Time (Central)</label><select name="reminder_hour">' + hourOpts + '</select></div>';
+      html += '</div>';
+      html += '<div style="display:flex;gap:10px;align-items:center;margin-top:4px;">';
+      html += '<button type="submit" class="mp-btn mp-btn--primary" style="width:auto;">Save Schedule</button>';
+      html += '<span class="mp-hint" style="margin:0;">Use "Send Reminders Now" on the Schedule tab to test immediately.</span>';
+      html += '</div></form></div></details>';
+    }
 
     /* ── Weekly email composer ── */
     html += '<div class="mp-section-divider">Weekly Church Email</div>';
@@ -511,6 +545,23 @@
     html += '<script>window._spMemberData=' + JSON.stringify(memberData) + ';<\/script>';
 
     D.setContent(html);
+
+    /* wire reminder settings form */
+    var rsform = document.getElementById('reminder-settings-form');
+    if (rsform) {
+      rsform.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var fd = new FormData(rsform);
+        var day  = fd.get('reminder_day')  || '3';
+        var hour = fd.get('reminder_hour') || '9';
+        var _sb2 = D.getSb();
+        await Promise.all([
+          _sb2.from('portal_settings').upsert({ key: 'reminder_day',  value: day  }, { onConflict: 'key' }),
+          _sb2.from('portal_settings').upsert({ key: 'reminder_hour', value: hour }, { onConflict: 'key' })
+        ]);
+        renderEmailTab();
+      });
+    }
 
     /* wire weekly form */
     var wform = document.getElementById('weekly-email-form');
