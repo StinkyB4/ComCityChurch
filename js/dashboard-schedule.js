@@ -142,6 +142,52 @@
     return html;
   }
 
+  /* ── recurring event helpers ─────────────────────────────────── */
+  function getNthWeekdayOfMonth(year, month, weekday, n) {
+    var firstDow = new Date(year, month, 1).getDay();
+    var day = 1 + (weekday - firstDow + 7) % 7 + (n - 1) * 7;
+    return day <= new Date(year, month + 1, 0).getDate() ? day : null;
+  }
+
+  function expandRecurringEvents(events, monthStart, nextMonthStart) {
+    var rs = new Date(monthStart + 'T00:00:00');
+    var re = new Date(nextMonthStart + 'T00:00:00');
+    var out = [];
+    events.forEach(function (ev) {
+      if (!ev.recurrence_type) { out.push(ev); return; }
+      var evEnd  = ev.recurrence_end_date ? new Date(ev.recurrence_end_date + 'T23:59:59') : new Date('2099-12-31');
+      var origin = new Date(ev.event_date + 'T12:00:00');
+      function add(d) {
+        if (d >= rs && d < re && d <= evEnd)
+          out.push(Object.assign({}, ev, { event_date: d.toISOString().split('T')[0] }));
+      }
+      var c;
+      if (ev.recurrence_type === 'weekly') {
+        c = new Date(origin);
+        while (c < rs) c.setDate(c.getDate() + 7);
+        while (c < re) { add(new Date(c)); c.setDate(c.getDate() + 7); }
+      } else if (ev.recurrence_type === 'monthly') {
+        c = new Date(origin);
+        while (c < rs) c.setMonth(c.getMonth() + 1);
+        while (c < re) { add(new Date(c)); c.setMonth(c.getMonth() + 1); }
+      } else if (ev.recurrence_type === 'yearly') {
+        c = new Date(origin);
+        while (c < rs) c.setFullYear(c.getFullYear() + 1);
+        while (c < re) { add(new Date(c)); c.setFullYear(c.getFullYear() + 1); }
+      } else if (ev.recurrence_type === 'monthly_weekday') {
+        var week = ev.recurrence_week || Math.ceil(origin.getDate() / 7);
+        var dow  = (ev.recurrence_day !== null && ev.recurrence_day !== undefined) ? ev.recurrence_day : origin.getDay();
+        c = new Date(rs.getFullYear(), rs.getMonth(), 1);
+        while (c < re) {
+          var dn = getNthWeekdayOfMonth(c.getFullYear(), c.getMonth(), dow, week);
+          if (dn) { var inst = new Date(c.getFullYear(), c.getMonth(), dn); if (inst >= origin) add(inst); }
+          c.setMonth(c.getMonth() + 1);
+        }
+      }
+    });
+    return out;
+  }
+
   /* ── calendar renderer ───────────────────────────────────────── */
   function renderCalendarSection(year, month, rosters, calEvents, uid, canManage, D, teams, mcs) {
     var MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -254,7 +300,11 @@
       _sb.from('schedule_templates').select('*').order('is_default', { ascending: false }),
       _sb.from('guests').select('*').order('name'),
       _sb.from('profiles').select('id,first_name,last_name,full_name,email,phone1,phone1_type,spouse_id').eq('status', 'approved'),
-      _sb.from('events').select('*').gte('event_date', monthStart).lt('event_date', nextMonthStart).order('event_date')
+      /* non-recurring in this month + any recurring event (expanded client-side) */
+      Promise.all([
+        _sb.from('events').select('*').gte('event_date', monthStart).lt('event_date', nextMonthStart).order('event_date'),
+        _sb.from('events').select('*').lt('event_date', monthStart).not('recurrence_type', 'is', null).order('event_date')
+      ]).then(function (r) { return { data: (r[0].data || []).concat(r[1].data || []) }; })
     ];
     if (_isAdmin) {
       fetches.push(_sb.from('teams').select('id,name').order('name'));
@@ -266,7 +316,8 @@
     var templates = results[1].data || [];
     var guests    = results[2].data || [];
     var approved  = results[3].data || [];
-    var calEvents = results[4].data || [];
+    var _rawCalEvents = results[4].data || [];
+    var calEvents = expandRecurringEvents(_rawCalEvents, monthStart, nextMonthStart);
     var teams     = _isAdmin ? (results[5].data || []) : [];
     var mcs       = _isAdmin ? (results[6].data || []) : [];
 
@@ -277,8 +328,8 @@
     var todayStr = new Date().toISOString().split('T')[0];
     var nextSun  = nextSunday();
 
-    /* store for calendar click handler */
-    window._mpCalData = { calEvents: calEvents, rosters: rosters, uid: uid, D: D, canManage: _isAdmin, teams: teams, mcs: mcs, sb: _sb };
+    /* store for calendar click handler; keep raw events for editing */
+    window._mpCalData = { calEvents: calEvents, baseCalEvents: _rawCalEvents, rosters: rosters, uid: uid, D: D, canManage: _isAdmin, teams: teams, mcs: mcs, sb: _sb };
 
     var html = '<h2 class="mp-tab-title">Schedule</h2>';
 
@@ -663,15 +714,21 @@
 
     dayEvents.forEach(function (ev) {
       var visLabel = ev.visibility === 'team' ? 'Team event' : ev.visibility === 'mc' ? 'MC event' : 'Church event';
+      var RECUR_SHORT = { weekly: 'Weekly', monthly: 'Monthly', yearly: 'Yearly', monthly_weekday: 'Monthly' };
+      if (ev.recurrence_type === 'monthly_weekday' && ev.recurrence_week && ev.recurrence_day !== null) {
+        var _ORD = ['','1st','2nd','3rd','4th','5th'], _DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+        RECUR_SHORT.monthly_weekday = _ORD[ev.recurrence_week] + ' ' + _DAYS[ev.recurrence_day] + ' monthly';
+      }
+      var recurBadge = ev.recurrence_type ? ' <span style="font-size:0.75rem;color:#5C718E;white-space:nowrap;">↻ ' + D.esc(RECUR_SHORT[ev.recurrence_type] || ev.recurrence_type) + '</span>' : '';
       html += '<div class="mp-cal-detail-event">';
       html += '<div class="mp-cal-detail-event-title">' + D.esc(ev.title) + (ev.event_time ? ' &mdash; ' + D.esc(ev.event_time) : '') + '</div>';
-      html += '<div class="mp-cal-detail-event-meta">' + visLabel + '</div>';
+      html += '<div class="mp-cal-detail-event-meta">' + visLabel + recurBadge + '</div>';
       if (ev.description) html += '<div class="mp-cal-detail-event-desc">' + D.esc(ev.description) + '</div>';
       html += buildCalExportHtml(D, ev.title, ev.event_date, ev.event_time || null, ev.description || null);
       if (cd.canManage) {
         html += '<div style="margin-top:8px;display:flex;gap:8px;">';
         html += '<button class="mp-btn mp-btn--secondary mp-btn--small" onclick="mpCalEditEvent(\'' + D.esc(ev.id) + '\')">Edit</button>';
-        html += '<button class="mp-btn mp-btn--danger mp-btn--small" onclick="mpCalDeleteEvent(\'' + D.esc(ev.id) + '\',\'' + D.esc(ev.title) + '\')">Delete</button>';
+        html += '<button class="mp-btn mp-btn--danger mp-btn--small" onclick="mpCalDeleteEvent(\'' + D.esc(ev.id) + '\',\'' + D.esc(ev.title) + '\',' + (ev.recurrence_type ? 'true' : 'false') + ')">Delete</button>';
         html += '</div>';
       }
       html += '</div>';
@@ -706,6 +763,22 @@
     html += '<div class="mp-form-row"><div class="mp-form-group"><label>Date <span class="mp-required">*</span></label><input type="date" name="event_date" value="' + D.esc(isEdit ? ev.event_date : '') + '" required></div>';
     html += '<div class="mp-form-group"><label>Time <span class="mp-optional">(Optional)</span></label><input type="text" name="event_time" value="' + D.esc(isEdit ? (ev.event_time || '') : '') + '" placeholder="e.g. 6:30 PM"></div></div>';
     html += '<div class="mp-form-group"><label>Description <span class="mp-optional">(Optional)</span></label><textarea name="event_description" rows="2" placeholder="Brief description...">' + D.esc(isEdit ? (ev.description || '') : '') + '</textarea></div>';
+
+    var recType = isEdit ? (ev.recurrence_type || '') : '';
+    html += '<div class="mp-form-group"><label>Repeats</label>';
+    html += '<select name="event_recurrence" id="mp-event-recurrence" onchange="mpCalRecurrenceChange(this.value)">';
+    html += '<option value=""'   + (!recType ? ' selected':'') + '>Does not repeat</option>';
+    html += '<option value="weekly"' + (recType==='weekly'?' selected':'') + '>Weekly</option>';
+    html += '<option value="monthly"' + (recType==='monthly'?' selected':'') + '>Monthly (same date)</option>';
+    html += '<option value="monthly_weekday"' + (recType==='monthly_weekday'?' selected':'') + '>Monthly (same weekday &amp; week)</option>';
+    html += '<option value="yearly"' + (recType==='yearly'?' selected':'') + '>Yearly</option>';
+    html += '</select></div>';
+    html += '<div id="mp-recurrence-opts" style="' + (recType ? '' : 'display:none;') + '">';
+    html += '<div class="mp-form-group"><label>Ends <span class="mp-optional">(Optional — leave blank for no end)</span></label>';
+    html += '<input type="date" name="event_recurrence_end" value="' + D.esc(isEdit && ev.recurrence_end_date ? ev.recurrence_end_date : '') + '"></div>';
+    if (isEdit && recType) html += '<p style="font-size:0.8rem;color:#888;margin:0 0 12px;">Saving updates all occurrences.</p>';
+    html += '</div>';
+
     html += '<div class="mp-form-group"><label>Visible To</label>';
     html += '<select name="event_visibility" id="mp-event-vis" onchange="mpCalVisChange(this.value)">';
     html += '<option value="all"' + (!isEdit || ev.visibility === 'all' ? ' selected' : '') + '>All Members (default)</option>';
@@ -741,16 +814,28 @@
     document.getElementById('mp-event-form').addEventListener('submit', async function (e) {
       e.preventDefault();
       var fd = new FormData(e.target);
-      var vis = fd.get('event_visibility');
+      var vis     = fd.get('event_visibility');
+      var recType = fd.get('event_recurrence') || null;
+      var evDate  = fd.get('event_date') || '';
+      var recWeek = null, recDay = null;
+      if (recType === 'monthly_weekday' && evDate) {
+        var _d = new Date(evDate + 'T12:00:00');
+        recWeek = Math.ceil(_d.getDate() / 7);
+        recDay  = _d.getDay();
+      }
       var payload = {
         title: (fd.get('event_title') || '').trim(),
-        event_date: fd.get('event_date'),
+        event_date: evDate,
         event_time: fd.get('event_time') || '',
         description: fd.get('event_description') || '',
         visibility: vis,
         target_team_id: vis === 'team' ? (fd.get('event_team_id') || null) : null,
         target_mc_id:   vis === 'mc'   ? (fd.get('event_mc_id')   || null) : null,
-        created_by: window.mpDashboard.getProfile().id
+        created_by: window.mpDashboard.getProfile().id,
+        recurrence_type:     recType || null,
+        recurrence_end_date: recType && fd.get('event_recurrence_end') ? fd.get('event_recurrence_end') : null,
+        recurrence_week:     recWeek,
+        recurrence_day:      recDay
       };
       if (!payload.title || !payload.event_date) { alert('Title and date are required.'); return; }
       var evId = fd.get('event_id');
@@ -771,11 +856,16 @@
   };
   window.mpCalEditEvent = function (id) {
     var cd = window._mpCalData; if (!cd) return;
-    var ev = cd.calEvents.find(function (e) { return e.id === id; });
+    /* use base (unexpanded) events so date/recurrence fields are the originals */
+    var src = cd.baseCalEvents || cd.calEvents;
+    var ev = src.find(function (e) { return e.id === id; });
     if (ev) openEventModal(cd.D, cd.teams, cd.mcs, ev);
   };
-  window.mpCalDeleteEvent = async function (id, title) {
-    if (!confirm('Delete event "' + title + '"?')) return;
+  window.mpCalDeleteEvent = async function (id, title, isRecurring) {
+    var msg = isRecurring
+      ? 'Delete ALL occurrences of "' + title + '"? This cannot be undone.'
+      : 'Delete "' + title + '"?';
+    if (!confirm(msg)) return;
     var cd = window._mpCalData; if (!cd) return;
     await cd.sb.from('events').delete().eq('id', id);
     renderScheduleTab();
@@ -788,6 +878,10 @@
     var tg = document.getElementById('mp-event-team-group'), mg = document.getElementById('mp-event-mc-group');
     if (tg) tg.style.display = val === 'team' ? '' : 'none';
     if (mg) mg.style.display = val === 'mc'   ? '' : 'none';
+  };
+  window.mpCalRecurrenceChange = function (val) {
+    var el = document.getElementById('mp-recurrence-opts');
+    if (el) el.style.display = val ? '' : 'none';
   };
 
   /* ── template builder helpers ───────────────────────────────── */
@@ -904,6 +998,9 @@
     if (!row || !list) return;
     if (dir < 0) { var prev = row.previousElementSibling; if (prev) list.insertBefore(row, prev); }
     else         { var nxt  = row.nextElementSibling;     if (nxt)  list.insertBefore(nxt, row); }
+    /* keep focus on the button so it visually tracks with the row */
+    btn.focus();
+    row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   };
   window.mpTplAddRoleRow = function () {
     var list = document.getElementById('mp-tpl-roles'); if (!list) return;
