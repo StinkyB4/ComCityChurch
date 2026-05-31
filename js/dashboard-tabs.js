@@ -320,6 +320,7 @@
       html += '<div style="display:flex;gap:10px;margin-top:16px;"><button type="submit" class="mp-btn mp-btn--primary" style="flex:1;">' + (editMc ? 'Save Changes' : 'Create MC') + '</button>';
       if (editMc) html += '<a href="#" class="mp-btn mp-btn--secondary" onclick="window.mpDashboard.navigate(\'mcs\');return false;">Cancel</a>';
       html += '</div></form></div></details>';
+      }
     }
 
     if (!mcs.length) {

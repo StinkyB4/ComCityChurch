@@ -322,10 +322,9 @@
         html += '<button type="submit" class="mp-btn mp-btn--danger" style="width:auto;">Delete Roster Event</button></form>';
       }
 
-      html += '<script>window._schedAssigneeOpts=' + JSON.stringify(assigneeOptsHtml) + ';<\/script>';
-      html += '<script>window.mpSchedTypeChange=function(v){var g=document.getElementById("roster-title-group");if(g)g.style.display=v==="event"?"":"none";};';
-      html += 'var mpSlotIdx=' + slots.length + ';';
-      html += 'window.mpSchedAddRow=function(){var w=document.getElementById("slots-wrap");if(!w)return;var i=mpSlotIdx++;var d=document.createElement("div");d.className="mp-sched-slot-row";d.dataset.idx=i;d.innerHTML=\'<input type="hidden" name="slots[\'+i+\'][id]" value=""><input type="text" name="slots[\'+i+\'][role]" placeholder="Role" class="mp-sched-role-input"><select name="slots[\'+i+\'][assignee]" class="mp-sched-select">\'+window._schedAssigneeOpts+\'</select><button type="button" class="mp-btn mp-btn--danger mp-btn--small" onclick="this.closest(\\".mp-sched-slot-row\\").remove()">&#10005;</button>\';w.appendChild(d);d.querySelector("input[type=text]").focus();};<\/script>';
+      /* set globals BEFORE setContent — script tags inside innerHTML are never executed */
+      window._schedAssigneeOpts = assigneeOptsHtml;
+      window._mpSchedSlotIdx = slots.length;
 
       D.setContent(html);
 
@@ -741,6 +740,25 @@
     var tg = document.getElementById('mp-event-team-group'), mg = document.getElementById('mp-event-mc-group');
     if (tg) tg.style.display = val === 'team' ? '' : 'none';
     if (mg) mg.style.display = val === 'mc'   ? '' : 'none';
+  };
+
+  /* ── roster edit-form globals ────────────────────────────────── */
+  window.mpSchedTypeChange = function (v) {
+    var g = document.getElementById('roster-title-group');
+    if (g) g.style.display = v === 'event' ? '' : 'none';
+  };
+  window.mpSchedAddRow = function () {
+    var w = document.getElementById('slots-wrap'); if (!w) return;
+    var i = window._mpSchedSlotIdx++;
+    var d = document.createElement('div');
+    d.className = 'mp-sched-slot-row'; d.dataset.idx = i;
+    d.innerHTML = '<input type="hidden" name="slots[' + i + '][id]" value="">'
+      + '<input type="text" name="slots[' + i + '][role]" placeholder="Role" class="mp-sched-role-input">'
+      + '<select name="slots[' + i + '][assignee]" class="mp-sched-select">'
+      + (window._schedAssigneeOpts || '') + '</select>'
+      + '<button type="button" class="mp-btn mp-btn--danger mp-btn--small"'
+      + ' onclick="this.closest(\'.mp-sched-slot-row\').remove()">&#10005;</button>';
+    w.appendChild(d); d.querySelector('input[type=text]').focus();
   };
 
   /* ── existing roster globals ─────────────────────────────────── */
