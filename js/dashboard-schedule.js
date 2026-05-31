@@ -81,7 +81,13 @@
       '.mp-tpl-order-btn:hover{background:#eef2f8;}',
       '.mp-tpl-load-bar{display:flex;align-items:center;gap:8px;background:#f0f4f8;border-radius:6px;padding:9px 12px;margin-bottom:4px;}',
       '.mp-tpl-load-label{font-size:0.83rem;color:#555;white-space:nowrap;font-weight:600;}',
-      '.mp-tpl-load-select{flex:1;min-width:0;}'
+      '.mp-tpl-load-select{flex:1;min-width:0;}',
+      /* time picker */
+      '.mp-allday-row{display:flex;align-items:center;gap:7px;font-size:0.85rem;color:#555;cursor:pointer;margin-bottom:7px;user-select:none;}',
+      '.mp-allday-row input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:#112E53;flex-shrink:0;}',
+      '.mp-time-desktop{width:100%;display:block;}',
+      '.mp-time-native{width:100%;display:none!important;}',
+      '@media(pointer:coarse){.mp-time-desktop{display:none!important;}.mp-time-native{display:block!important;}}'
     ].join('');
     document.head.appendChild(s);
   })();
@@ -751,6 +757,27 @@
     renderScheduleTab();
   };
 
+  /* ── event modal helpers ─────────────────────────────────────── */
+  function mpTo24h(t) {
+    if (!t) return '';
+    var m = t.match(/(\d+):(\d{2})\s*(AM|PM)/i); if (!m) return '';
+    var h = parseInt(m[1], 10);
+    if (m[3].toUpperCase() === 'PM' && h !== 12) h += 12;
+    if (m[3].toUpperCase() === 'AM' && h === 12) h = 0;
+    return String(h).padStart(2,'0') + ':' + String(parseInt(m[2],10)).padStart(2,'0');
+  }
+  function buildTimeOpts(sel) {
+    var o = '<option value="">— Select time —</option>';
+    for (var h = 0; h < 24; h++) {
+      for (var m = 0; m < 60; m += 30) {
+        var p = h < 12 ? 'AM' : 'PM', h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+        var lbl = h12 + ':' + String(m).padStart(2,'0') + ' ' + p;
+        o += '<option value="' + lbl + '"' + (lbl === sel ? ' selected' : '') + '>' + lbl + '</option>';
+      }
+    }
+    return o;
+  }
+
   /* ── event modal ─────────────────────────────────────────────── */
   function buildEventModal(D, teams, mcs, ev) {
     var isEdit = !!ev;
@@ -761,7 +788,17 @@
     if (isEdit) html += '<input type="hidden" name="event_id" value="' + D.esc(ev.id) + '">';
     html += '<div class="mp-form-group"><label>Title <span class="mp-required">*</span></label><input type="text" name="event_title" value="' + D.esc(isEdit ? ev.title : '') + '" required placeholder="e.g. Church Picnic"></div>';
     html += '<div class="mp-form-row"><div class="mp-form-group"><label>Date <span class="mp-required">*</span></label><input type="date" name="event_date" value="' + D.esc(isEdit ? ev.event_date : '') + '" required></div>';
-    html += '<div class="mp-form-group"><label>Time <span class="mp-optional">(Optional)</span></label><input type="text" name="event_time" value="' + D.esc(isEdit ? (ev.event_time || '') : '') + '" placeholder="e.g. 6:30 PM"></div></div>';
+    var curTime = isEdit ? (ev.event_time || '') : '';
+    var isAllDay = !curTime;
+    html += '<div class="mp-form-group">';
+    html += '<label>Time <span class="mp-required" id="mp-time-req"' + (isAllDay ? ' style="display:none;"' : '') + '>*</span></label>';
+    html += '<label class="mp-allday-row"><input type="checkbox" name="event_allday" id="mp-allday-cb" value="1"' + (isAllDay ? ' checked' : '') + ' onchange="mpCalAllDayChange(this.checked)"> All day</label>';
+    html += '<div id="mp-time-wrap" style="' + (isAllDay ? 'display:none;' : '') + '">';
+    html += '<select class="mp-time-desktop" onchange="mpCalSyncTime(this.value)">' + buildTimeOpts(curTime) + '</select>';
+    html += '<input type="time" class="mp-time-native" value="' + D.esc(mpTo24h(curTime)) + '" onchange="mpCalSyncTime(window.mpTo12h(this.value))">';
+    html += '<input type="hidden" name="event_time" id="mp-event-time-val" value="' + D.esc(curTime) + '">';
+    html += '</div>';
+    html += '</div></div>';
     html += '<div class="mp-form-group"><label>Description <span class="mp-optional">(Optional)</span></label><textarea name="event_description" rows="2" placeholder="Brief description...">' + D.esc(isEdit ? (ev.description || '') : '') + '</textarea></div>';
 
     var recType = isEdit ? (ev.recurrence_type || '') : '';
@@ -837,6 +874,9 @@
         recurrence_week:     recWeek,
         recurrence_day:      recDay
       };
+      var allDay = fd.get('event_allday') === '1';
+      if (!allDay && !payload.event_time) { alert('Please select a time or check "All day".'); return; }
+      if (allDay) payload.event_time = '';
       if (!payload.title || !payload.event_date) { alert('Title and date are required.'); return; }
       var evId = fd.get('event_id');
       var sb = window.mpDashboard.getSb();
@@ -882,6 +922,24 @@
   window.mpCalRecurrenceChange = function (val) {
     var el = document.getElementById('mp-recurrence-opts');
     if (el) el.style.display = val ? '' : 'none';
+  };
+  window.mpTo12h = function (t) {
+    if (!t) return '';
+    var p = t.split(':'), h = parseInt(p[0],10), m = parseInt(p[1],10);
+    var pm = h >= 12, h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+    return h12 + ':' + String(m).padStart(2,'0') + ' ' + (pm ? 'PM' : 'AM');
+  };
+  window.mpCalAllDayChange = function (checked) {
+    var wrap = document.getElementById('mp-time-wrap');
+    var req  = document.getElementById('mp-time-req');
+    var hid  = document.getElementById('mp-event-time-val');
+    if (wrap) wrap.style.display = checked ? 'none' : '';
+    if (req)  req.style.display  = checked ? 'none' : '';
+    if (checked && hid) hid.value = '';  /* clear stored time when switching to all-day */
+  };
+  window.mpCalSyncTime = function (val) {
+    var h = document.getElementById('mp-event-time-val');
+    if (h) h.value = val || '';
   };
 
   /* ── template builder helpers ───────────────────────────────── */
