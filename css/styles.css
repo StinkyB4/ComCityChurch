@@ -1079,3 +1079,9 @@ footer {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* Spotify CTA below sermon grid */
+.sermon-cta {
+  text-align: center;
+  margin-top: var(--space-xl);
+}
