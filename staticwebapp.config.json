@@ -1,13 +1,38 @@
-﻿{
+{
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["/css/*", "/js/*", "/assets/*", "/api/*"]
+    "exclude": ["/css/*", "/js/*", "/assets/*", "/api/*", "/members/*"]
   },
   "routes": [
-    { "route": "/members", "rewrite": "/members/index.html" },
-    { "route": "/members/", "rewrite": "/members/index.html" }
+    { "route": "/about",                  "rewrite": "/about.html"                  },
+    { "route": "/believe",                "rewrite": "/believe.html"                },
+    { "route": "/gospel",                 "rewrite": "/gospel.html"                 },
+    { "route": "/communities",            "rewrite": "/communities.html"            },
+    { "route": "/gatherings",             "rewrite": "/gatherings.html"             },
+    { "route": "/sermons",                "rewrite": "/sermons.html"                },
+    { "route": "/give",                   "rewrite": "/give.html"                   },
+    { "route": "/contact",                "rewrite": "/contact.html"                },
+    { "route": "/members",                "rewrite": "/members/index.html"          },
+    { "route": "/members/register",       "rewrite": "/members/register.html"       },
+    { "route": "/members/pending",        "rewrite": "/members/pending.html"        },
+    { "route": "/members/dashboard",      "rewrite": "/members/dashboard.html"      },
+    { "route": "/members/admin",          "rewrite": "/members/admin.html"          }
   ],
+  "responseOverrides": {
+    "404": {
+      "rewrite": "/index.html",
+      "statusCode": 200
+    }
+  },
+  "globalHeaders": {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options":        "SAMEORIGIN",
+    "Referrer-Policy":        "strict-origin-when-cross-origin",
+    "Permissions-Policy":     "camera=(), microphone=(), geolocation=()"
+  },
   "mimeTypes": {
-    ".json": "application/json"
+    ".json": "application/json",
+    ".mp4":  "video/mp4",
+    ".webp": "image/webp"
   }
 }
