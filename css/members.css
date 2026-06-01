@@ -1698,6 +1698,14 @@ body.mp-body {
 .mp-rte-color-full { width: 100%; height: 24px; border: 1px solid var(--mp-border); border-radius: 4px; cursor: pointer; }
 .mp-rte-btn-panel { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; padding: 10px 12px; background: #f9f6f4; border: 1.5px solid var(--mp-border); border-radius: 6px; align-items: center; }
 .mp-rte-btn-input { flex: 1; min-width: 100px; padding: 6px 10px; border: 1.5px solid var(--mp-border); border-radius: 5px; font-size: 0.85rem; font-family: inherit; }
+.mp-rte-size-display { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; font-size: 0.8rem; color: var(--mp-text-1); padding: 0 2px; user-select: none; font-family: inherit; }
+.mp-rte-btn--size { padding: 4px 5px; font-size: 0.9rem; font-weight: 600; }
+.mp-rte-btn--dd { gap: 2px; }
+.mp-rte-picker-label { font-size: 0.72rem; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+.mp-rte-dropdown-wrap { position: relative; }
+.mp-rte-dropdown-menu { position: absolute; top: calc(100% + 4px); left: 0; background: #fff; border: 1.5px solid var(--mp-border); border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); z-index: 300; padding: 4px 0; min-width: 130px; }
+.mp-rte-dropdown-item { display: flex; align-items: center; gap: 8px; padding: 6px 14px; font-size: 0.85rem; cursor: pointer; white-space: nowrap; background: none; border: none; width: 100%; text-align: left; color: var(--mp-text-1); font-family: inherit; }
+.mp-rte-dropdown-item:hover { background: #f9f6f4; }
 
 /* ══════════════════════════════════════════════════════════════════════════
    PROFILE TAB

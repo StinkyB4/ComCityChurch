@@ -17,17 +17,141 @@
   tryRegister();
 
   /* shared RTE toolbar HTML */
+  var _RTE_SIZES     = [8, 9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 28, 32, 36, 48, 72];
+  var _RTE_HTML_SIZE = [1, 1,  2,  2,  3,  3,  4,  4,  5,  5,  6,  6,  7,  7,  7,  7];
+  var _RTE_FG = ['#000000','#333333','#555555','#777777','#999999','#ffffff',
+    '#e53e3e','#dd6b20','#d69e2e','#38a169','#2b6cb0','#6b46c1',
+    '#feb2b2','#fbd38d','#fefcbf','#c6f6d5','#bee3f8','#e9d8fd'];
+  var _RTE_BG = ['transparent','#fef08a','#bbf7d0','#bfdbfe','#fecaca','#fed7aa',
+    '#e9d8fd','#fce7f3','#ccfbf1','#f0fdf4','#eff6ff','#fdf4ff',
+    '#000000','#333333','#ffffff','#f9f6f4','#ede8e4','#d4c5bb'];
+
+  function _rteSwatches(colors, bId, hId, type, indId, pickId) {
+    return colors.map(function (c) {
+      var isNone = c === 'transparent';
+      var style = isNone
+        ? 'background:linear-gradient(135deg,#fff 45%,#e53e3e 45%,#e53e3e 55%,#fff 55%);border:1px solid #ddd;'
+        : 'background:' + c + ';';
+      return '<button type="button" class="mp-rte-swatch" style="' + style + '"'
+        + ' onclick="rteApplyColor(\'' + bId + '\',\'' + hId + '\',\'' + type + '\',\'' + c + '\',\'' + indId + '\',\'' + pickId + '\')"'
+        + ' title="' + (isNone ? 'None' : c) + '"></button>';
+    }).join('');
+  }
+
   function rteToolbar(bodyId, hiddenId, prefix) {
     prefix = prefix || 'rte';
-    return '<div class="mp-rte-toolbar">'
-      + '<button type="button" class="mp-rte-btn" onclick="' + prefix + 'Cmd(\'bold\')" title="Bold"><strong>B</strong></button>'
-      + '<button type="button" class="mp-rte-btn" onclick="' + prefix + 'Cmd(\'italic\')" title="Italic"><em>I</em></button>'
-      + '<button type="button" class="mp-rte-btn" onclick="' + prefix + 'Cmd(\'underline\')" title="Underline"><u>U</u></button>'
-      + '<span class="mp-rte-sep"></span>'
-      + '<button type="button" class="mp-rte-btn" onclick="' + prefix + 'Link()" title="Link">🔗</button>'
-      + '<button type="button" class="mp-rte-btn" onclick="' + prefix + 'Cmd(\'insertUnorderedList\')" title="List">•</button>'
-      + '<button type="button" class="mp-rte-btn" onclick="' + prefix + 'Cmd(\'removeFormat\')" title="Clear">✕</button>'
-      + '</div>';
+    var b = bodyId, h = hiddenId;
+    var fgPick = prefix + '-fgpick', fgInd = prefix + '-fgind';
+    var bgPick = prefix + '-bgpick', bgInd = prefix + '-bgind';
+    var sizeDisp = prefix + '-size';
+    var alnMenu  = prefix + '-alnmenu';
+    var lsMenu   = prefix + '-lsmenu';
+
+    /* inline SVG icons */
+    var iLink   = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+    var iImg    = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
+    var iPencil = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+    var iAlnL   = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg>';
+    var iAlnC   = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>';
+    var iAlnR   = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="6" y1="18" x2="21" y2="18"/></svg>';
+    var iAlnJ   = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>';
+    var iLS     = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="20" y2="6"/><line x1="3" y1="12" x2="20" y2="12"/><line x1="3" y1="18" x2="20" y2="18"/><polyline points="17 3 20 6 17 9"/><polyline points="17 15 20 18 17 21"/></svg>';
+    var iBullet = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"/></svg>';
+    var iOrdered= '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><text x="1.5" y="8.5" font-size="7.5" fill="currentColor" stroke="none" font-family="Arial,sans-serif">1.</text><text x="1.5" y="14.5" font-size="7.5" fill="currentColor" stroke="none" font-family="Arial,sans-serif">2.</text><text x="1.5" y="20.5" font-size="7.5" fill="currentColor" stroke="none" font-family="Arial,sans-serif">3.</text></svg>';
+    var iOutdent= '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="6" x2="9" y2="6"/><line x1="21" y1="12" x2="12" y2="12"/><line x1="21" y1="18" x2="9" y2="18"/><polyline points="7 9 3 12 7 15"/></svg>';
+    var iIndent = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/><polyline points="11 9 15 12 11 15"/></svg>';
+    var iChevD  = '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"/></svg>';
+
+    var T = '<div class="mp-rte-toolbar">';
+
+    /* font family */
+    T += '<select class="mp-rte-select mp-rte-select--wide" title="Font family" onchange="rteSetFont(\'' + b + '\',\'' + h + '\',this.value)">'
+       + '<option value="Arial" selected>Arial</option>'
+       + '<option value="Georgia">Georgia</option>'
+       + '<option value="Times New Roman">Times New Roman</option>'
+       + '<option value="Courier New">Courier New</option>'
+       + '<option value="Verdana">Verdana</option>'
+       + '<option value="Helvetica">Helvetica</option>'
+       + '</select>';
+    T += '<span class="mp-rte-sep"></span>';
+
+    /* font size stepper */
+    T += '<button type="button" class="mp-rte-btn mp-rte-btn--size" onclick="rteSizeStep(\'' + b + '\',\'' + h + '\',\'' + sizeDisp + '\',-1)" title="Decrease font size">−</button>';
+    T += '<span class="mp-rte-size-display" id="' + sizeDisp + '">11</span>';
+    T += '<button type="button" class="mp-rte-btn mp-rte-btn--size" onclick="rteSizeStep(\'' + b + '\',\'' + h + '\',\'' + sizeDisp + '\',1)" title="Increase font size">+</button>';
+    T += '<span class="mp-rte-sep"></span>';
+
+    /* B I U */
+    T += '<button type="button" class="mp-rte-btn" onclick="rteExecCmd(\'' + b + '\',\'' + h + '\',\'bold\')" title="Bold"><strong>B</strong></button>';
+    T += '<button type="button" class="mp-rte-btn" onclick="rteExecCmd(\'' + b + '\',\'' + h + '\',\'italic\')" title="Italic"><em>I</em></button>';
+    T += '<button type="button" class="mp-rte-btn" onclick="rteExecCmd(\'' + b + '\',\'' + h + '\',\'underline\')" title="Underline"><u>U</u></button>';
+
+    /* text color */
+    T += '<div class="mp-rte-color-btn-wrap">'
+       + '<button type="button" class="mp-rte-btn mp-rte-btn--color" onclick="rteTogglePicker(\'' + fgPick + '\')" title="Text color">'
+       + '<span style="font-weight:700;line-height:1;font-size:0.9em;">A</span>'
+       + '<span class="mp-rte-color-indicator" id="' + fgInd + '" style="background:#000000"></span>'
+       + '</button>'
+       + '<div class="mp-rte-picker" id="' + fgPick + '" style="display:none;">'
+       + '<div class="mp-rte-picker-label">Text Color</div>'
+       + '<div class="mp-rte-swatch-grid">' + _rteSwatches(_RTE_FG, b, h, 'fore', fgInd, fgPick) + '</div>'
+       + '<input type="color" class="mp-rte-color-full" value="#000000" oninput="rteApplyColor(\'' + b + '\',\'' + h + '\',\'fore\',this.value,\'' + fgInd + '\',\'\')">'
+       + '</div></div>';
+
+    /* highlight color */
+    T += '<div class="mp-rte-color-btn-wrap">'
+       + '<button type="button" class="mp-rte-btn mp-rte-btn--color" onclick="rteTogglePicker(\'' + bgPick + '\')" title="Highlight color">'
+       + iPencil
+       + '<span class="mp-rte-color-indicator" id="' + bgInd + '" style="background:#fef08a"></span>'
+       + '</button>'
+       + '<div class="mp-rte-picker" id="' + bgPick + '" style="display:none;">'
+       + '<div class="mp-rte-picker-label">Highlight Color</div>'
+       + '<div class="mp-rte-swatch-grid">' + _rteSwatches(_RTE_BG, b, h, 'back', bgInd, bgPick) + '</div>'
+       + '<input type="color" class="mp-rte-color-full" value="#fef08a" oninput="rteApplyColor(\'' + b + '\',\'' + h + '\',\'back\',this.value,\'' + bgInd + '\',\'\')">'
+       + '</div></div>';
+    T += '<span class="mp-rte-sep"></span>';
+
+    /* link, image */
+    T += '<button type="button" class="mp-rte-btn" onclick="rteInsertLink(\'' + b + '\',\'' + h + '\')" title="Insert link">' + iLink + '</button>';
+    T += '<button type="button" class="mp-rte-btn" onclick="rteInsertImage(\'' + b + '\',\'' + h + '\')" title="Insert image">' + iImg + '</button>';
+    T += '<span class="mp-rte-sep"></span>';
+
+    /* alignment dropdown */
+    T += '<div class="mp-rte-dropdown-wrap">'
+       + '<button type="button" class="mp-rte-btn mp-rte-btn--dd" onclick="rteTogglePicker(\'' + alnMenu + '\')" title="Text alignment">' + iAlnL + iChevD + '</button>'
+       + '<div class="mp-rte-picker mp-rte-dropdown-menu" id="' + alnMenu + '" style="display:none;">'
+       + '<button type="button" class="mp-rte-dropdown-item" onclick="rteExecCmd(\'' + b + '\',\'' + h + '\',\'justifyLeft\');rteTogglePicker(\'' + alnMenu + '\')">' + iAlnL + ' Left</button>'
+       + '<button type="button" class="mp-rte-dropdown-item" onclick="rteExecCmd(\'' + b + '\',\'' + h + '\',\'justifyCenter\');rteTogglePicker(\'' + alnMenu + '\')">' + iAlnC + ' Center</button>'
+       + '<button type="button" class="mp-rte-dropdown-item" onclick="rteExecCmd(\'' + b + '\',\'' + h + '\',\'justifyRight\');rteTogglePicker(\'' + alnMenu + '\')">' + iAlnR + ' Right</button>'
+       + '<button type="button" class="mp-rte-dropdown-item" onclick="rteExecCmd(\'' + b + '\',\'' + h + '\',\'justifyFull\');rteTogglePicker(\'' + alnMenu + '\')">' + iAlnJ + ' Justify</button>'
+       + '</div></div>';
+
+    /* line spacing dropdown */
+    T += '<div class="mp-rte-dropdown-wrap">'
+       + '<button type="button" class="mp-rte-btn mp-rte-btn--dd" onclick="rteTogglePicker(\'' + lsMenu + '\')" title="Line spacing">' + iLS + iChevD + '</button>'
+       + '<div class="mp-rte-picker mp-rte-dropdown-menu" id="' + lsMenu + '" style="display:none;">'
+       + '<button type="button" class="mp-rte-dropdown-item" onclick="rteLineSpacing(\'' + b + '\',\'' + h + '\',\'1\');rteTogglePicker(\'' + lsMenu + '\')">Single (1.0)</button>'
+       + '<button type="button" class="mp-rte-dropdown-item" onclick="rteLineSpacing(\'' + b + '\',\'' + h + '\',\'1.15\');rteTogglePicker(\'' + lsMenu + '\')">1.15</button>'
+       + '<button type="button" class="mp-rte-dropdown-item" onclick="rteLineSpacing(\'' + b + '\',\'' + h + '\',\'1.5\');rteTogglePicker(\'' + lsMenu + '\')">1.5</button>'
+       + '<button type="button" class="mp-rte-dropdown-item" onclick="rteLineSpacing(\'' + b + '\',\'' + h + '\',\'2\');rteTogglePicker(\'' + lsMenu + '\')">Double (2.0)</button>'
+       + '</div></div>';
+    T += '<span class="mp-rte-sep"></span>';
+
+    /* lists */
+    T += '<button type="button" class="mp-rte-btn" onclick="rteExecCmd(\'' + b + '\',\'' + h + '\',\'insertUnorderedList\')" title="Bullet list">' + iBullet + '</button>';
+    T += '<button type="button" class="mp-rte-btn" onclick="rteExecCmd(\'' + b + '\',\'' + h + '\',\'insertOrderedList\')" title="Numbered list">' + iOrdered + '</button>';
+    T += '<span class="mp-rte-sep"></span>';
+
+    /* indent */
+    T += '<button type="button" class="mp-rte-btn" onclick="rteExecCmd(\'' + b + '\',\'' + h + '\',\'outdent\')" title="Decrease indent">' + iOutdent + '</button>';
+    T += '<button type="button" class="mp-rte-btn" onclick="rteExecCmd(\'' + b + '\',\'' + h + '\',\'indent\')" title="Increase indent">' + iIndent + '</button>';
+    T += '<span class="mp-rte-sep"></span>';
+
+    /* clear formatting */
+    T += '<button type="button" class="mp-rte-btn" onclick="rteExecCmd(\'' + b + '\',\'' + h + '\',\'removeFormat\')" title="Clear formatting">✕</button>';
+
+    T += '</div>';
+    return T;
   }
 
   /* ══════════════════════════════════════════════════════════════
@@ -663,6 +787,152 @@
     document.execCommand('createLink', false, url); spRteSync();
   };
   window.spRteSync = function () { var b = document.getElementById('sp-rte'), h = document.getElementById('sp-hidden'); if (b && h) h.value = b.innerHTML; };
+
+  /* ══════════════════════════════════════════════════════════════
+     SHARED RTE GLOBALS — called from toolbar onclick attributes
+     ══════════════════════════════════════════════════════════════ */
+  window.rteSync = function (bId, hId) {
+    var b = document.getElementById(bId), h = document.getElementById(hId);
+    if (b && h) h.value = b.innerHTML;
+  };
+
+  window.rteExecCmd = function (bId, hId, cmd) {
+    var b = document.getElementById(bId);
+    if (b) { b.focus(); document.execCommand(cmd, false, null); }
+    window.rteSync(bId, hId);
+  };
+
+  window.rteSetFont = function (bId, hId, fontName) {
+    var b = document.getElementById(bId);
+    if (b) { b.focus(); document.execCommand('fontName', false, fontName); }
+    window.rteSync(bId, hId);
+  };
+
+  window.rteSizeStep = function (bId, hId, dispId, delta) {
+    var disp = document.getElementById(dispId);
+    if (!disp) return;
+    var cur = parseInt(disp.textContent, 10) || 11;
+    var idx = _RTE_SIZES.indexOf(cur);
+    if (idx < 0) {
+      for (var i = 0; i < _RTE_SIZES.length; i++) { if (_RTE_SIZES[i] >= cur) { idx = i; break; } }
+      if (idx < 0) idx = 3;
+    }
+    idx = Math.max(0, Math.min(_RTE_SIZES.length - 1, idx + delta));
+    var pt = _RTE_SIZES[idx];
+    disp.textContent = pt;
+    var b = document.getElementById(bId);
+    if (!b) return;
+    b.focus();
+    var sel = window.getSelection();
+    if (sel && sel.rangeCount && !sel.isCollapsed) {
+      /* marker technique: stamp a font[size=7], then replace with inline pt style */
+      document.execCommand('styleWithCSS', false, false);
+      document.execCommand('fontSize', false, '7');
+      b.querySelectorAll('font[size="7"]').forEach(function (el) {
+        el.removeAttribute('size');
+        el.style.fontSize = pt + 'pt';
+      });
+    } else {
+      /* no selection — set state for next typed character */
+      document.execCommand('styleWithCSS', false, true);
+      document.execCommand('fontSize', false, _RTE_HTML_SIZE[idx]);
+    }
+    window.rteSync(bId, hId);
+  };
+
+  window.rteTogglePicker = function (pickerId) {
+    document.querySelectorAll('.mp-rte-picker').forEach(function (p) {
+      if (p.id !== pickerId) p.style.display = 'none';
+    });
+    var el = document.getElementById(pickerId);
+    if (el) el.style.display = (el.style.display === 'none' ? 'block' : 'none');
+  };
+
+  window.rteApplyColor = function (bId, hId, type, color, indId, pickId) {
+    var b = document.getElementById(bId);
+    if (b) {
+      b.focus();
+      if (type === 'fore') {
+        document.execCommand('foreColor', false, color);
+      } else {
+        if (color === 'transparent') {
+          document.execCommand('hiliteColor', false, 'transparent');
+        } else {
+          document.execCommand('backColor', false, color);
+        }
+      }
+    }
+    var ind = document.getElementById(indId);
+    if (ind) ind.style.background = color === 'transparent' ? '' : color;
+    if (pickId) { var pick = document.getElementById(pickId); if (pick) pick.style.display = 'none'; }
+    window.rteSync(bId, hId);
+  };
+
+  window.rteInsertLink = function (bId, hId) {
+    var b = document.getElementById(bId); if (!b) return;
+    var sel = window.getSelection();
+    var saved = sel && sel.rangeCount ? sel.getRangeAt(0).cloneRange() : null;
+    var url = prompt('URL:', 'https://');
+    if (!url || url === 'https://') return;
+    b.focus();
+    if (saved) { var s = window.getSelection(); s.removeAllRanges(); s.addRange(saved); }
+    document.execCommand('createLink', false, url);
+    window.rteSync(bId, hId);
+  };
+
+  window.rteInsertImage = function (bId, hId) {
+    var b = document.getElementById(bId); if (!b) return;
+    var url = prompt('Image URL:', 'https://');
+    if (!url || url === 'https://') return;
+    b.focus();
+    document.execCommand('insertImage', false, url);
+    window.rteSync(bId, hId);
+  };
+
+  window.rteLineSpacing = function (bId, hId, value) {
+    var b = document.getElementById(bId); if (!b) return;
+    b.focus();
+    var sel = window.getSelection();
+    var blocks = [];
+    if (sel && sel.rangeCount) {
+      var range = sel.getRangeAt(0);
+      function nearestBlock(node) {
+        while (node && node !== b) {
+          if (/^(P|DIV|H[1-6]|LI|BLOCKQUOTE)$/i.test(node.nodeName)) return node;
+          node = node.parentNode;
+        }
+        return null;
+      }
+      var startNode = range.startContainer.nodeType === 3 ? range.startContainer.parentNode : range.startContainer;
+      var endNode   = range.endContainer.nodeType === 3   ? range.endContainer.parentNode   : range.endContainer;
+      var startBlock = nearestBlock(startNode);
+      var endBlock   = nearestBlock(endNode);
+      if (startBlock && startBlock === endBlock) {
+        blocks = [startBlock];
+      } else {
+        var inside = false;
+        Array.prototype.forEach.call(b.children, function (child) {
+          if (child === startBlock) inside = true;
+          if (inside) blocks.push(child);
+          if (child === endBlock) inside = false;
+        });
+      }
+    }
+    if (!blocks.length) blocks = Array.prototype.slice.call(b.children);
+    if (blocks.length) {
+      blocks.forEach(function (el) { el.style.lineHeight = value; });
+    } else {
+      b.style.lineHeight = value;
+    }
+    window.rteSync(bId, hId);
+  };
+
+  /* close all pickers on outside click */
+  document.addEventListener('mousedown', function (e) {
+    if (!e.target.closest || (!e.target.closest('.mp-rte-color-btn-wrap') && !e.target.closest('.mp-rte-dropdown-wrap'))) {
+      document.querySelectorAll('.mp-rte-picker').forEach(function (p) { p.style.display = 'none'; });
+    }
+  });
 
   /* also expose mpFmtPh if not already set */
   if (!window.mpFmtPh) {

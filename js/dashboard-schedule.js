@@ -1118,10 +1118,17 @@
   };
 
   window.mpCalLoadEventTemplate = function (tplId) {
-    if (!tplId) return;
+    var wrap = document.getElementById('event-slots-wrap'); if (!wrap) return;
+    if (!tplId) {
+      /* "— none —" selected — remove every slot that has no assignee chosen */
+      wrap.querySelectorAll('.mp-ev-slot').forEach(function (el) {
+        var asel = el.querySelector('select');
+        if (!asel || !asel.value) el.remove();
+      });
+      return;
+    }
     var tpl = (window._mpSchedTemplates || []).find(function (t) { return t.id === tplId; });
     if (!tpl || !tpl.slots) return;
-    var wrap = document.getElementById('event-slots-wrap'); if (!wrap) return;
     var opts = window._mpCalAssigneeOpts || '', D = window.mpDashboard;
     wrap.innerHTML = ''; var idx = 0;
     tpl.slots.forEach(function (row) {

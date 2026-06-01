@@ -52,16 +52,16 @@
     ]);
     var mcByProfile = {}, teamsByProfile = {};
     (mcMemsRes.data || []).forEach(function (r) {
-      var n = r.missional_communities && r.missional_communities.name;
-      if (!n) return;
+      var mc = r.missional_communities;
+      if (!mc || !mc.name) return;
       if (!mcByProfile[r.profile_id]) mcByProfile[r.profile_id] = [];
-      mcByProfile[r.profile_id].push(n);
+      mcByProfile[r.profile_id].push({ id: mc.id, name: mc.name });
     });
     (teamMemsRes.data || []).forEach(function (r) {
-      var n = r.teams && r.teams.name;
-      if (!n) return;
+      var team = r.teams;
+      if (!team || !team.name) return;
       if (!teamsByProfile[r.member_id]) teamsByProfile[r.member_id] = [];
-      teamsByProfile[r.member_id].push(n);
+      teamsByProfile[r.member_id].push({ id: team.id, name: team.name });
     });
 
     /* group into families — check both directions of spouse_id so one-sided
@@ -115,10 +115,10 @@
         return {
           type: 'couple', label: label, famLabel: famLabel,
           search: (label + ' ' + al + ' ' + bl + ' '
-            + (mcByProfile[a.id]    || []).join(' ') + ' '
-            + (mcByProfile[b.id]    || []).join(' ') + ' '
-            + (teamsByProfile[a.id] || []).join(' ') + ' '
-            + (teamsByProfile[b.id] || []).join(' ')).toLowerCase(),
+            + (mcByProfile[a.id]    || []).map(function(x){return x.name;}).join(' ') + ' '
+            + (mcByProfile[b.id]    || []).map(function(x){return x.name;}).join(' ') + ' '
+            + (teamsByProfile[a.id] || []).map(function(x){return x.name;}).join(' ') + ' '
+            + (teamsByProfile[b.id] || []).map(function(x){return x.name;}).join(' ')).toLowerCase(),
           a: memberData(a, mcByProfile, teamsByProfile), b: memberData(b, mcByProfile, teamsByProfile),
           address: a.address || b.address || '',
           anniversary: D.fmtDate(a.anniversary || b.anniversary || ''),
@@ -131,8 +131,8 @@
           name: ((m.first_name || '') + (m.last_name ? ' ' + m.last_name : '')).trim() || m.full_name || m.email,
           search: ((m.first_name || '') + ' ' + (m.last_name || '') + ' ' + (m.full_name || '') + ' '
             + (m.email || '') + ' '
-            + (mcByProfile[m.id]    || []).join(' ') + ' '
-            + (teamsByProfile[m.id] || []).join(' ')).toLowerCase(),
+            + (mcByProfile[m.id]    || []).map(function(x){return x.name;}).join(' ') + ' '
+            + (teamsByProfile[m.id] || []).map(function(x){return x.name;}).join(' ')).toLowerCase(),
           m: memberData(m, mcByProfile, teamsByProfile),
           address: m.address || '', anniversary: D.fmtDate(m.anniversary || ''),
           children: childrenByProfile[m.id] || []
@@ -206,6 +206,13 @@
       if (!val) return '';
       return '<tr><td class="mp-dir-dl-label">' + lbl + '</td><td class="mp-dir-dl-gap"></td><td class="mp-dir-dl-val">' + val + '</td></tr>';
     }
+    function mcLink(mc) {
+      return '<a href="?tab=mcs" class="mp-dir-link" onclick="mpDirNavMC(\'' + D.esc(mc.id) + '\');return false;">' + D.esc(mc.name) + '</a>';
+    }
+    function teamLink(team) {
+      return '<a href="?tab=teams" class="mp-dir-link" onclick="mpDirNavTeam(\'' + D.esc(team.id) + '\');return false;">' + D.esc(team.name) + '</a>';
+    }
+
     function personBlock(p) {
       var rows = '';
       if (p.email) rows += dlR('Email', '<a href="mailto:' + D.esc(p.email) + '">' + D.esc(p.email) + '</a>');
@@ -213,8 +220,8 @@
       if (p.phone2) rows += dlR(D.esc(p.phone2_type || 'Home'), D.esc(p.phone2));
       if (p.birthday) rows += dlR('Birthday', D.esc(p.birthday));
       if (p.bio) rows += dlR('About', D.esc(p.bio));
-      if (p.mcs   && p.mcs.length)   rows += dlR('MC',    D.esc(p.mcs.join(', ')));
-      if (p.teams && p.teams.length) rows += dlR('Teams', D.esc(p.teams.join(', ')));
+      if (p.mcs   && p.mcs.length)   rows += dlR('MC',    p.mcs.map(mcLink).join(', '));
+      if (p.teams && p.teams.length) rows += dlR('Teams', p.teams.map(teamLink).join(', '));
       return '<div class="mp-dir-person-block"><div class="mp-dir-person-row">'
         + av(p.photo, p.initials, p.name) + '<span class="mp-dir-person-name">' + D.esc(p.name) + '</span></div>'
         + (rows ? dlTbl(rows) : '') + '</div>';
@@ -261,8 +268,8 @@
             if (clist) rows += dlR('Children', clist);
           }
           if (m.m.bio) rows += dlR('About', D.esc(m.m.bio));
-          if (m.m.mcs   && m.m.mcs.length)   rows += dlR('MC',    D.esc(m.m.mcs.join(', ')));
-          if (m.m.teams && m.m.teams.length) rows += dlR('Teams', D.esc(m.m.teams.join(', ')));
+          if (m.m.mcs   && m.m.mcs.length)   rows += dlR('MC',    m.m.mcs.map(mcLink).join(', '));
+          if (m.m.teams && m.m.teams.length) rows += dlR('Teams', m.m.teams.map(teamLink).join(', '));
           if (rows) html += dlTbl(rows);
           html += '</div>';
         }
@@ -291,6 +298,22 @@
         document.body.appendChild(ov);
       }
       document.getElementById('mp-dir-lb-img').src = src; ov.style.display = 'flex';
+    };
+
+    /* deep-link navigation from directory cards */
+    window.mpDirNavMC = function (id) {
+      window.mpDashboard.navigate('mcs');
+      if (id) setTimeout(function () {
+        var el = document.getElementById('mc-' + id);
+        if (el) { el.open = true; el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      }, 150);
+    };
+    window.mpDirNavTeam = function (id) {
+      window.mpDashboard.navigate('teams');
+      if (id) setTimeout(function () {
+        var el = document.getElementById('team-' + id);
+        if (el) { el.open = true; el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      }, 150);
     };
 
     window.mpDirFilter = function (q) {
