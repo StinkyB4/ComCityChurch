@@ -55,6 +55,45 @@
     }
   }
 
+  /* ── Refresh tree DOM from in-memory tree (no DB re-fetch) ── */
+  /* Called after every mutation so the first save is reflected  */
+  /* immediately without a round-trip that could return stale    */
+  /* data from the connection pooler.                            */
+  function refreshFileSection(formEl) {
+    var D = window.mpDashboard;
+    var tree = window._fileTree || [];
+    var isAdmin = D.isAdmin();
+
+    /* update tree view */
+    var wrap = document.getElementById('file-tree-wrap');
+    if (wrap) {
+      wrap.innerHTML = tree.length
+        ? '<ul class="mp-tree-root">' + renderTree(tree, isAdmin, 0) + '</ul>'
+        : '<p class="mp-empty">No files or folders yet.</p>';
+    }
+
+    /* update folder dropdowns in all three forms */
+    var newOpts = gatherFolderOptions(tree, 0);
+    ['folder_parent_id', 'upload_folder_id', 'link_folder_id'].forEach(function (name) {
+      var sel = document.querySelector('select[name="' + name + '"]');
+      if (!sel) return;
+      var prev = sel.value;
+      sel.innerHTML = '<option value="">-- Root level --</option>' + newOpts;
+      if (prev) sel.value = prev;
+    });
+
+    /* reset submitted form */
+    if (formEl) formEl.reset();
+  }
+
+  /* ── notify checkbox HTML (reused across forms) ── */
+  function notifyCheckbox(name) {
+    return '<div style="width:100%;margin-top:6px;">'
+      + '<label style="display:flex;align-items:center;gap:6px;font-size:0.85rem;color:var(--mp-text-muted,#555);cursor:pointer;">'
+      + '<input type="checkbox" name="' + name + '"> Notify members by email'
+      + '</label></div>';
+  }
+
   /* ── render tree HTML (recursive) ───────────────────────── */
   function renderTree(nodes, isAdmin, depth) {
     var D = window.mpDashboard;
@@ -136,28 +175,38 @@
     if (_canUpload) {
       var panelBadge = _isAdmin ? 'Admin' : 'Leader';
       html += '<details class="mp-admin-panel"><summary class="mp-admin-toggle">Manage Files &amp; Folders <span class="mp-admin-badge">' + panelBadge + '</span></summary><div class="mp-admin-body">';
+
       /* create folder — admins only */
       if (_isAdmin) {
-      html += '<div class="mp-admin-section"><h4>Create New Folder</h4>';
-      html += '<form id="folder-form" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">';
-      html += '<div class="mp-form-group" style="flex:1;margin:0;"><label>Folder Name</label><input type="text" name="folder_name" required placeholder="e.g. Meeting Minutes"></div>';
-      html += '<div class="mp-form-group" style="flex:1;margin:0;"><label>Inside Folder <span class="mp-optional">(root if blank)</span></label><select name="folder_parent_id"><option value="">-- Root level --</option>' + folderOpts + '</select></div>';
-      html += '<button type="submit" class="mp-btn mp-btn--primary" style="width:auto;">Create Folder</button></form></div>';
+        html += '<div class="mp-admin-section"><h4>Create New Folder</h4>';
+        html += '<form id="folder-form" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">';
+        html += '<div class="mp-form-group" style="flex:1;margin:0;"><label>Folder Name</label><input type="text" name="folder_name" required placeholder="e.g. Meeting Minutes"></div>';
+        html += '<div class="mp-form-group" style="flex:1;margin:0;"><label>Inside Folder <span class="mp-optional">(root if blank)</span></label><select name="folder_parent_id"><option value="">-- Root level --</option>' + folderOpts + '</select></div>';
+        html += '<button type="submit" class="mp-btn mp-btn--primary" style="width:auto;">Create Folder</button>';
+        html += notifyCheckbox('folder_notify');
+        html += '</form></div>';
       }
+
       /* upload file — all leaders */
       html += '<div class="mp-admin-section"' + (_isAdmin ? ' style="margin-top:16px;"' : '') + '><h4>Upload File</h4>';
       html += '<form id="upload-form" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">';
       html += '<div class="mp-form-group" style="flex:1;margin:0;"><label>Display Name</label><input type="text" name="upload_label" placeholder="Defaults to filename"></div>';
       html += '<div class="mp-form-group" style="flex:1;margin:0;"><label>Upload To</label><select name="upload_folder_id"><option value="">-- Root level --</option>' + folderOpts + '</select></div>';
       html += '<div class="mp-form-group" style="flex:1;margin:0;"><label>File <span class="mp-required">*</span></label><input type="file" name="upload_file" id="upload-file-inp" required></div>';
-      html += '<button type="submit" class="mp-btn mp-btn--primary" style="width:auto;">Upload</button></form></div>';
+      html += '<button type="submit" class="mp-btn mp-btn--primary" style="width:auto;">Upload</button>';
+      html += notifyCheckbox('upload_notify');
+      html += '</form></div>';
+
       /* add external link */
       html += '<div class="mp-admin-section" style="margin-top:16px;"><h4>Add External Link</h4>';
       html += '<form id="link-form" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">';
       html += '<div class="mp-form-group" style="flex:1;margin:0;"><label>Display Name <span class="mp-required">*</span></label><input type="text" name="link_label" required placeholder="e.g. 2024 Annual Report"></div>';
       html += '<div class="mp-form-group" style="flex:1;margin:0;"><label>URL <span class="mp-required">*</span></label><input type="url" name="link_url" required placeholder="https://drive.google.com/…"></div>';
       html += '<div class="mp-form-group" style="flex:1;margin:0;"><label>Inside Folder <span class="mp-optional">(root if blank)</span></label><select name="link_folder_id"><option value="">-- Root level --</option>' + folderOpts + '</select></div>';
-      html += '<button type="submit" class="mp-btn mp-btn--primary" style="width:auto;">Add Link</button></form></div>';
+      html += '<button type="submit" class="mp-btn mp-btn--primary" style="width:auto;">Add Link</button>';
+      html += notifyCheckbox('link_notify');
+      html += '</form></div>';
+
       html += '</div></details>';
     }
 
@@ -190,10 +239,12 @@
       fform.addEventListener('submit', async function (e) {
         e.preventDefault();
         var fd = new FormData(fform);
-        var name = (fd.get('folder_name') || '').trim(), parentId = fd.get('folder_parent_id') || '';
+        var name = (fd.get('folder_name') || '').trim();
+        var parentId = fd.get('folder_parent_id') || '';
+        var notify   = fd.get('folder_notify') === 'on';
         if (!name) { alert('Folder name is required.'); return; }
         var tree2 = window._fileTree || [];
-        var folder = { type: 'folder', id: 'fld_' + Date.now(), name, children: [] };
+        var folder = { type: 'folder', id: 'fld_' + Date.now(), name: name, children: [] };
         if (parentId) {
           var parent = findNode(tree2, parentId);
           if (parent && parent.type === 'folder') { parent.children = parent.children || []; parent.children.push(folder); }
@@ -202,8 +253,8 @@
           tree2.push(folder);
         }
         await saveTree(_sb, tree2);
-        await renderFilesTab();
-        var panel = document.querySelector('.mp-admin-panel'); if (panel) panel.open = true;
+        refreshFileSection(fform);
+        if (notify) D.callEdge('send-email', { action: 'file_notification', type: 'folder', name: name });
       });
     }
 
@@ -213,28 +264,34 @@
       uform.addEventListener('submit', async function (e) {
         e.preventDefault();
         var fd = new FormData(uform);
-        var label = (fd.get('upload_label') || '').trim();
+        var label    = (fd.get('upload_label') || '').trim();
         var folderId = fd.get('upload_folder_id') || '';
+        var notify   = fd.get('upload_notify') === 'on';
         var file = document.getElementById('upload-file-inp');
         if (!file || !file.files || !file.files[0]) { alert('Please select a file.'); return; }
         var f = file.files[0];
         if (!label) label = f.name;
         var path = 'files/' + Date.now() + '_' + f.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-        var submitBtn = uform.querySelector('button[type=submit]'); if (submitBtn) submitBtn.disabled = true;
+        var submitBtn = uform.querySelector('button[type=submit]');
+        if (submitBtn) submitBtn.disabled = true;
+
+        var fileUrl = '';
         var { data: upData, error: upErr } = await _sb.storage.from('member-files').upload(path, f);
         if (upErr) {
-          /* fallback: try avatars bucket as a workaround if member-files doesn't exist */
+          /* fallback: try avatars bucket */
           var { data: upData2, error: upErr2 } = await _sb.storage.from('avatars').upload(path, f);
-          if (upErr2) { alert('Upload failed: ' + (upErr2.message || upErr.message)); if (submitBtn) submitBtn.disabled = false; return; }
+          if (upErr2) {
+            alert('Upload failed: ' + (upErr2.message || upErr.message));
+            if (submitBtn) submitBtn.disabled = false;
+            return;
+          }
           var { data: ud2 } = _sb.storage.from('avatars').getPublicUrl(path);
-          var url2 = ud2 ? ud2.publicUrl : '';
-          var node2 = { type: 'file', id: 'file_' + Date.now(), name: label, filename: f.name, url: url2, uploaded_at: Math.floor(Date.now() / 1000), uploaded_by: D.getProfile().id };
-          var t2 = window._fileTree || [];
-          if (folderId) { var p2 = findNode(t2, folderId); if (p2 && p2.type === 'folder') { p2.children = p2.children || []; p2.children.push(node2); } else t2.push(node2); } else t2.push(node2);
-          await saveTree(_sb, t2); await renderFilesTab(); var panel2 = document.querySelector('.mp-admin-panel'); if (panel2) panel2.open = true; return;
+          fileUrl = ud2 ? ud2.publicUrl : '';
+        } else {
+          var { data: ud } = _sb.storage.from('member-files').getPublicUrl(path);
+          fileUrl = ud ? ud.publicUrl : '';
         }
-        var { data: ud } = _sb.storage.from('member-files').getPublicUrl(path);
-        var fileUrl = ud ? ud.publicUrl : '';
+
         var fileNode = { type: 'file', id: 'file_' + Date.now(), name: label, filename: f.name, url: fileUrl, uploaded_at: Math.floor(Date.now() / 1000), uploaded_by: D.getProfile().id };
         var tree3 = window._fileTree || [];
         if (folderId) {
@@ -245,8 +302,9 @@
           tree3.push(fileNode);
         }
         await saveTree(_sb, tree3);
-        await renderFilesTab();
-        var panel3 = document.querySelector('.mp-admin-panel'); if (panel3) panel3.open = true;
+        if (submitBtn) submitBtn.disabled = false;
+        refreshFileSection(uform);
+        if (notify) D.callEdge('send-email', { action: 'file_notification', type: 'file', name: label });
       });
     }
 
@@ -256,9 +314,10 @@
       lform.addEventListener('submit', async function (e) {
         e.preventDefault();
         var fd = new FormData(lform);
-        var name = (fd.get('link_label') || '').trim();
-        var url  = (fd.get('link_url')   || '').trim();
+        var name     = (fd.get('link_label') || '').trim();
+        var url      = (fd.get('link_url')   || '').trim();
         var folderId = fd.get('link_folder_id') || '';
+        var notify   = fd.get('link_notify') === 'on';
         if (!name) { alert('Display name is required.'); return; }
         if (!url)  { alert('URL is required.'); return; }
         var linkNode = { type: 'link', id: 'link_' + Date.now(), name: name, url: url, added_at: Math.floor(Date.now() / 1000), added_by: D.getProfile().id };
@@ -271,8 +330,8 @@
           treeL.push(linkNode);
         }
         await saveTree(_sb, treeL);
-        await renderFilesTab();
-        var panel4 = document.querySelector('.mp-admin-panel'); if (panel4) panel4.open = true;
+        refreshFileSection(lform);
+        if (notify) D.callEdge('send-email', { action: 'file_notification', type: 'link', name: name });
       });
     }
 
@@ -288,7 +347,7 @@
         var node = findNode(tree4, id);
         if (node) { node.name = name; await saveTree(_sb, tree4); }
         document.getElementById('rename-panel').style.display = 'none';
-        renderFilesTab();
+        refreshFileSection(null);
       });
     }
   }
@@ -339,7 +398,7 @@
     }
     deleteNode(tree5, id);
     await saveTree(_sb2, tree5);
-    renderFilesTab();
+    refreshFileSection(null);
   };
 
   window.mpFilterFiles = function (q) {
