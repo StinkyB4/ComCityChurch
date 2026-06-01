@@ -273,22 +273,66 @@ async function handleSpouseInvite(payload: Record<string, unknown>) {
 async function handleMessageNotification(payload: Record<string, unknown>) {
   const sb = getAdminSb();
   if (!sb) return { ok: false, error: 'No admin client' };
-  const title   = String(payload.title || '');
-  const msgBody = String(payload.body  || '').slice(0, 500);
-  const date    = String(payload.date  || '');
-  const dashUrl = SITE_URL + '/members/dashboard.html';
-  const { data: members } = await sb.from('profiles').select('first_name,full_name,email').eq('status', 'approved');
-  if (!members || !members.length) return { ok: true, note: 'No approved members' };
+  const title       = String(payload.title       || '');
+  const msgBody     = String(payload.body        || '').slice(0, 500);
+  const date        = String(payload.date        || '');
+  const targetType  = String(payload.target_type || 'all');   // 'all' | 'mc' | 'team'
+  const targetId    = String(payload.target_id   || '');
+  const dashUrl     = SITE_URL + '/members/dashboard.html';
+
+  /* ── Resolve recipients based on target type ── */
+  let members: Array<{ first_name: string; full_name: string; email: string }> = [];
+  let groupLabel = '';
+
+  if (targetType === 'mc' && targetId) {
+    /* fetch MC name for subject line */
+    const { data: mc } = await sb.from('missional_communities').select('name').eq('id', targetId).single();
+    groupLabel = mc ? mc.name + ' MC' : 'your Missional Community';
+    /* fetch members whose preferred_community matches */
+    const { data: mems } = await sb
+      .from('profiles')
+      .select('first_name,full_name,email')
+      .eq('status', 'approved')
+      .eq('preferred_community', targetId);
+    members = mems || [];
+
+  } else if (targetType === 'team' && targetId) {
+    /* fetch team name for subject line */
+    const { data: team } = await sb.from('teams').select('name').eq('id', targetId).single();
+    groupLabel = team ? team.name + ' Team' : 'your Team';
+    /* fetch team members via join */
+    const { data: tmRows } = await sb
+      .from('team_members')
+      .select('profiles(first_name,full_name,email)')
+      .eq('team_id', targetId);
+    members = (tmRows || [])
+      .map((r: Record<string, unknown>) => r.profiles as { first_name: string; full_name: string; email: string })
+      .filter(Boolean);
+
+  } else {
+    /* default: all approved members */
+    const { data: mems } = await sb.from('profiles').select('first_name,full_name,email').eq('status', 'approved');
+    members = mems || [];
+    groupLabel = '';
+  }
+
+  if (!members.length) return { ok: true, note: 'No recipients found for target' };
+
+  const subjectPrefix = groupLabel ? '[' + SITE_NAME + ' · ' + groupLabel + '] ' : '[' + SITE_NAME + '] ';
 
   for (const m of members) {
     const firstName = m.first_name || (m.full_name || '').split(' ')[0] || 'Member';
     const dateRow   = date
       ? '<p style="margin:0 0 8px;font-size:11px;color:' + RED + ';text-transform:uppercase;letter-spacing:0.08em;font-weight:bold;">' + date + '</p>'
       : '';
+    const groupRow  = groupLabel
+      ? '<p style="margin:0 0 4px;font-size:11px;color:#777;text-transform:uppercase;letter-spacing:0.08em;">Message for: ' + groupLabel + '</p>'
+      : '';
     const html = emailOpen('New message from ' + SITE_NAME)
       + emailBody(
           '<p style="margin:0 0 16px;">Hi <strong>' + firstName + '</strong>,</p>'
           + '<div style="background:#F4F5F7;border-left:4px solid ' + NAVY + ';border-radius:6px;padding:20px 24px;margin-bottom:24px;">'
+          + groupRow
           + dateRow
           + '<p style="margin:0 0 10px;font-size:17px;font-weight:bold;color:' + NAVY + ';">' + title + '</p>'
           + '<p style="margin:0;color:' + CHARCOAL + ';font-size:14px;line-height:1.7;">' + msgBody + '</p>'
@@ -296,9 +340,9 @@ async function handleMessageNotification(payload: Record<string, unknown>) {
         )
       + emailButton('View on Dashboard', dashUrl)
       + emailClose();
-    await sendEmail(m.email, '[' + SITE_NAME + '] ' + title, html);
+    await sendEmail(m.email, subjectPrefix + title, html);
   }
-  return { ok: true };
+  return { ok: true, sent: members.length };
 }
 
 async function handleWeeklyChurchEmail(payload: Record<string, unknown>) {

@@ -90,7 +90,10 @@
       '@media(pointer:coarse){.mp-time-desktop{display:none!important;}.mp-time-native{display:block!important;}}',
       '.mp-time-row{display:flex;gap:10px;}',
       '.mp-time-row>div{flex:1;min-width:0;}',
-      '.mp-time-sublab{font-size:0.75rem;color:#888;display:block;margin-bottom:3px;}'
+      '.mp-time-sublab{font-size:0.75rem;color:#888;display:block;margin-bottom:3px;}',
+      '.mp-ev-slot{margin-bottom:6px;}',
+      '.mp-slot-inline-guest{display:flex;gap:6px;margin-top:5px;padding-left:2px;}',
+      '.mp-slot-guest-input{flex:1;min-width:0;font-size:0.83rem;}'
     ].join('');
     document.head.appendChild(s);
   })();
@@ -746,15 +749,34 @@
       if (myEvSlots.length) {
         html += '<div class="mp-cal-detail-serving" style="margin-top:6px;">You are assigned — ' + D.esc(myEvSlots.map(function (s) { return s.role || ''; }).join(', ')) + '</div>';
       }
+      /* slot roster summary (admins/leaders) */
+      if (cd.canManage && (ev.slots || []).length) {
+        html += '<details style="margin-top:7px;font-size:0.82rem;"><summary style="cursor:pointer;color:#5C718E;">Slots (' + (ev.slots || []).length + ')</summary>';
+        html += '<table style="width:100%;margin-top:5px;border-collapse:collapse;">';
+        (ev.slots || []).forEach(function (s) {
+          var name = '';
+          if (s.assignee_type === 'guest_inline') {
+            name = D.esc(s.guest_name || '') || '<em style="color:#bbb;">name not provided</em>';
+          } else if (s.assignee_type === 'member' && s.assignee_id && cd.profMap) {
+            var pm = cd.profMap[s.assignee_id];
+            if (pm) name = D.esc(((pm.first_name || '') + (pm.last_name ? ' ' + pm.last_name : '')).trim() || pm.full_name || '');
+          } else if (s.assignee_type === 'couple' && s.assignee_id && cd.profMap) {
+            var pa = cd.profMap[s.assignee_id], pb = s.assignee_id_b ? cd.profMap[s.assignee_id_b] : null;
+            name = (pa && pb) ? D.esc(D.coupleDisplayName(pa, pb)) : (pa ? D.esc(pa.first_name || pa.full_name || '') : '');
+          }
+          html += '<tr><td style="color:#555;padding:2px 10px 2px 0;white-space:nowrap;">' + D.esc(s.role || '') + '</td>';
+          html += '<td style="color:' + (name ? '#222' : '#ccc') + ';">' + (name || '— TBD —') + '</td></tr>';
+        });
+        html += '</table></details>';
+      }
       if (ev.description) html += '<div class="mp-cal-detail-event-desc">' + D.esc(ev.description) + '</div>';
       html += buildCalExportHtml(D, ev.title, ev.event_date, ev.event_time || null, ev.description || null);
       if (cd.canManage) {
+        var hasAssigned = (ev.slots || []).some(function (s) { return s.assignee_id || s.guest_email; });
         html += '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">';
         html += '<button class="mp-btn mp-btn--secondary mp-btn--small" onclick="mpCalEditEvent(\'' + D.esc(ev.id) + '\')">Edit</button>';
         html += '<button class="mp-btn mp-btn--danger mp-btn--small" onclick="mpCalDeleteEvent(\'' + D.esc(ev.id) + '\',\'' + D.esc(ev.title) + '\',' + (ev.recurrence_type ? 'true' : 'false') + ')">Delete</button>';
-        if ((ev.slots || []).some(function (s) { return s.assignee_id; })) {
-          html += '<button class="mp-btn mp-btn--outline mp-btn--small" onclick="mpCalNotifyEvent(\'' + D.esc(ev.id) + '\',\'' + D.esc(ev.title) + '\')">&#9993; Email Assigned</button>';
-        }
+        if (hasAssigned) html += '<button class="mp-btn mp-btn--outline mp-btn--small" onclick="mpCalNotifyEvent(\'' + D.esc(ev.id) + '\',\'' + D.esc(ev.title) + '\')">&#9993; Email Assigned</button>';
         html += '</div>';
       }
       html += '</div>';
@@ -863,6 +885,18 @@
     var aOpts = window._mpCalAssigneeOpts || '';
     if (aOpts) {
       html += '<div class="mp-section-divider" style="margin:14px 0 8px;">Volunteer Slots <span class="mp-optional">(Optional)</span></div>';
+      /* template loader */
+      if (window._mpSchedTemplates && window._mpSchedTemplates.length) {
+        html += '<div class="mp-tpl-load-bar" style="margin-bottom:8px;">';
+        html += '<span class="mp-tpl-load-label">Load template:</span>';
+        html += '<select id="ev-tpl-select" class="mp-tpl-load-select"><option value="">— none —</option>';
+        window._mpSchedTemplates.forEach(function (t) {
+          html += '<option value="' + D.esc(t.id) + '">' + D.esc(t.name) + (t.is_default ? ' ✓' : '') + '</option>';
+        });
+        html += '</select>';
+        html += '<button type="button" class="mp-btn mp-btn--secondary mp-btn--small" onclick="mpCalLoadEventTemplate(document.getElementById(\'ev-tpl-select\').value)">Apply</button>';
+        html += '</div>';
+      }
       html += '<div id="event-slots-wrap">';
       (isEdit && ev.slots && ev.slots.length ? ev.slots : []).forEach(function (slot, i) {
         html += buildEventSlotRow(slot, i, aOpts, D);
@@ -923,12 +957,18 @@
       payload.event_end_time = allDay ? '' : (fd.get('event_end_time') || '');
       /* event slots */
       var evSlots = [];
-      document.querySelectorAll('#event-slots-wrap .mp-sched-slot-row').forEach(function (el, i) {
-        var ri = el.querySelector('input[type=text]'), role = ri ? ri.value.trim() : '';
+      document.querySelectorAll('#event-slots-wrap .mp-ev-slot').forEach(function (el, i) {
+        var ri = el.querySelector('.mp-sched-role-input'), role = ri ? ri.value.trim() : '';
         if (!role) return;
         var asel = el.querySelector('select'), combined = asel ? asel.value : '';
-        var pts = combined.split(':'), hid2 = el.querySelector('input[type=hidden]');
-        evSlots.push({ id: hid2 ? hid2.value : ('evs_' + i), role: role, assignee_type: pts[0] || '', assignee_id: pts[1] || '', assignee_id_b: pts[2] || '', guest_id: pts[0] === 'guest' ? pts[1] : '' });
+        var hid2 = el.querySelector('input[type=hidden]');
+        if (combined === 'guest_inline') {
+          var gnEl = el.querySelector('[name$="[guest_name]"]'), geEl = el.querySelector('[name$="[guest_email]"]');
+          evSlots.push({ id: hid2 ? hid2.value : ('evs_' + i), role: role, assignee_type: 'guest_inline', guest_name: gnEl ? gnEl.value.trim() : '', guest_email: geEl ? geEl.value.trim() : '' });
+        } else {
+          var pts = combined.split(':');
+          evSlots.push({ id: hid2 ? hid2.value : ('evs_' + i), role: role, assignee_type: pts[0] || '', assignee_id: pts[1] || '', assignee_id_b: pts[2] || '', guest_id: pts[0] === 'guest' ? pts[1] : '' });
+        }
       });
       payload.slots = evSlots;
       var doNotify = fd.get('event_notify') === '1';
@@ -1003,34 +1043,73 @@
 
   /* ── event slot helpers ──────────────────────────────────────── */
   function buildEventSlotRow(slot, idx, opts, D) {
+    var isInline = slot.assignee_type === 'guest_inline';
     var sv = '';
-    if (slot.assignee_type === 'member'  && slot.assignee_id) sv = 'member:'  + slot.assignee_id;
-    else if (slot.assignee_type === 'couple' && slot.assignee_id) sv = 'couple:' + slot.assignee_id + ':' + (slot.assignee_id_b || '');
-    else if (slot.assignee_type === 'guest'  && slot.guest_id)  sv = 'guest:'  + slot.guest_id;
-    return '<div class="mp-sched-slot-row" data-idx="' + idx + '">'
+    if (!isInline) {
+      if (slot.assignee_type === 'member'  && slot.assignee_id) sv = 'member:'  + slot.assignee_id;
+      else if (slot.assignee_type === 'couple' && slot.assignee_id) sv = 'couple:' + slot.assignee_id + ':' + (slot.assignee_id_b || '');
+      else if (slot.assignee_type === 'guest'  && slot.guest_id)  sv = 'guest:'  + slot.guest_id;
+    }
+    /* inject "Non-member" option right after the unassigned placeholder */
+    var extOpts = opts.replace(
+      '— Unassigned —</option>',
+      '— Unassigned —</option><option value="guest_inline"' + (isInline ? ' selected' : '') + '>✚ Non-member (manual entry)</option>'
+    );
+    if (!isInline && sv) extOpts = extOpts.replace('value="' + sv + '"', 'value="' + sv + '" selected');
+    return '<div class="mp-ev-slot" data-idx="' + idx + '">'
+      + '<div class="mp-sched-slot-row">'
       + '<input type="hidden" name="ev_slots[' + idx + '][id]" value="' + D.esc(slot.id || '') + '">'
       + '<input type="text"   name="ev_slots[' + idx + '][role]" value="' + D.esc(slot.role || '') + '" placeholder="Role" class="mp-sched-role-input">'
-      + '<select name="ev_slots[' + idx + '][assignee]" class="mp-sched-select">' + opts.replace('value="' + sv + '"', 'value="' + sv + '" selected') + '</select>'
-      + '<button type="button" class="mp-btn mp-btn--danger mp-btn--small" onclick="this.closest(\'.mp-sched-slot-row\').remove()">&#10005;</button>'
+      + '<select name="ev_slots[' + idx + '][assignee]" class="mp-sched-select" onchange="mpCalSlotTypeChange(this)">' + extOpts + '</select>'
+      + '<button type="button" class="mp-btn mp-btn--danger mp-btn--small" onclick="this.closest(\'.mp-ev-slot\').remove()">&#10005;</button>'
+      + '</div>'
+      + '<div class="mp-slot-inline-guest"' + (isInline ? '' : ' style="display:none;"') + '>'
+      + '<input type="text"  name="ev_slots[' + idx + '][guest_name]"  value="' + D.esc(slot.guest_name  || '') + '" placeholder="Full name"            class="mp-slot-guest-input">'
+      + '<input type="email" name="ev_slots[' + idx + '][guest_email]" value="' + D.esc(slot.guest_email || '') + '" placeholder="Email (for notification)" class="mp-slot-guest-input">'
+      + '</div>'
       + '</div>';
   }
 
   window.mpCalEventAddSlot = function () {
     var wrap = document.getElementById('event-slots-wrap'); if (!wrap) return;
-    var idx = wrap.querySelectorAll('.mp-sched-slot-row').length;
-    var d = document.createElement('div'); d.className = 'mp-sched-slot-row'; d.dataset.idx = idx;
-    d.innerHTML = '<input type="hidden" name="ev_slots[' + idx + '][id]" value="new_' + idx + '">'
-      + '<input type="text" name="ev_slots[' + idx + '][role]" placeholder="Role" class="mp-sched-role-input">'
-      + '<select name="ev_slots[' + idx + '][assignee]" class="mp-sched-select">' + (window._mpCalAssigneeOpts || '') + '</select>'
-      + '<button type="button" class="mp-btn mp-btn--danger mp-btn--small" onclick="this.closest(\'.mp-sched-slot-row\').remove()">&#10005;</button>';
-    wrap.appendChild(d); d.querySelector('input[type=text]').focus();
+    var idx = wrap.querySelectorAll('.mp-ev-slot').length;
+    wrap.insertAdjacentHTML('beforeend', buildEventSlotRow(
+      { id: 'new_' + idx, role: '', assignee_type: '', assignee_id: '', assignee_id_b: '', guest_id: '', guest_name: '', guest_email: '' },
+      idx, window._mpCalAssigneeOpts || '', window.mpDashboard
+    ));
+    var last = wrap.lastElementChild;
+    if (last) { var inp = last.querySelector('.mp-sched-role-input'); if (inp) inp.focus(); }
+  };
+
+  window.mpCalSlotTypeChange = function (sel) {
+    var slot = sel.closest('.mp-ev-slot'); if (!slot) return;
+    var g = slot.querySelector('.mp-slot-inline-guest');
+    if (g) g.style.display = sel.value === 'guest_inline' ? '' : 'none';
+  };
+
+  window.mpCalLoadEventTemplate = function (tplId) {
+    if (!tplId) return;
+    var tpl = (window._mpSchedTemplates || []).find(function (t) { return t.id === tplId; });
+    if (!tpl || !tpl.slots) return;
+    var wrap = document.getElementById('event-slots-wrap'); if (!wrap) return;
+    var opts = window._mpCalAssigneeOpts || '', D = window.mpDashboard;
+    wrap.innerHTML = ''; var idx = 0;
+    tpl.slots.forEach(function (row) {
+      for (var ci = 0; ci < (row.count || 1); ci++) {
+        wrap.insertAdjacentHTML('beforeend', buildEventSlotRow(
+          { id: 'new_' + idx, role: row.role, assignee_type: '', assignee_id: '', assignee_id_b: '', guest_id: '', guest_name: '', guest_email: '' },
+          idx, opts, D
+        ));
+        idx++;
+      }
+    });
   };
 
   window.mpCalNotifyEvent = async function (id, title) {
     var cd = window._mpCalData; if (!cd) return;
     var ev = (cd.baseCalEvents || cd.calEvents).find(function (e) { return e.id === id; });
-    if (!ev || !(ev.slots || []).some(function (s) { return s.assignee_id; })) return;
-    if (!confirm('Send email notification to assigned members for "' + title + '"?')) return;
+    if (!ev || !(ev.slots || []).some(function (s) { return s.assignee_id || s.guest_email; })) return;
+    if (!confirm('Send email notification to all assigned members for "' + title + '"?')) return;
     await window.mpDashboard.callEdge('send-email', { action: 'event_assignment', event_title: ev.title, event_date: ev.event_date, event_time: ev.event_time || '', slots: ev.slots || [] });
   };
 

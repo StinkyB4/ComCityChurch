@@ -365,12 +365,56 @@
           });
           html += '</ul>';
         }
+        /* ── Post Message panel (visible to leaders of this MC + admin) ── */
+        if (canEditThisMC) {
+          html += '<div class="mp-post-msg-wrap" style="margin-top:16px;padding-top:16px;border-top:1px solid #e8ecf0;">';
+          html += '<details class="mp-admin-panel" id="mc-msg-panel-' + D.esc(mc.id) + '">';
+          html += '<summary class="mp-admin-toggle" style="font-size:0.88em;">Post Message to ' + D.esc(mc.name) + ' <span class="mp-admin-badge">Leader</span></summary>';
+          html += '<div class="mp-admin-body"><form id="mc-msg-form-' + D.esc(mc.id) + '" data-mc-id="' + D.esc(mc.id) + '" data-mc-name="' + D.esc(mc.name) + '">';
+          html += '<div class="mp-form-group"><label>Subject <span class="mp-required">*</span></label><input type="text" name="msg_title" required placeholder="e.g. Meeting this week"></div>';
+          html += '<div class="mp-form-group"><label>Message <span class="mp-required">*</span></label><textarea name="msg_body" rows="4" required placeholder="Write your message here…" style="width:100%;padding:9px 12px;border:1px solid var(--mp-border,#dde3eb);border-radius:6px;font-size:0.9em;font-family:inherit;resize:vertical;"></textarea></div>';
+          html += '<div class="mp-notify-section"><label class="mp-checkbox-label" style="display:flex;align-items:center;gap:8px;font-size:0.88em;cursor:pointer;"><input type="checkbox" name="send_email" value="1" checked> Notify members by email</label></div>';
+          html += '<div style="margin-top:12px;"><button type="submit" class="mp-btn mp-btn--primary mp-btn--small">Post Message</button></div>';
+          html += '</form></div></details>';
+          html += '</div>';
+        }
         html += '</div></details>';
       });
       html += '</div>';
     }
 
     D.setContent(html);
+
+    /* wire mc post-message forms */
+    document.querySelectorAll('[id^="mc-msg-form-"]').forEach(function (form) {
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var mcId   = form.dataset.mcId;
+        var mcName = form.dataset.mcName;
+        var title  = (form.querySelector('[name=msg_title]').value || '').trim();
+        var body   = (form.querySelector('[name=msg_body]').value  || '').trim();
+        var notify = form.querySelector('[name=send_email]') && form.querySelector('[name=send_email]').checked;
+        if (!title || !body) { alert('Subject and message are required.'); return; }
+        var _sb2 = D.getSb(), uid = D.getUser().id;
+        var { data: newMsg, error } = await _sb2.from('admin_messages').insert({
+          author_id: uid, title: title, content: body,
+          type: 'announcement', target_audience: 'mc', target_mc_id: mcId,
+          published_at: new Date().toISOString()
+        }).select().single();
+        if (error) { alert('Error posting message: ' + error.message); return; }
+        if (notify && newMsg) {
+          D.callEdge('send-email', {
+            action: 'message_notification', title: title, body: body,
+            target_type: 'mc', target_id: mcId,
+            message_id: newMsg.id
+          });
+        }
+        var panel = document.getElementById('mc-msg-panel-' + mcId);
+        if (panel) panel.open = false;
+        form.reset();
+        alert('Message posted to ' + mcName + (notify ? ' — members will be notified by email.' : '.'));
+      });
+    });
 
     /* wire mc form */
     var form = document.getElementById('mc-form');
@@ -503,12 +547,56 @@
           });
           html += '</ul>';
         }
+        /* ── Post Message panel (visible to leaders of this team + admin) ── */
+        if (canEditThisTeam) {
+          html += '<div class="mp-post-msg-wrap" style="margin-top:16px;padding-top:16px;border-top:1px solid #e8ecf0;">';
+          html += '<details class="mp-admin-panel" id="team-msg-panel-' + D.esc(team.id) + '">';
+          html += '<summary class="mp-admin-toggle" style="font-size:0.88em;">Post Message to ' + D.esc(team.name) + ' <span class="mp-admin-badge">Leader</span></summary>';
+          html += '<div class="mp-admin-body"><form id="team-msg-form-' + D.esc(team.id) + '" data-team-id="' + D.esc(team.id) + '" data-team-name="' + D.esc(team.name) + '">';
+          html += '<div class="mp-form-group"><label>Subject <span class="mp-required">*</span></label><input type="text" name="msg_title" required placeholder="e.g. Heads up for Sunday"></div>';
+          html += '<div class="mp-form-group"><label>Message <span class="mp-required">*</span></label><textarea name="msg_body" rows="4" required placeholder="Write your message here…" style="width:100%;padding:9px 12px;border:1px solid var(--mp-border,#dde3eb);border-radius:6px;font-size:0.9em;font-family:inherit;resize:vertical;"></textarea></div>';
+          html += '<div class="mp-notify-section"><label class="mp-checkbox-label" style="display:flex;align-items:center;gap:8px;font-size:0.88em;cursor:pointer;"><input type="checkbox" name="send_email" value="1" checked> Notify members by email</label></div>';
+          html += '<div style="margin-top:12px;"><button type="submit" class="mp-btn mp-btn--primary mp-btn--small">Post Message</button></div>';
+          html += '</form></div></details>';
+          html += '</div>';
+        }
         html += '</div></details>';
       });
       html += '</div>';
     }
 
     D.setContent(html);
+
+    /* wire team post-message forms */
+    document.querySelectorAll('[id^="team-msg-form-"]').forEach(function (form) {
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var teamId   = form.dataset.teamId;
+        var teamName = form.dataset.teamName;
+        var title    = (form.querySelector('[name=msg_title]').value || '').trim();
+        var body     = (form.querySelector('[name=msg_body]').value  || '').trim();
+        var notify   = form.querySelector('[name=send_email]') && form.querySelector('[name=send_email]').checked;
+        if (!title || !body) { alert('Subject and message are required.'); return; }
+        var _sb2 = D.getSb(), uid = D.getUser().id;
+        var { data: newMsg, error } = await _sb2.from('admin_messages').insert({
+          author_id: uid, title: title, content: body,
+          type: 'announcement', target_audience: 'team', target_team_id: teamId,
+          published_at: new Date().toISOString()
+        }).select().single();
+        if (error) { alert('Error posting message: ' + error.message); return; }
+        if (notify && newMsg) {
+          D.callEdge('send-email', {
+            action: 'message_notification', title: title, body: body,
+            target_type: 'team', target_id: teamId,
+            message_id: newMsg.id
+          });
+        }
+        var panel = document.getElementById('team-msg-panel-' + teamId);
+        if (panel) panel.open = false;
+        form.reset();
+        alert('Message posted to ' + teamName + (notify ? ' — members will be notified by email.' : '.'));
+      });
+    });
 
     /* auto-open from hash */
     var hash = window.location.hash;

@@ -225,6 +225,36 @@ const SITE_MEDIA = {
       }
     },
 
+    "moms-and-womens": {
+      type: "image",
+      src: "../assets/media/heroes/mc-moms-and-womens.jpg",
+      alt: "Women gathering together",
+      overlay: {
+        type: "dark",
+        opacity: 0.45,
+      }
+    },
+
+    "mens-discipleship": {
+      type: "image",
+      src: "../assets/media/heroes/mc-mens-discipleship.jpg",
+      alt: "Men studying Scripture together",
+      overlay: {
+        type: "dark",
+        opacity: 0.45,
+      }
+    },
+
+    "womens-prayer": {
+      type: "image",
+      src: "../assets/media/heroes/mc-womens-prayer.jpg",
+      alt: "Women in prayer",
+      overlay: {
+        type: "dark",
+        opacity: 0.45,
+      }
+    },
+
     // ── BLOG PAGES ─────────────────────────────────────────────────
     // "blog" is used by blog.html (root level) — assets/ paths.
     // Post-level keys are used by blog/*.html (one level deep) — ../assets/ paths.
@@ -334,6 +364,36 @@ const SITE_MEDIA = {
         direction: "to-top",
         color: "#112E53",
         opacity: 1.55,
+      }
+    },
+    "moms-and-womens": {
+      src: "assets/media/communities/moms-and-womens.jpg",
+      alt: "Women's MC community",
+      overlay: {
+        type: "gradient",
+        direction: "to-top",
+        color: "#112E53",
+        opacity: 1.60,
+      }
+    },
+    "mens-discipleship": {
+      src: "assets/media/communities/mens-discipleship.jpg",
+      alt: "Men's Discipleship Morning",
+      overlay: {
+        type: "gradient",
+        direction: "to-top",
+        color: "#30343B",
+        opacity: 1.60,
+      }
+    },
+    "womens-prayer": {
+      src: "assets/media/communities/womens-prayer.jpg",
+      alt: "Women's Prayer Call",
+      overlay: {
+        type: "gradient",
+        direction: "to-top",
+        color: "#112E53",
+        opacity: 1.60,
       }
     },
   },

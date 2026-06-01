@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>River Heights MC — Commissioned City Church</title>
+  <title>Women's Prayer Call — Commissioned City Church</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400&family=Montserrat:wght@600;700;800&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
@@ -11,7 +11,7 @@
   <style>
     .mc-hero {
       min-height: 52vh;
-      background: linear-gradient(135deg, #30343B 0%, #4a5568 100%);
+      background: linear-gradient(135deg, #112E53 0%, #5C718E 100%);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -34,20 +34,55 @@
     }
     .mc-hero .breadcrumb a:hover { color: white; }
     .mc-hero .breadcrumb span { margin: 0 6px; }
-    .calendar-wrapper {
-      width: 100%;
-      max-width: 900px;
-      margin: 0 auto;
+    .mc-meet-card {
       background: white;
       border-radius: var(--radius-card);
-      overflow: hidden;
-      box-shadow: 0 4px 24px rgba(48,52,59,0.10);
+      box-shadow: 0 4px 24px rgba(17,46,83,0.10);
+      padding: var(--space-xl);
+      max-width: 680px;
+      margin: 0 auto;
+      text-align: center;
     }
-    .calendar-wrapper iframe {
-      display: block;
-      width: 100%;
-      height: 600px;
-      border: none;
+    .mc-meet-row {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-xl);
+      flex-wrap: wrap;
+      margin-top: var(--space-lg);
+    }
+    .mc-meet-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .mc-meet-icon {
+      width: 48px;
+      height: 48px;
+      background: #e5ecf8;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .mc-meet-label {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted-blue);
+    }
+    .mc-meet-value {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--navy);
+    }
+    .mc-meet-note {
+      margin-top: var(--space-lg);
+      padding-top: var(--space-md);
+      border-top: 1px solid #e8ecf0;
+      font-size: 14px;
+      color: var(--muted-blue);
     }
   </style>
 </head>
@@ -90,7 +125,7 @@
         </ul>
       </li>
       <li><a href="../give.html">Give</a></li>
-      <li><a href="/members/" target="_blank" rel="noopener">Log In</a></li>
+      <li><a href="/members/">Log In</a></li>
     </ul>
     <a href="../visit.html" class="btn btn-primary nav-cta">Plan Your Visit →</a>
     <button class="nav-hamburger" aria-label="Open menu"><span></span><span></span><span></span></button>
@@ -128,31 +163,31 @@
     </div>
   </div>
   <a href="../give.html">Give</a>
-  <a href="/members/" target="_blank" rel="noopener">Log In</a>
+  <a href="/members/">Log In</a>
   <a href="../visit.html" class="btn btn-primary">Plan Your Visit →</a>
 </div>
 
 <main>
 
 <!-- ===== HERO ===== -->
-<section class="mc-hero" data-media="heroes.river-heights" aria-labelledby="page-heading">
+<section class="mc-hero" data-media="heroes.womens-prayer" aria-labelledby="page-heading">
   <nav class="breadcrumb" aria-label="Breadcrumb">
     <a href="../communities.html">Communities</a>
     <span aria-hidden="true">›</span>
-    <span>River Heights</span>
+    <span>Women's Prayer Call</span>
   </nav>
-  <span class="eyebrow fade-in-up" style="color:rgba(255,255,255,0.7);">Neighbourhood MC</span>
-  <h1 id="page-heading" class="fade-in-up delay-1" style="color:white;">River Heights</h1>
-  <p class="fade-in-up delay-2" style="color:rgba(255,255,255,0.8); max-width:560px; font-size:18px; margin-top:var(--space-sm);">On mission together in River Heights.</p>
+  <span class="eyebrow fade-in-up" style="color:rgba(255,255,255,0.7);">Women's MC</span>
+  <h1 id="page-heading" class="fade-in-up delay-1" style="color:white;">Women's Prayer Call</h1>
+  <p class="fade-in-up delay-2" style="color:rgba(255,255,255,0.8); max-width:560px; font-size:18px; margin-top:var(--space-sm);">United in Prayer. Every Monday Morning.</p>
 </section>
 
 <!-- ===== DESCRIPTION ===== -->
 <section class="section">
   <div class="container text-block mx-auto">
     <span class="eyebrow fade-in-up">Who We Are</span>
-    <h2 class="fade-in-up delay-1">A Community of Disciples in River Heights</h2>
-    <p class="fade-in-up delay-2">The River Heights Missional Community is a gospel-centered family of disciples living and serving in the River Heights neighbourhood of Winnipeg. We gather to eat together, study God's Word, pray, and encourage one another. And we scatter into the rhythms of our neighbourhood — knowing our neighbours, serving the people around us, and sharing the hope we have in Jesus.</p>
-    <p class="fade-in-up delay-2">We are not a program — we are a community on mission together. If you live in or near River Heights and are looking for a place to belong, we'd be glad to have you join us.</p>
+    <h2 class="fade-in-up delay-1">Seeking the Lord Together, Every Week</h2>
+    <p class="fade-in-up delay-2">The Women's Prayer Call is a weekly Google Meet gathering for women of the church to come together and pray. Every Monday morning, women from across the city join a call to bring their requests, burdens, and praise before the Lord — together.</p>
+    <p class="fade-in-up delay-2">All women are welcome. Whether you've been praying for years or are still finding your footing, this call is a simple and accessible way to stay connected to other women and to God throughout the week.</p>
   </div>
 </section>
 
@@ -161,69 +196,58 @@
   <div class="container">
     <div class="section-heading text-center mx-auto" style="max-width:520px; margin-bottom:var(--space-lg);">
       <span class="eyebrow fade-in-up">What to Expect</span>
-      <h2 class="fade-in-up delay-1">Life Together in the Neighbourhood</h2>
+      <h2 class="fade-in-up delay-1">A Simple, Faithful Rhythm of Prayer</h2>
     </div>
     <div class="grid-3" style="max-width:900px; margin:0 auto;">
       <div class="card fade-in-up" style="padding:var(--space-lg); text-align:center;">
-        <h3 style="font-size:20px; margin-bottom:var(--space-sm);">Shared Meals</h3>
-        <p style="color:var(--muted-blue);">We eat together regularly. Food is one of the simplest ways to build real friendship.</p>
+        <h3 style="font-size:20px; margin-bottom:var(--space-sm);">Weekly Prayer</h3>
+        <p style="color:var(--muted-blue);">Every Monday morning we bring our requests, burdens, and praise before the Lord together — believing God hears and answers.</p>
       </div>
       <div class="card fade-in-up delay-1" style="padding:var(--space-lg); text-align:center;">
-        <h3 style="font-size:20px; margin-bottom:var(--space-sm);">Word & Prayer</h3>
-        <p style="color:var(--muted-blue);">We study Scripture together and pray for our neighbours, our city, and one another.</p>
+        <h3 style="font-size:20px; margin-bottom:var(--space-sm);">Join From Anywhere</h3>
+        <p style="color:var(--muted-blue);">All you need is a phone or computer. The Google Meet format makes it easy to join from home, work, or wherever your Monday morning finds you.</p>
       </div>
       <div class="card fade-in-up delay-2" style="padding:var(--space-lg); text-align:center;">
-        <h3 style="font-size:20px; margin-bottom:var(--space-sm);">Neighbourhood Mission</h3>
-        <p style="color:var(--muted-blue);">We look for ways to bless and serve the people around us — not as a program, but as a way of life.</p>
+        <h3 style="font-size:20px; margin-bottom:var(--space-sm);">Open to All Women</h3>
+        <p style="color:var(--muted-blue);">Whether you've been praying for years or are just learning how, every woman is welcome on this call.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ===== CALENDAR ===== -->
+<!-- ===== WHEN WE MEET ===== -->
 <section class="section">
   <div class="container">
     <div class="section-heading text-center mx-auto" style="max-width:520px; margin-bottom:var(--space-lg);">
-      <span class="eyebrow fade-in-up">Upcoming Gatherings</span>
-      <h2 class="fade-in-up delay-1">River Heights MC Calendar</h2>
-      <p class="fade-in-up delay-2" style="color:var(--muted-blue); margin-top:var(--space-sm);">Check below for upcoming gatherings, meals, and events for the River Heights community.</p>
+      <span class="eyebrow fade-in-up">When We Meet</span>
+      <h2 class="fade-in-up delay-1">Every Monday Morning</h2>
     </div>
-
-    <div class="calendar-wrapper fade-in-up">
-      <!--
-        ============================================================
-        GOOGLE CALENDAR EMBED — RIVER HEIGHTS MC
-        ============================================================
-        To embed the live calendar:
-
-        1. Open Google Calendar (calendar.google.com) and sign in
-           with the River Heights MC calendar account (or the admin
-           account that owns the calendar).
-
-        2. In the left sidebar, click the three-dot menu (⋮) next
-           to the River Heights MC calendar and choose
-           "Settings and sharing".
-
-        3. Scroll down to "Integrate calendar" and copy the
-           "Embed code" — it will look like the iframe below,
-           but with a real calendar ID in the src URL.
-
-        4. REPLACE the placeholder src below with the actual embed
-           src from step 3. It will look something like:
-           https://calendar.google.com/calendar/embed?src=abc123%40group.calendar.google.com&ctz=America%2FWinnipeg
-
-        5. Make sure the calendar is set to "Public" in sharing
-           settings, otherwise the embed will show a blank calendar.
-        ============================================================
-      -->
-      <iframe
-        src="https://calendar.google.com/calendar/embed?src=REPLACE_WITH_RIVER_HEIGHTS_CALENDAR_ID%40group.calendar.google.com&ctz=America%2FWinnipeg&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&mode=MONTH"
-        title="River Heights MC Calendar"
-        aria-label="River Heights Missional Community events calendar"
-        loading="lazy">
-      </iframe>
+    <div class="mc-meet-card fade-in-up">
+      <div class="mc-meet-row">
+        <div class="mc-meet-item">
+          <div class="mc-meet-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#112E53" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          </div>
+          <span class="mc-meet-label">Day</span>
+          <span class="mc-meet-value">Every Monday</span>
+        </div>
+        <div class="mc-meet-item">
+          <div class="mc-meet-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#112E53" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <span class="mc-meet-label">Time</span>
+          <span class="mc-meet-value">9:00am – 10:00am</span>
+        </div>
+        <div class="mc-meet-item">
+          <div class="mc-meet-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#112E53" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l-4 4l6 6l4-16l-18 7l4 2l2 6l3-4"/></svg>
+          </div>
+          <span class="mc-meet-label">Format</span>
+          <span class="mc-meet-value">Google Meet (Virtual)</span>
+        </div>
+      </div>
+      <p class="mc-meet-note">Email us to receive the Google Meet link before your first call.</p>
     </div>
-
   </div>
 </section>
 
@@ -231,10 +255,10 @@
 <section class="section section--gray text-center">
   <div class="container">
     <span class="eyebrow fade-in-up">Get Connected</span>
-    <h2 class="fade-in-up delay-1" style="max-width:520px; margin:0 auto var(--space-md);">Want to Join River Heights MC?</h2>
-    <p class="fade-in-up delay-2" style="color:var(--muted-blue); max-width:460px; margin:0 auto var(--space-lg);">Reach out and we'll introduce you to the community. No commitment required — just come and see.</p>
+    <h2 class="fade-in-up delay-1" style="max-width:520px; margin:0 auto var(--space-md);">Ready to Join the Women's Prayer Call?</h2>
+    <p class="fade-in-up delay-2" style="color:var(--muted-blue); max-width:480px; margin:0 auto var(--space-lg);">Email us and we'll send you the Google Meet link so you can join the next call.</p>
     <div class="fade-in-up delay-3" style="display:flex; gap:var(--space-md); justify-content:center; flex-wrap:wrap;">
-      <a href="../contact.html?mc=river-heights" class="btn btn-primary">Get in Touch</a>
+      <a href="mailto:info@commissionedcity.church" class="btn btn-primary">Email Us for the Link</a>
       <a href="../communities.html" class="btn btn-outline">All Communities</a>
     </div>
   </div>

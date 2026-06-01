@@ -340,14 +340,27 @@
     /* parallel data fetches */
     var todayStr    = new Date().toISOString().split('T')[0];
     var sevenDayStr = new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0];
-    var [msgsRes, treeRes, pendRes, rosterRes, evtAssignRes] = await Promise.all([
-      _sb.from('admin_messages').select('*').order('published_at',{ascending:false}).limit(20),
+    /* also fetch user's team memberships for message filtering */
+    var [msgsRes, treeRes, pendRes, rosterRes, evtAssignRes, myTeamsRes] = await Promise.all([
+      _sb.from('admin_messages').select('*').order('published_at',{ascending:false}).limit(40),
       _sb.from('file_tree').select('tree').limit(1).maybeSingle(),
       _isAdmin ? _sb.from('profiles').select('*').eq('status','pending').order('created_at') : Promise.resolve({data:[]}),
       _sb.from('schedule_rosters').select('date,title,type,slots').gte('date',todayStr).order('date').limit(52),
-      _sb.from('events').select('id,title,event_date,event_time,slots').gte('event_date',todayStr).order('event_date').limit(52)
+      _sb.from('events').select('id,title,event_date,event_time,slots').gte('event_date',todayStr).order('event_date').limit(52),
+      _sb.from('team_members').select('team_id').eq('member_id',_user.id)
     ]);
-    var msgs    = msgsRes.data  || [];
+    var myTeamIds = (myTeamsRes.data||[]).map(function(r){ return r.team_id; });
+    /* filter messages: show 'all', plus mc/team messages that target this user */
+    var allMsgs = msgsRes.data || [];
+    var msgs = allMsgs.filter(function(m){
+      if(!m.target_audience || m.target_audience === 'all' || m.target_audience === 'members') return true;
+      if(m.target_audience === 'leaders') return _isLeader;
+      if(m.target_audience === 'mc' && m.target_mc_id) return m.target_mc_id === _profile.preferred_community;
+      if(m.target_audience === 'team' && m.target_team_id) return myTeamIds.indexOf(m.target_team_id) !== -1;
+      /* legacy: target_team_id without target_audience */
+      if(m.target_team_id && !m.target_audience) return myTeamIds.indexOf(m.target_team_id) !== -1;
+      return true;
+    }).slice(0,20);
     var pending = pendRes.data  || [];
     var recentFiles = [];
     if(treeRes.data&&treeRes.data.tree){
@@ -368,8 +381,9 @@
     });
     (evtAssignRes.data || []).forEach(function(ev){
       var myRoles = (ev.slots || []).filter(function(s){
-        return (s.assignee_type==='member' && s.assignee_id===_user.id) ||
-               (s.assignee_type==='couple' && (s.assignee_id===_user.id || s.assignee_id_b===_user.id));
+        return (s.assignee_type==='member'  && s.assignee_id===_user.id) ||
+               (s.assignee_type==='couple'  && (s.assignee_id===_user.id || s.assignee_id_b===_user.id));
+        /* guest_inline slots never match a logged-in user profile */
       }).map(function(s){ return s.role||''; }).filter(Boolean);
       if(!myRoles.length) return;
       upcomingServing.push({date:ev.event_date, title:ev.title, roles:myRoles});
@@ -523,11 +537,28 @@
     html+='<section style="margin-top:24px;"><h3 class="mp-section-title">Messages</h3>';
     if(!msgs.length) html+='<p class="mp-empty">No messages yet.</p>';
     else msgs.forEach(function(m){
-      html+='<div class="mp-message-card"><div class="mp-message-header"><span class="mp-message-title">'+esc(m.title)+'</span><span class="mp-message-date">'+esc(fmtDate(m.published_at||m.created_at))+'</span></div>';
+      /* build audience label */
+      var audienceLabel = '';
+      if(m.target_audience === 'mc' || (m.target_mc_id && !m.target_audience)){
+        audienceLabel = '<span class="mp-msg-audience-tag mp-msg-audience-tag--mc">MC Message</span>';
+      } else if(m.target_audience === 'team' || (m.target_team_id && !m.target_audience)){
+        audienceLabel = '<span class="mp-msg-audience-tag mp-msg-audience-tag--team">Team Message</span>';
+      } else if(!m.target_audience || m.target_audience === 'all'){
+        audienceLabel = '<span class="mp-msg-audience-tag">All Members</span>';
+      }
+      html+='<div class="mp-message-card"><div class="mp-message-header"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'+audienceLabel+'<span class="mp-message-title">'+esc(m.title)+'</span></div><span class="mp-message-date">'+esc(fmtDate(m.published_at||m.created_at))+'</span></div>';
       html+='<div class="mp-message-body">'+sanitizeBody(m.content||m.body||'')+'</div>';
       if(_isAdmin) html+='<div class="mp-message-admin-actions"><button class="mp-btn mp-btn--small mp-btn--outline" onclick="mpDeleteMsg(\''+esc(m.id)+'\')">Delete</button></div>';
       html+='</div>';
     });
+    /* inject audience tag styles once */
+    if(!document.getElementById('mp-msg-tag-css')){
+      var ts=document.createElement('style'); ts.id='mp-msg-tag-css';
+      ts.textContent='.mp-msg-audience-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;padding:2px 8px;border-radius:4px;background:#e5ecf8;color:#112E53;white-space:nowrap;}'
+        +'.mp-msg-audience-tag--mc{background:#e8f5e9;color:#2e7d32;}'
+        +'.mp-msg-audience-tag--team{background:#fff3e0;color:#e65100;}';
+      document.head.appendChild(ts);
+    }
     html+='</section>';
 
     /* ── recent files ── */

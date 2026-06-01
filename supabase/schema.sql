@@ -237,11 +237,15 @@ CREATE TABLE IF NOT EXISTS admin_messages (
   title TEXT NOT NULL,
   content TEXT NOT NULL,
   type TEXT NOT NULL DEFAULT 'announcement', -- 'announcement' | 'prayer_request' | 'event'
-  target_audience TEXT DEFAULT 'all', -- 'all' | 'members' | 'leaders' | 'team'
+  target_audience TEXT DEFAULT 'all', -- 'all' | 'members' | 'leaders' | 'mc' | 'team'
   target_team_id UUID REFERENCES teams(id) ON DELETE SET NULL,
+  target_mc_id UUID REFERENCES missional_communities(id) ON DELETE SET NULL,
   published_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
+
+-- Migration: add target_mc_id to existing deployments
+-- ALTER TABLE admin_messages ADD COLUMN IF NOT EXISTS target_mc_id UUID REFERENCES missional_communities(id) ON DELETE SET NULL;
 
 CREATE INDEX IF NOT EXISTS idx_admin_messages_author ON admin_messages(author_id);
 CREATE INDEX IF NOT EXISTS idx_admin_messages_type ON admin_messages(type);
@@ -249,7 +253,7 @@ CREATE INDEX IF NOT EXISTS idx_admin_messages_published ON admin_messages(publis
 
 ALTER TABLE admin_messages ENABLE ROW LEVEL SECURITY;
 
--- RLS: Approved members see all announcements
+-- RLS: Approved members see announcements targeted to them
 CREATE POLICY "members_view_announcements"
   ON admin_messages FOR SELECT
   USING (
@@ -258,15 +262,42 @@ CREATE POLICY "members_view_announcements"
       target_audience = 'all'
       OR (target_audience = 'members' AND auth.uid() IN (SELECT id FROM profiles WHERE role != 'admin'))
       OR (target_audience = 'leaders' AND auth.uid() IN (SELECT id FROM profiles WHERE role = 'team'))
-      OR (target_team_id IN (SELECT team_id FROM team_members WHERE member_id = auth.uid()))
+      OR (target_team_id IS NOT NULL AND target_team_id IN (SELECT team_id FROM team_members WHERE member_id = auth.uid()))
+      OR (target_mc_id IS NOT NULL AND target_mc_id IN (SELECT preferred_community FROM profiles WHERE id = auth.uid()))
     )
   );
 
--- RLS: Admins create and edit messages
+-- RLS: Admins create, edit and delete any message
 CREATE POLICY "admins_manage_messages"
   ON admin_messages FOR ALL
   USING (
     auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin')
+  );
+
+-- RLS: Leaders can post messages to their own MC or team
+CREATE POLICY "leaders_insert_group_messages"
+  ON admin_messages FOR INSERT
+  WITH CHECK (
+    author_id = auth.uid()
+    AND auth.uid() IN (SELECT id FROM profiles WHERE role IN ('team', 'admin'))
+    AND (
+      (target_mc_id IS NOT NULL AND target_mc_id IN (
+        SELECT id FROM missional_communities WHERE leader_id = auth.uid()
+      ))
+      OR (target_team_id IS NOT NULL AND target_team_id IN (
+        SELECT id FROM teams WHERE leader_id = auth.uid()
+        UNION
+        SELECT team_id FROM team_members WHERE member_id = auth.uid() AND role = 'leader'
+      ))
+    )
+  );
+
+-- RLS: Leaders can delete their own messages
+CREATE POLICY "leaders_delete_own_messages"
+  ON admin_messages FOR DELETE
+  USING (
+    author_id = auth.uid()
+    AND auth.uid() IN (SELECT id FROM profiles WHERE role IN ('team', 'admin'))
   );
 
 
