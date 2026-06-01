@@ -740,6 +740,10 @@
         html+=dlRow('Children',children.map(function(c){
           return esc(c.name)+' ('+(c.gender==='girl'?'Girl':'Boy')+')'+(c.birthday?' &mdash; '+esc(fmtDate(c.birthday)):'');
         }).join('<br>'));
+        html+=dlRow('Child Reminders',
+          '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.88rem;">'
+          +'<input type="checkbox"'+(p.child_notif_optout?'':' checked')
+          +' onchange="mpSaveChildOptout(!this.checked)"> Receive serving reminders for my children</label>');
       }
       if(myMCs.length){
         html+=dlRow('Missional Community',myMCs.map(function(mc){
@@ -839,6 +843,10 @@
         html+='</div>';
       });
       html+='</div><span class="mp-hint">Fill in a child\'s details and click + Add to save.</span></div>';
+      html+='<div class="mp-form-group" style="margin-top:4px;"><label class="mp-checkbox-label" style="display:flex;align-items:center;gap:8px;cursor:pointer;">';
+      html+='<input type="checkbox" name="child_notif_receive" value="1"'+(p.child_notif_optout?'':' checked')+'>';
+      html+=' <span>Receive serving reminders when my children are scheduled</span></label>';
+      html+='<span class="mp-hint">Uncheck to stop receiving reminder emails for your children\'s slots.</span></div>';
 
       /* password */
       html+='<fieldset class="mp-fieldset"><legend>Change Password <span class="mp-optional">(leave blank to keep current)</span></legend>';
@@ -860,6 +868,11 @@
   }
 
   /* profile helpers exposed globally */
+  window.mpSaveChildOptout = async function(optout){
+    await _sb.from('profiles').update({child_notif_optout:optout}).eq('id',_user.id);
+    _profile.child_notif_optout=optout;
+    showToast(optout?'You will no longer receive child serving reminders.':'You will now receive child serving reminders.');
+  };
   window.mpProfileEdit = function(){
     var url=new URL(window.location.href);
     url.searchParams.set('edit','1'); url.searchParams.set('tab','profile');
@@ -995,7 +1008,8 @@
         birthday:fd.get('birthday')||null, anniversary:fd.get('anniversary')||null,
         gender:fd.get('gender')||'', bio:fd.get('bio')||'',
         spouse_is_member:fd.get('spouse_is_member')==='1',
-        spouse_name_text:fd.get('spouse_name_text')||''
+        spouse_name_text:fd.get('spouse_name_text')||'',
+        child_notif_optout:fd.get('child_notif_receive')!=='1'
       };
       updates.address=[updates.addr_street,updates.addr_city,updates.addr_province,updates.addr_postal,updates.addr_country].filter(Boolean).join(', ');
 
@@ -1023,14 +1037,13 @@
       /* save profile */
       var { error }=await _sb.from('profiles').update(updates).eq('id',_user.id);
 
-      /* save children — delete then re-insert; surface any insert error */
+      /* save children — SECURITY DEFINER RPC bypasses RLS */
       var newChildren=parseChildren(fd);
-      await _sb.from('children').delete().eq('profile_id',_user.id);
-      if(newChildren.length){
-        var { error:childErr }=await _sb.from('children').insert(
-          newChildren.map(function(c){return {profile_id:_user.id,name:c.name,gender:c.gender,birthday:c.birthday||null};}));
-        if(childErr) error=error||childErr;
-      }
+      var { error:childErr }=await _sb.rpc('save_children',{
+        p_profile_id:_user.id,
+        p_children:JSON.stringify(newChildren)
+      });
+      if(childErr) error=error||childErr;
 
       /* password */
       if(npw) await _sb.auth.updateUser({password:npw});

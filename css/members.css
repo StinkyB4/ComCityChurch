@@ -1764,7 +1764,7 @@ body.mp-body {
 .mp-dir-detail         { margin-top: 6px; }
 .mp-dir-dl-table       { border-collapse: collapse; width: 100%; }
 .mp-dir-dl-table tr    { }
-.mp-dir-dl-label       { font-size: 0.8rem; color: var(--mp-text-3); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 4px 8px 4px 0; vertical-align: top; white-space: nowrap; }
+.mp-dir-dl-label       { font-size: 0.8rem; color: var(--mp-text-3); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 4px 8px 4px 0; vertical-align: top; white-space: nowrap; min-width: 110px; }
 .mp-dir-dl-gap         { width: 8px; }
 .mp-dir-dl-val         { font-size: 0.88rem; color: var(--mp-text-1); padding: 4px 0; }
 .mp-dir-dl-val a       { color: var(--mp-accent); text-decoration: none; }

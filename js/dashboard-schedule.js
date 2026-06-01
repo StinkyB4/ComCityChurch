@@ -109,7 +109,8 @@
     var d = new Date(dateStr + 'T12:00:00');
     return isNaN(d.getTime()) ? dateStr : d.toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric' });
   }
-  function assigneeName(slot, profMap, guestMap) {
+  function assigneeName(slot, profMap, guestMap, childMap) {
+    childMap = childMap || {};
     var t = slot.assignee_type || '';
     if (t === 'member' && slot.assignee_id) {
       var p = profMap[slot.assignee_id];
@@ -124,9 +125,14 @@
       var g = guestMap[slot.guest_id];
       return g ? g.name : '';
     }
+    if (t === 'child' && slot.assignee_id) {
+      var c = childMap[slot.assignee_id];
+      return c ? c.name : '';
+    }
     return '';
   }
-  function buildAssigneeOptions(profMap, guestMap) {
+  function buildAssigneeOptions(profMap, guestMap, childMap) {
+    childMap = childMap || {};
     var D = window.mpDashboard;
     var html = '<option value="">— Unassigned —</option>';
     var memberOpts = '', coupleOpts = '', seenCouples = {};
@@ -151,6 +157,12 @@
       return '<option value="guest:' + D.esc(g.id) + '">' + D.esc(g.name + ' (guest)') + '</option>';
     }).join('');
     if (guestOpts) html += '<optgroup label="Non-Member Volunteers">' + guestOpts + '</optgroup>';
+    var childOpts = Object.values(childMap).sort(function (a, b) { return a.name.localeCompare(b.name); }).map(function (c) {
+      var parent = profMap[c.profile_id];
+      var pName = parent ? (((parent.first_name || '') + (parent.last_name ? ' ' + parent.last_name : '')).trim() || parent.full_name || '') : '';
+      return '<option value="child:' + D.esc(c.id) + '">' + D.esc(c.name + (pName ? ' (child — ' + pName + ')' : ' (child)')) + '</option>';
+    }).join('');
+    if (childOpts) html += '<optgroup label="Children">' + childOpts + '</optgroup>';
     return html;
   }
 
@@ -316,12 +328,15 @@
       _sb.from('schedule_templates').select('*').order('is_default', { ascending: false }),
       _sb.from('guests').select('*').order('name'),
       _sb.from('profiles').select('id,first_name,last_name,full_name,email,phone1,phone1_type,spouse_id').eq('status', 'approved'),
+      /* 4 — calendar events (combined below) */
       /* non-recurring in this month + any recurring event (expanded client-side) */
       Promise.all([
         _sb.from('events').select('*').gte('event_date', monthStart).lt('event_date', nextMonthStart).order('event_date'),
         _sb.from('events').select('*').lt('event_date', monthStart).not('recurrence_type', 'is', null).order('event_date')
       ]).then(function (r) { return { data: (r[0].data || []).concat(r[1].data || []) }; })
     ];
+    /* always fetch children so parent can see their child's slots highlighted */
+    fetches.push(_sb.from('children').select('id,name,gender,profile_id').order('name'));
     if (_isAdmin) {
       fetches.push(_sb.from('teams').select('id,name').order('name'));
       fetches.push(_sb.from('missional_communities').select('id,name').order('name'));
@@ -333,20 +348,23 @@
     var guests    = results[2].data || [];
     var approved  = results[3].data || [];
     var _rawCalEvents = results[4].data || [];
+    var childrenData = results[5].data || [];
     var calEvents = expandRecurringEvents(_rawCalEvents, monthStart, nextMonthStart);
-    var teams     = _isAdmin ? (results[5].data || []) : [];
-    var mcs       = _isAdmin ? (results[6].data || []) : [];
+    /* children fetch is index 5; teams/MCs shift to 6/7 */
+    var teams = _isAdmin ? (results[6].data || []) : [];
+    var mcs   = _isAdmin ? (results[7].data || []) : [];
 
-    var profMap = {}, guestMap = {};
+    var profMap = {}, guestMap = {}, childMap = {};
     approved.forEach(function (p) { profMap[p.id] = p; });
     guests.forEach(function (g) { guestMap[g.id] = g; });
+    childrenData.forEach(function (c) { childMap[c.id] = c; });
 
     var todayStr = new Date().toISOString().split('T')[0];
     var nextSun  = nextSunday();
 
     /* store for calendar click handler; keep raw events for editing */
-    var _assigneeOpts = buildAssigneeOptions(profMap, guestMap);
-    window._mpCalData = { calEvents: calEvents, baseCalEvents: _rawCalEvents, rosters: rosters, uid: uid, D: D, canManage: _isAdmin, teams: teams, mcs: mcs, sb: _sb, profMap: profMap, guestMap: guestMap, assigneeOpts: _assigneeOpts };
+    var _assigneeOpts = buildAssigneeOptions(profMap, guestMap, childMap);
+    window._mpCalData = { calEvents: calEvents, baseCalEvents: _rawCalEvents, rosters: rosters, uid: uid, D: D, canManage: _isAdmin, teams: teams, mcs: mcs, sb: _sb, profMap: profMap, guestMap: guestMap, childMap: childMap, assigneeOpts: _assigneeOpts };
 
     var html = '<h2 class="mp-tab-title">Schedule</h2>';
 
@@ -376,7 +394,7 @@
       }
 
       var backUrl = '?tab=schedule';
-      var assigneeOptsHtml = buildAssigneeOptions(profMap, guestMap);
+      var assigneeOptsHtml = buildAssigneeOptions(profMap, guestMap, childMap);
 
       html += '<div class="mp-sched-edit-header"><a href="' + D.esc(backUrl) + '" class="mp-admin-back-link" onclick="window.mpDashboard.navigate(\'schedule\');return false;">&#8592; Back to Schedule</a>';
       html += '<h3 class="mp-sched-edit-title">' + (creating ? 'New Roster Event' : 'Edit: ' + D.esc(titleVal)) + '</h3></div>';
@@ -525,7 +543,12 @@
           var rType = roster.type || 'sunday', rNotes = roster.notes || '';
           var slots2 = roster.slots || [];
           var isPast = rDate < todayStr;
-          var isMine = slots2.some(function (s) { return (s.assignee_type === 'member' && s.assignee_id === uid) || (s.assignee_type === 'couple' && (s.assignee_id === uid || s.assignee_id_b === uid)); });
+          var isMine = slots2.some(function (s) {
+            if (s.assignee_type === 'member' && s.assignee_id === uid) return true;
+            if (s.assignee_type === 'couple' && (s.assignee_id === uid || s.assignee_id_b === uid)) return true;
+            if (s.assignee_type === 'child' && childMap[s.assignee_id] && childMap[s.assignee_id].profile_id === uid) return true;
+            return false;
+          });
           var isNext = rDate === nextSun;
 
           html += '<div class="mp-sched-card' + (isPast ? ' mp-sched-card--past' : '') + (isMine ? ' mp-sched-card--serving' : '') + (rType === 'event' ? ' mp-sched-card--event' : '') + '"' + (ri === upcomingIdx ? ' id="sched-upcoming"' : '') + '>';
@@ -553,8 +576,11 @@
             if (ungrouped.length) {
               html += '<table class="mp-sched-card-table">';
               ungrouped.forEach(function (slot) {
-                var name = assigneeName(slot, profMap, guestMap);
-                var isMe = (slot.assignee_type === 'member' && slot.assignee_id === uid) || (slot.assignee_type === 'couple' && (slot.assignee_id === uid || slot.assignee_id_b === uid));
+                var name = assigneeName(slot, profMap, guestMap, childMap);
+                var child = slot.assignee_type === 'child' ? childMap[slot.assignee_id] : null;
+                var isMe = (slot.assignee_type === 'member' && slot.assignee_id === uid) ||
+                           (slot.assignee_type === 'couple' && (slot.assignee_id === uid || slot.assignee_id_b === uid)) ||
+                           (child && child.profile_id === uid);
                 html += '<tr' + (isMe ? ' class="mp-sched-row--me"' : '') + '><td class="mp-sched-td-role">' + D.esc(slot.role || '') + '</td><td class="mp-sched-td-name">' + (name ? D.esc(name) : '<span class="mp-sched-tbd">TBD</span>') + '</td></tr>';
               });
               html += '</table>';
@@ -563,8 +589,11 @@
               if (!grouped[grp].length) return;
               html += '<details class="mp-sched-group"><summary class="mp-sched-group-header">' + D.esc(grp) + '</summary><table class="mp-sched-card-table">';
               grouped[grp].forEach(function (slot) {
-                var name = assigneeName(slot, profMap, guestMap);
-                var isMe = (slot.assignee_type === 'member' && slot.assignee_id === uid) || (slot.assignee_type === 'couple' && (slot.assignee_id === uid || slot.assignee_id_b === uid));
+                var name = assigneeName(slot, profMap, guestMap, childMap);
+                var child = slot.assignee_type === 'child' ? childMap[slot.assignee_id] : null;
+                var isMe = (slot.assignee_type === 'member' && slot.assignee_id === uid) ||
+                           (slot.assignee_type === 'couple' && (slot.assignee_id === uid || slot.assignee_id_b === uid)) ||
+                           (child && child.profile_id === uid);
                 html += '<tr' + (isMe ? ' class="mp-sched-row--me"' : '') + '><td class="mp-sched-td-role">' + D.esc(slot.role || '') + '</td><td class="mp-sched-td-name">' + (name ? D.esc(name) : '<span class="mp-sched-tbd">TBD</span>') + '</td></tr>';
               });
               html += '</table></details>';

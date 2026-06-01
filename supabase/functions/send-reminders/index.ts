@@ -163,6 +163,7 @@ serve(async (req: Request) => {
 
   const profileIds = new Set<string>();
   const guestIds   = new Set<string>();
+  const childIds   = new Set<string>();
 
   function collectIds(roster: Record<string, unknown> | null) {
     if (!roster) return;
@@ -172,23 +173,50 @@ serve(async (req: Request) => {
       if (slot.assignee_type === 'couple'  && slot.assignee_id)   profileIds.add(String(slot.assignee_id));
       if (slot.assignee_type === 'couple'  && slot.assignee_id_b) profileIds.add(String(slot.assignee_id_b));
       if (slot.assignee_type === 'guest'   && slot.guest_id)      guestIds.add(String(slot.guest_id));
+      if (slot.assignee_type === 'child'   && slot.assignee_id)   childIds.add(String(slot.assignee_id));
     });
   }
   collectIds(thisRoster as Record<string, unknown>);
   collectIds(nextRoster as Record<string, unknown>);
 
+  /* resolve children → their parent profile IDs */
+  const childrenData = childIds.size
+    ? (await sb.from('children').select('id,name,profile_id').in('id', [...childIds])).data || []
+    : [];
+  type ChildRow = { id: string; name: string; profile_id: string };
+  const childById: Record<string, ChildRow> = {};
+  (childrenData as ChildRow[]).forEach((c) => { childById[c.id] = c; profileIds.add(c.profile_id); });
+
   const [{ data: profiles }, { data: guests }] = await Promise.all([
-    profileIds.size ? sb.from('profiles').select('id,first_name,full_name,email,phone1,phone1_type').in('id', [...profileIds]) : Promise.resolve({ data: [] }),
-    guestIds.size   ? sb.from('guests').select('id,name,email').in('id', [...guestIds])                                        : Promise.resolve({ data: [] }),
+    profileIds.size ? sb.from('profiles').select('id,first_name,full_name,email,phone1,phone1_type,spouse_id,child_notif_optout').in('id', [...profileIds]) : Promise.resolve({ data: [] }),
+    guestIds.size   ? sb.from('guests').select('id,name,email').in('id', [...guestIds])                                                                     : Promise.resolve({ data: [] }),
   ]);
 
-  const profMap: Record<string, { first_name: string; full_name: string; email: string; phone1: string; phone1_type: string }> = {};
-  (profiles || []).forEach((p) => { profMap[p.id] = p; });
+  type ProfRow = { id: string; first_name: string; full_name: string; email: string; phone1: string; phone1_type: string; spouse_id?: string; child_notif_optout?: boolean };
+  const profMap: Record<string, ProfRow> = {};
+  (profiles || []).forEach((p: ProfRow) => { profMap[p.id] = p; });
+
+  /* fetch spouse profiles of child parents not already in profMap */
+  const spouseIds = [...new Set(
+    (childrenData as ChildRow[]).map(c => profMap[c.profile_id]?.spouse_id).filter(Boolean) as string[]
+  )].filter(id => !profMap[id]);
+  if (spouseIds.length) {
+    const { data: spouseData } = await sb.from('profiles').select('id,first_name,full_name,email,phone1,phone1_type,spouse_id,child_notif_optout').in('id', spouseIds);
+    (spouseData || []).forEach((p: ProfRow) => { profMap[p.id] = p; });
+  }
+
   const guestMap: Record<string, { name: string; email: string }> = {};
   ((guests || []) as Array<{ id: string; name: string; email: string }>).forEach((g) => { guestMap[g.id] = g; });
 
   type AssigneeEntry = { type: 'member' | 'guest'; key: string; email: string; firstName: string; this: unknown[]; next: unknown[] };
   const assigneeMap: Record<string, AssigneeEntry> = {};
+
+  function addAssignee(mid: string, slotWithMeta: unknown, which: 'this' | 'next') {
+    const prof = profMap[mid]; if (!prof || !prof.email) return;
+    const k = 'member:' + mid;
+    if (!assigneeMap[k]) assigneeMap[k] = { type: 'member', key: k, email: prof.email, firstName: prof.first_name || (prof.full_name || '').split(' ')[0] || '', this: [], next: [] };
+    assigneeMap[k][which].push(slotWithMeta);
+  }
 
   function addSlot(roster: Record<string, unknown> | null, which: 'this' | 'next') {
     if (!roster) return;
@@ -199,22 +227,27 @@ serve(async (req: Request) => {
 
       if (atype === 'couple') {
         const ids = [String(slot.assignee_id || ''), String(slot.assignee_id_b || '')].filter(Boolean);
-        ids.forEach((mid) => {
-          const prof = profMap[mid]; if (!prof || !prof.email) return;
-          const k = 'member:' + mid;
-          if (!assigneeMap[k]) assigneeMap[k] = { type: 'member', key: k, email: prof.email, firstName: prof.first_name || (prof.full_name || '').split(' ')[0] || '', this: [], next: [] };
-          assigneeMap[k][which].push({ ...slot, assignee_type: 'member', assignee_id: mid, assignee_id_b: null });
-        });
+        ids.forEach((mid) => addAssignee(mid, { ...slot, assignee_type: 'member', assignee_id: mid, assignee_id_b: null }, which));
       } else if (atype === 'member') {
-        const mid = String(slot.assignee_id || ''); const prof = profMap[mid]; if (!prof || !prof.email) return;
-        const k = 'member:' + mid;
-        if (!assigneeMap[k]) assigneeMap[k] = { type: 'member', key: k, email: prof.email, firstName: prof.first_name || (prof.full_name || '').split(' ')[0] || '', this: [], next: [] };
-        assigneeMap[k][which].push(slot);
+        addAssignee(String(slot.assignee_id || ''), slot, which);
       } else if (atype === 'guest') {
         const gid = String(slot.guest_id || ''); const g = guestMap[gid]; if (!g || !g.email) return;
         const k = 'guest:' + gid;
         if (!assigneeMap[k]) assigneeMap[k] = { type: 'guest', key: k, email: g.email, firstName: g.name.split(' ')[0] || g.name, this: [], next: [] };
         assigneeMap[k][which].push(slot);
+      } else if (atype === 'child') {
+        /* route notification to parent(s), checking opt-out */
+        const child = childById[String(slot.assignee_id || '')];
+        if (!child) return;
+        const slotWithChild = { ...slot, _child_name: child.name };
+        const parentIds = [child.profile_id];
+        const parentA = profMap[child.profile_id];
+        if (parentA?.spouse_id) parentIds.push(parentA.spouse_id);
+        parentIds.forEach((pid) => {
+          const parent = profMap[pid];
+          if (!parent || !parent.email || parent.child_notif_optout) return;
+          addAssignee(pid, slotWithChild, which);
+        });
       }
     });
   }
@@ -231,8 +264,14 @@ serve(async (req: Request) => {
   for (const entry of Object.values(assigneeMap)) {
     if (!entry.this.length && !entry.next.length) continue;
 
-    const thisRoles = entry.this.map((s) => (s as Record<string, unknown>).role || '').filter(Boolean).join(' & ');
-    const nextRoles = entry.next.map((s) => (s as Record<string, unknown>).role || '').filter(Boolean).join(' & ');
+    function slotLabel(s: unknown): string {
+      const slot = s as Record<string, unknown>;
+      const role = String(slot.role || '');
+      const childName = slot._child_name ? String(slot._child_name) : null;
+      return childName ? `${role} (${childName})` : role;
+    }
+    const thisRoles = entry.this.map(slotLabel).filter(Boolean).join(' & ');
+    const nextRoles = entry.next.map(slotLabel).filter(Boolean).join(' & ');
 
     let swapButtons = '';
     for (const slot of entry.this) {
@@ -246,16 +285,29 @@ serve(async (req: Request) => {
     html += `<tr><td style="height:28px;"></td></tr>`;
     html += `<tr><td style="padding:0 40px 4px;font-size:17px;color:#333;">Hey <strong>${entry.firstName}</strong>!</td></tr>`;
 
+    /* check if ALL slots are child slots (parent notification only) */
+    const allChildSlots = (s: unknown[]) => s.every(x => (x as Record<string,unknown>)._child_name);
+    const childOnlyThis = entry.this.length > 0 && allChildSlots(entry.this);
+    const childOnlyNext = entry.next.length > 0 && allChildSlots(entry.next);
+
     if (entry.this.length) {
       html += `<tr><td style="height:16px;"></td></tr>`;
       html += sectionHeader(`This Sunday — ${thisLabel}`);
-      html += `<tr><td style="padding:16px 40px 4px;font-size:16px;color:#333;line-height:1.6;">You're on <strong>${thisRoles}</strong> this Sunday${thisTitle !== 'Sunday Service' ? ` (${thisTitle})` : ''}!</td></tr>`;
+      if (childOnlyThis) {
+        html += `<tr><td style="padding:16px 40px 4px;font-size:16px;color:#333;line-height:1.6;">Your child is scheduled for <strong>${thisRoles}</strong> this Sunday${thisTitle !== 'Sunday Service' ? ` (${thisTitle})` : ''}.</td></tr>`;
+      } else {
+        html += `<tr><td style="padding:16px 40px 4px;font-size:16px;color:#333;line-height:1.6;">You're on <strong>${thisRoles}</strong> this Sunday${thisTitle !== 'Sunday Service' ? ` (${thisTitle})` : ''}!</td></tr>`;
+      }
     }
 
     if (entry.next.length) {
       html += `<tr><td style="height:12px;"></td></tr>`;
       html += sectionHeader(`Next Sunday — ${nextLabel}`);
-      html += `<tr><td style="padding:16px 40px 4px;font-size:15px;color:#555;line-height:1.6;">And you're on <strong>${nextRoles}</strong> next week${nextTitle !== 'Sunday Service' ? ` (${nextTitle})` : ''}.</td></tr>`;
+      if (childOnlyNext) {
+        html += `<tr><td style="padding:16px 40px 4px;font-size:15px;color:#555;line-height:1.6;">Your child is scheduled for <strong>${nextRoles}</strong> next week${nextTitle !== 'Sunday Service' ? ` (${nextTitle})` : ''}.</td></tr>`;
+      } else {
+        html += `<tr><td style="padding:16px 40px 4px;font-size:15px;color:#555;line-height:1.6;">And you're on <strong>${nextRoles}</strong> next week${nextTitle !== 'Sunday Service' ? ` (${nextTitle})` : ''}.</td></tr>`;
+      }
     }
 
     if (entry.this.length && swapButtons) {
