@@ -1575,6 +1575,30 @@ body.mp-body {
 .mp-photo-upload-controls { display: flex; flex-direction: column; gap: 6px; }
 .mp-photo-placeholder-initials { font-size: 1.6rem; font-weight: 700; color: var(--mp-accent); }
 
+/* Registration-page section break (used on register.html only) */
+.reg-section-break {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 8px 0 20px;
+  gap: 12px;
+}
+.reg-section-break::before,
+.reg-section-break::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--mp-border, #dde3eb);
+}
+.reg-section-break-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--mp-text-3, #999);
+  white-space: nowrap;
+}
+
 /* Children rows */
 .mp-child-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
 .mp-child-gender  { width: 80px; flex-shrink: 0; }

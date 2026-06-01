@@ -232,37 +232,42 @@
       </div>
 
       <!-- ── Family ── -->
-      <div class=”mp-section-divider”>Family <span style=”font-weight:400;font-size:0.9em;color:#888;”>(Optional)</span></div>
-
-      <div class=”mp-form-group”>
-        <label for=”reg-spouse-name”>Spouse's Name <span class=”mp-optional”>(Optional)</span></label>
-        <input type=”text” id=”reg-spouse-name” name=”spouse_name_text”
-               placeholder=”e.g. Jane Smith” autocomplete=”off”>
-        <span class=”mp-hint”>If your spouse is also a member, you can link your profiles later from your profile settings.</span>
+      <div class=”reg-section-break”>
+        <span class=”reg-section-break-label”>Family <span class=”mp-optional”>(Optional)</span></span>
       </div>
 
-      <div class=”mp-form-group”>
-        <label for=”reg-spouse-email”>Spouse's Email <span class=”mp-optional”>(Optional — sends them an invitation)</span></label>
-        <input type=”email” id=”reg-spouse-email” name=”spouse_invite_email”
-               placeholder=”spouse@example.com” autocomplete=”off”>
-        <span class=”mp-hint”>If provided, we'll send your spouse an invitation to create their own account.</span>
+      <!-- Spouse name + invite email — side by side, like Birthday / Anniversary -->
+      <div class=”mp-form-row”>
+        <div class=”mp-form-group”>
+          <label for=”reg-spouse-name”>Spouse's Name</label>
+          <input type=”text” id=”reg-spouse-name” name=”spouse_name_text”
+                 placeholder=”e.g. Jane Smith” autocomplete=”off”>
+          <span class=”mp-hint”>You can link profiles from your settings once both accounts are active.</span>
+        </div>
+        <div class=”mp-form-group”>
+          <label for=”reg-spouse-email”>Spouse's Email <span class=”mp-optional”>(sends an invite)</span></label>
+          <input type=”email” id=”reg-spouse-email” name=”spouse_invite_email”
+                 placeholder=”spouse@example.com” autocomplete=”off”>
+          <span class=”mp-hint”>We'll send them an invitation to create their own account.</span>
+        </div>
       </div>
 
+      <!-- Children -->
       <div class=”mp-form-group”>
-        <label>Children <span class=”mp-optional”>(Optional)</span></label>
+        <label>Children</label>
         <div id=”reg-children-list”>
           <div class=”mp-child-row” data-index=”0”>
             <select name=”ch[0][gender]” class=”mp-child-gender”>
               <option value=”boy”>Boy</option>
               <option value=”girl”>Girl</option>
             </select>
-            <input type=”text” name=”ch[0][name]” placeholder=”Child's name” class=”mp-child-name”>
-            <input type=”date” name=”ch[0][birthday]” class=”mp-child-birthday”>
+            <input type=”text” name=”ch[0][name]” placeholder=”Name” class=”mp-child-name”>
+            <input type=”date” name=”ch[0][birthday]” class=”mp-child-birthday” title=”Birthday (optional)”>
             <button type=”button” class=”mp-btn mp-btn--secondary mp-btn--small”
                     onclick=”regSaveChild(this)”>+ Add</button>
           </div>
         </div>
-        <span class=”mp-hint”>Fill in a child's details and click + Add. Repeat for each child.</span>
+        <span class=”mp-hint”>Fill in name, gender, and birthday, then click + Add. Repeat for each child.</span>
       </div>
 
       <!-- ── Profile Photo ── -->
