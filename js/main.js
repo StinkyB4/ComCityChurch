@@ -510,8 +510,8 @@ class YouTubeHeroPlayer {
 }
 
 // ── LIVE SERMON RSS FEED ─────────────────────────────────────────────────
-// Calls our own Azure Function at /api/sermons — server-side fetch,
-// no CORS issues, no third-party proxies.
+// Stage 1: Azure Function at /api/sermons (fast, cached, works in production).
+// Stage 2: rss2json.com client-side fetch (works everywhere, including local dev).
 // Safe to call on every page — exits immediately if #sermon-grid isn't found.
 
 async function fetchSermons() {
@@ -522,57 +522,54 @@ async function fetchSermons() {
   if (!grid) return;
 
   const SPOTIFY_SHOW = 'https://open.spotify.com/show/2XGMvfMPl2GVUDEkHG5GTZ';
+  const RSS_FEED     = 'https://anchor.fm/s/fcef7890/podcast/rss';
+  const COUNT        = 6;
 
+  let items = null;
+
+  // Stage 1: Azure Function (production)
   try {
-    const response = await fetch('/api/sermons', {
-      signal: AbortSignal.timeout(10000)
-    });
-
-    // Guard: if the response isn't JSON (e.g. local preview returns index.html),
-    // throw immediately rather than letting JSON.parse choke on HTML
-    const contentType = response.headers.get('content-type') || '';
-    if (!response.ok || !contentType.includes('application/json')) {
-      throw new Error(`API unavailable (${response.status})`);
+    const r  = await fetch('/api/sermons', { signal: AbortSignal.timeout(5000) });
+    const ct = r.headers.get('content-type') || '';
+    if (r.ok && ct.includes('application/json')) {
+      const d = await r.json();
+      if (d.status === 'ok' && d.items?.length) items = d.items;
     }
+  } catch (_) {}
 
-    const data = await response.json();
-    if (data.status !== 'ok' || !data.items?.length) {
-      throw new Error('No sermon data returned');
-    }
+  // Stage 2: rss2json.com (local dev + fallback) — free tier doesn't support count param; slice after
+  if (!items) {
+    try {
+      const url = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(RSS_FEED)}`;
+      const r   = await fetch(url, { signal: AbortSignal.timeout(8000) });
+      if (r.ok) {
+        const d = await r.json();
+        if (d.status === 'ok' && d.items?.length) {
+          items = d.items.slice(0, COUNT).map(ep => ({
+            title:       ep.title,
+            pubDate:     ep.pubDate,
+            link:        ep.link || SPOTIFY_SHOW,
+            description: ep.description || '',
+            thumbnail:   ep.thumbnail || '',
+          }));
+        }
+      }
+    } catch (_) {}
+  }
 
-    if (loading) loading.style.display = 'none';
+  if (loading) loading.style.display = 'none';
+
+  if (items?.length) {
     grid.style.display = 'grid';
-
-    renderSermonCards(grid, data.items.map(item => ({
+    renderSermonCards(grid, items.map(item => ({
       title:       item.title || 'Untitled',
       date:        item.pubDate,
       description: item.description || '',
       thumb:       item.thumbnail || '',
       link:        item.link || SPOTIFY_SHOW,
     })));
-
-  } catch (err) {
-    console.warn('[Sermons] API unavailable:', err.message);
-    if (loading) loading.style.display = 'none';
-
-    // Fallback: use static sermon data from media.js when API isn't reachable
-    // (e.g. local file preview — the Azure Function only runs on Azure)
-    // Note: SITE_MEDIA is declared with const so it doesn't attach to window —
-    // use typeof guard to avoid a ReferenceError if media.js hasn't loaded
-    const staticSermons = (typeof SITE_MEDIA !== 'undefined') ? SITE_MEDIA.sermons : null;
-    if (staticSermons?.length) {
-      grid.style.display = 'grid';
-      renderSermonCards(grid, staticSermons.map(s => ({
-        title:       s.title,
-        date:        null,
-        description: `${s.reference} — ${s.speaker}`,
-        thumb:       s.thumb || '',
-        link:        s.spotifyUrl || SPOTIFY_SHOW,
-        series:      s.series || '',
-      })));
-    } else {
-      if (error) error.style.display = 'flex';
-    }
+  } else {
+    if (error) error.style.display = 'flex';
   }
 }
 
