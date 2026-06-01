@@ -576,6 +576,10 @@
       html+='<div class="mp-rte-body" id="msg-rte" contenteditable="true" data-placeholder="Write your message here..."></div>';
       html+='<textarea name="body" id="msg-hidden" style="display:none;"></textarea>';
       html+='</div>';
+      html+='<div class="mp-form-row" style="margin-top:12px;">';
+      html+='<div class="mp-form-group"><label>Button Label <small style="font-weight:400;color:var(--color-text-muted);">(optional)</small></label><input type="text" name="link_label" placeholder="e.g. Sign Up, Learn More"></div>';
+      html+='<div class="mp-form-group"><label>Button URL <small style="font-weight:400;color:var(--color-text-muted);">(optional)</small></label><input type="url" name="link_url" placeholder="https://"></div>';
+      html+='</div>';
       html+='<div class="mp-notify-section"><label class="mp-checkbox-label" style="display:flex;align-items:center;gap:8px;font-size:0.88em;cursor:pointer;">';
       html+='<input type="checkbox" id="msg-notify-cb" value="1"> Send email notification to all members</label></div>';
       html+='<div style="margin-top:16px;"><button type="submit" class="mp-btn mp-btn--primary">Post Message</button></div>';
@@ -597,6 +601,7 @@
       }
       html+='<div class="mp-message-card"><div class="mp-message-header"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'+audienceLabel+'<span class="mp-message-title">'+esc(m.title)+'</span></div><span class="mp-message-date">'+esc(fmtDate(m.published_at||m.created_at))+'</span></div>';
       html+='<div class="mp-message-body">'+sanitizeBody(m.content||m.body||'')+'</div>';
+      if(m.link_url) html+='<div style="margin-top:12px;"><a href="'+esc(m.link_url)+'" target="_blank" rel="noopener" class="mp-btn mp-btn--outline">'+esc(m.link_label||m.link_url)+'</a></div>';
       if(_isAdmin) html+='<div class="mp-message-admin-actions"><button class="mp-btn mp-btn--small mp-btn--outline" onclick="mpDeleteMsg(\''+esc(m.id)+'\')">Delete</button></div>';
       html+='</div>';
     });
@@ -640,11 +645,14 @@
         var title=form.querySelector('[name=title]').value.trim();
         var body=form.querySelector('[name=body]').value.trim();
         var date=form.querySelector('[name=date]').value||new Date().toISOString().split('T')[0];
+        var link_url=form.querySelector('[name=link_url]').value.trim();
+        var link_label=form.querySelector('[name=link_label]').value.trim();
         if(!title||!body){ alert('Title and message are required.'); return; }
-        var { error } = await _sb.from('admin_messages').insert({
-          author_id:_user.id, title, content:body, type:'announcement',
-          target_audience:'all', published_at:new Date(date+'T12:00:00').toISOString()
-        });
+        var insertPayload={author_id:_user.id, title, content:body, type:'announcement',
+          target_audience:'all', published_at:new Date(date+'T12:00:00').toISOString()};
+        if(link_url) insertPayload.link_url=link_url;
+        if(link_label) insertPayload.link_label=link_label;
+        var { error } = await _sb.from('admin_messages').insert(insertPayload);
         if(error){ alert('Error: '+error.message); return; }
         if(document.getElementById('msg-notify-cb')&&document.getElementById('msg-notify-cb').checked)
           callEdge('send-email',{action:'message_notification',title,body,date});

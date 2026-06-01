@@ -741,6 +741,18 @@ function renderMessagesUI() {
             placeholder="Message content…"
             style="width:100%;padding:.75rem;border:1px solid #e0e0e0;border-radius:6px;font-size:1rem;resize:vertical;box-sizing:border-box;font-family:var(--font-sans);"></textarea>
         </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+          <div class="form-group">
+            <label>Button Label <small style="font-weight:400;">(optional)</small></label>
+            <input type="text" id="msg-link-label" placeholder="e.g. Sign Up, Learn More"
+              style="width:100%;padding:.75rem;border:1px solid #e0e0e0;border-radius:6px;font-size:1rem;box-sizing:border-box;">
+          </div>
+          <div class="form-group">
+            <label>Button URL <small style="font-weight:400;">(optional)</small></label>
+            <input type="url" id="msg-link-url" placeholder="https://"
+              style="width:100%;padding:.75rem;border:1px solid #e0e0e0;border-radius:6px;font-size:1rem;box-sizing:border-box;">
+          </div>
+        </div>
         <div class="form-group" style="display:flex;align-items:center;gap:.5rem;">
           <input type="checkbox" id="msg-pin" style="width:auto;cursor:pointer;">
           <label for="msg-pin" style="margin:0;cursor:pointer;">&#128204; Pin this message</label>
@@ -769,6 +781,9 @@ function messageItem(m) {
         <strong>${m.pinned ? '&#128204; ' : ''}${esc(m.title)}</strong>
         <span style="font-size:.85rem;color:var(--color-text-muted);">${date}</span>
       </div>
+      ${m.link_url ? `<div style="margin:.4rem 0 .2rem;"><a href="${esc(m.link_url)}" target="_blank" rel="noopener"
+        style="display:inline-block;padding:.25rem .75rem;border:1px solid var(--color-navy);border-radius:4px;font-size:.8rem;color:var(--color-navy);text-decoration:none;"
+        >${esc(m.link_label || m.link_url)}</a></div>` : ''}
       <div class="message-item-actions">
         <button class="admin-btn btn-secondary" style="padding:.2rem .6rem;font-size:.8rem;"
           onclick="togglePin('${m.id}',${m.pinned})">
@@ -781,9 +796,11 @@ function messageItem(m) {
 }
 
 async function postMessage() {
-  const title  = document.getElementById('msg-title')?.value.trim();
-  const body   = document.getElementById('msg-body')?.value.trim();
-  const pinned = document.getElementById('msg-pin')?.checked || false;
+  const title      = document.getElementById('msg-title')?.value.trim();
+  const body       = document.getElementById('msg-body')?.value.trim();
+  const pinned     = document.getElementById('msg-pin')?.checked || false;
+  const link_url   = document.getElementById('msg-link-url')?.value.trim() || null;
+  const link_label = document.getElementById('msg-link-label')?.value.trim() || null;
 
   if (!title || !body) { toast('Title and body are required.', 'error'); return; }
 
@@ -797,15 +814,19 @@ async function postMessage() {
       pinned,
       published_at: new Date().toISOString(),
       type:         'announcement',
+      ...(link_url   && { link_url }),
+      ...(link_label && { link_label }),
     })
     .select()
     .single();
 
   if (error) { toast('Error: ' + error.message, 'error'); return; }
 
-  document.getElementById('msg-title').value  = '';
-  document.getElementById('msg-body').value   = '';
-  document.getElementById('msg-pin').checked  = false;
+  document.getElementById('msg-title').value        = '';
+  document.getElementById('msg-body').value         = '';
+  document.getElementById('msg-pin').checked        = false;
+  document.getElementById('msg-link-url').value     = '';
+  document.getElementById('msg-link-label').value   = '';
 
   allMessages = [data, ...allMessages];
   allMessages.sort((a, b) => (b.pinned - a.pinned) || (new Date(b.published_at) - new Date(a.published_at)));
