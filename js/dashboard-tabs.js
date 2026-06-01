@@ -114,7 +114,7 @@
             + (mcByProfile[b.id]    || []).join(' ') + ' '
             + (teamsByProfile[a.id] || []).join(' ') + ' '
             + (teamsByProfile[b.id] || []).join(' ')).toLowerCase(),
-          a: memberData(a), b: memberData(b),
+          a: memberData(a, mcByProfile, teamsByProfile), b: memberData(b, mcByProfile, teamsByProfile),
           address: a.address || b.address || '',
           anniversary: D.fmtDate(a.anniversary || b.anniversary || ''),
           children: allKids
@@ -128,7 +128,7 @@
             + (m.email || '') + ' '
             + (mcByProfile[m.id]    || []).join(' ') + ' '
             + (teamsByProfile[m.id] || []).join(' ')).toLowerCase(),
-          m: memberData(m),
+          m: memberData(m, mcByProfile, teamsByProfile),
           address: m.address || '', anniversary: D.fmtDate(m.anniversary || ''),
           children: childrenByProfile[m.id] || []
         };
@@ -156,7 +156,9 @@
     initDirJS();
   }
 
-  function memberData(m) {
+  function memberData(m, mcMap, teamsMap) {
+    mcMap    = mcMap    || {};
+    teamsMap = teamsMap || {};
     return {
       id: m.id, photo: m.avatar_url || '',
       initials: window.mpDashboard.getInitials(m),
@@ -165,8 +167,8 @@
       email: m.email || '', phone1: m.phone1 || '', phone1_type: m.phone1_type || 'Cell',
       phone2: m.phone2 || '', phone2_type: m.phone2_type || 'Home',
       birthday: window.mpDashboard.fmtDate(m.birthday || ''), bio: m.bio || '',
-      mcs:   (mcByProfile[m.id]    || []).slice(),
-      teams: (teamsByProfile[m.id] || []).slice()
+      mcs:   (mcMap[m.id]    || []).slice(),
+      teams: (teamsMap[m.id] || []).slice()
     };
   }
 
