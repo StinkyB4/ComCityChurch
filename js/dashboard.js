@@ -696,16 +696,18 @@
     var editMode=qs.get('edit')==='1';
 
     /* parallel fetches */
-    var [childRes, teamRes, spouseRes] = await Promise.all([
+    var [childRes, teamRes, spouseRes, mcRes] = await Promise.all([
       _sb.from('children').select('*').eq('profile_id',_user.id).order('id'),
       _sb.from('team_members').select('team_id, teams(id,name)').eq('member_id',_user.id),
       _profile.spouse_id
         ? _sb.from('profiles').select('id,first_name,last_name,full_name,email,phone1,phone1_type,avatar_url').eq('id',_profile.spouse_id).maybeSingle()
-        : Promise.resolve({data:null})
+        : Promise.resolve({data:null}),
+      _sb.from('mc_members').select('missional_communities(id,name)').eq('profile_id',_user.id)
     ]);
     var children = childRes.data||[];
     var myTeams  = (teamRes.data||[]).map(function(r){return r.teams;}).filter(Boolean);
     var spouse   = spouseRes.data||null;
+    var myMCs    = (mcRes.data||[]).map(function(r){return r.missional_communities;}).filter(Boolean);
 
     var p=_profile, initials=getInitials(p), photo=p.avatar_url||'';
 
@@ -739,10 +741,15 @@
           return esc(c.name)+' ('+(c.gender==='girl'?'Girl':'Boy')+')'+(c.birthday?' &mdash; '+esc(fmtDate(c.birthday)):'');
         }).join('<br>'));
       }
+      if(myMCs.length){
+        html+=dlRow('Missional Community',myMCs.map(function(mc){
+          return '<a href="#" class="mp-profile-team-link" onclick="window.mpDashboard.navigate(\'mcs\');return false;">'+esc(mc.name)+'</a>';
+        }).join(', '));
+      }
       if(myTeams.length){
         html+=dlRow('Teams',myTeams.map(function(t){
           return '<a href="#" class="mp-profile-team-link" onclick="window.mpDashboard.navigate(\'teams\');return false;">'+esc(t.name)+'</a>';
-        }).join(' '));
+        }).join(', '));
       }
       html+='</dl>';
       html+='<a href="#" onclick="mpProfileEdit();return false;" class="mp-btn mp-btn--secondary">Edit My Profile</a>';

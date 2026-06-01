@@ -46,6 +46,24 @@
       childrenByProfile[c.profile_id].push(c);
     });
 
+    var [mcMemsRes, teamMemsRes] = await Promise.all([
+      _sb.from('mc_members').select('profile_id, missional_communities(id,name)'),
+      _sb.from('team_members').select('member_id, teams(id,name)')
+    ]);
+    var mcByProfile = {}, teamsByProfile = {};
+    (mcMemsRes.data || []).forEach(function (r) {
+      var n = r.missional_communities && r.missional_communities.name;
+      if (!n) return;
+      if (!mcByProfile[r.profile_id]) mcByProfile[r.profile_id] = [];
+      mcByProfile[r.profile_id].push(n);
+    });
+    (teamMemsRes.data || []).forEach(function (r) {
+      var n = r.teams && r.teams.name;
+      if (!n) return;
+      if (!teamsByProfile[r.member_id]) teamsByProfile[r.member_id] = [];
+      teamsByProfile[r.member_id].push(n);
+    });
+
     /* group into families */
     var families = [], seen = {};
     members.forEach(function (m) {
@@ -59,14 +77,17 @@
         seen[m.id] = true;
       }
     });
-    /* sort by last name (earliest alphabetically for couples) */
+    /* sort couples by husband's last name, singles by their own last name */
+    function coupleSortKey(fam) {
+      var h = (fam.a.gender === 'male' && fam.a.last_name) ? fam.a
+            : (fam.b.gender === 'male' && fam.b.last_name) ? fam.b : null;
+      if (h) return h.last_name.toLowerCase();
+      var names = [fam.a.last_name, fam.b.last_name].filter(Boolean).map(function (s) { return s.toLowerCase(); }).sort();
+      return names[0] || '';
+    }
     families.sort(function (fa, fb) {
-      var ka = fa.type === 'couple'
-        ? Math.min.apply(null, [fa.a.last_name, fa.b.last_name].filter(Boolean).map(function (s) { return s.toLowerCase(); }))
-        : (fa.m.last_name || fa.m.full_name || '').toLowerCase();
-      var kb = fb.type === 'couple'
-        ? Math.min.apply(null, [fb.a.last_name, fb.b.last_name].filter(Boolean).map(function (s) { return s.toLowerCase(); }))
-        : (fb.m.last_name || fb.m.full_name || '').toLowerCase();
+      var ka = fa.type === 'couple' ? coupleSortKey(fa) : (fa.m.last_name || fa.m.full_name || '').toLowerCase();
+      var kb = fb.type === 'couple' ? coupleSortKey(fb) : (fb.m.last_name || fb.m.full_name || '').toLowerCase();
       return ka < kb ? -1 : ka > kb ? 1 : 0;
     });
 
@@ -76,14 +97,23 @@
         var a = fam.a, b = fam.b;
         var label = D.coupleDisplayName(a, b);
         var al = a.last_name || '', bl = b.last_name || '';
-        var famLabel = (al && bl && al.toLowerCase() === bl.toLowerCase()) ? al + ' Family' : label;
+        /* family name: husband's last name → "Cattani Family" */
+        var husband = (a.gender === 'male' && a.last_name) ? a
+                    : (b.gender === 'male' && b.last_name) ? b : null;
+        var famLabel = husband ? husband.last_name + ' Family'
+                    : (al && bl && al.toLowerCase() === bl.toLowerCase()) ? al + ' Family'
+                    : label;
         var kidsA = childrenByProfile[a.id] || [], kidsB = childrenByProfile[b.id] || [];
         var allKids = kidsA.concat(kidsB.filter(function (kb) {
           return !kidsA.some(function (ka) { return ka.name.toLowerCase() === kb.name.toLowerCase(); });
         }));
         return {
           type: 'couple', label: label, famLabel: famLabel,
-          search: (label + ' ' + al + ' ' + bl).toLowerCase(),
+          search: (label + ' ' + al + ' ' + bl + ' '
+            + (mcByProfile[a.id]    || []).join(' ') + ' '
+            + (mcByProfile[b.id]    || []).join(' ') + ' '
+            + (teamsByProfile[a.id] || []).join(' ') + ' '
+            + (teamsByProfile[b.id] || []).join(' ')).toLowerCase(),
           a: memberData(a), b: memberData(b),
           address: a.address || b.address || '',
           anniversary: D.fmtDate(a.anniversary || b.anniversary || ''),
@@ -94,7 +124,10 @@
         return {
           type: 'single', label: D.getInitials(m),
           name: ((m.first_name || '') + (m.last_name ? ' ' + m.last_name : '')).trim() || m.full_name || m.email,
-          search: ((m.first_name || '') + ' ' + (m.last_name || '') + ' ' + (m.full_name || '') + ' ' + (m.email || '')).toLowerCase(),
+          search: ((m.first_name || '') + ' ' + (m.last_name || '') + ' ' + (m.full_name || '') + ' '
+            + (m.email || '') + ' '
+            + (mcByProfile[m.id]    || []).join(' ') + ' '
+            + (teamsByProfile[m.id] || []).join(' ')).toLowerCase(),
           m: memberData(m),
           address: m.address || '', anniversary: D.fmtDate(m.anniversary || ''),
           children: childrenByProfile[m.id] || []
@@ -128,9 +161,12 @@
       id: m.id, photo: m.avatar_url || '',
       initials: window.mpDashboard.getInitials(m),
       name: ((m.first_name || '') + (m.last_name ? ' ' + m.last_name : '')).trim() || m.full_name || m.email,
+      last_name: m.last_name || '', gender: m.gender || '',
       email: m.email || '', phone1: m.phone1 || '', phone1_type: m.phone1_type || 'Cell',
       phone2: m.phone2 || '', phone2_type: m.phone2_type || 'Home',
-      birthday: window.mpDashboard.fmtDate(m.birthday || ''), bio: m.bio || ''
+      birthday: window.mpDashboard.fmtDate(m.birthday || ''), bio: m.bio || '',
+      mcs:   (mcByProfile[m.id]    || []).slice(),
+      teams: (teamsByProfile[m.id] || []).slice()
     };
   }
 
@@ -170,6 +206,8 @@
       if (p.phone2) rows += dlR(D.esc(p.phone2_type || 'Home'), D.esc(p.phone2));
       if (p.birthday) rows += dlR('Birthday', D.esc(p.birthday));
       if (p.bio) rows += dlR('About', D.esc(p.bio));
+      if (p.mcs   && p.mcs.length)   rows += dlR('MC',    D.esc(p.mcs.join(', ')));
+      if (p.teams && p.teams.length) rows += dlR('Teams', D.esc(p.teams.join(', ')));
       return '<div class="mp-dir-person-block"><div class="mp-dir-person-row">'
         + av(p.photo, p.initials, p.name) + '<span class="mp-dir-person-name">' + D.esc(p.name) + '</span></div>'
         + (rows ? dlTbl(rows) : '') + '</div>';
@@ -216,6 +254,8 @@
             if (clist) rows += dlR('Children', clist);
           }
           if (m.m.bio) rows += dlR('About', D.esc(m.m.bio));
+          if (m.m.mcs   && m.m.mcs.length)   rows += dlR('MC',    D.esc(m.m.mcs.join(', ')));
+          if (m.m.teams && m.m.teams.length) rows += dlR('Teams', D.esc(m.m.teams.join(', ')));
           if (rows) html += dlTbl(rows);
           html += '</div>';
         }
