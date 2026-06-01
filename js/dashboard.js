@@ -1037,8 +1037,8 @@
       /* save profile */
       var { error }=await _sb.from('profiles').update(updates).eq('id',_user.id);
 
-      /* save children — SECURITY DEFINER RPC bypasses RLS */
-      var newChildren=parseChildren(fd);
+      /* save children — read from DOM directly (avoids FormData bracket-name issues) */
+      var newChildren=parseChildrenFromDOM('children-list');
       var { error:childErr }=await _sb.rpc('save_children',{
         p_profile_id:_user.id,
         p_children:newChildren
@@ -1071,6 +1071,25 @@
     });
   }
 
+  /* Read children from DOM rows rather than FormData to avoid bracket-name issues */
+  function parseChildrenFromDOM(listId){
+    var list=document.getElementById(listId); if(!list) return [];
+    var res=[];
+    list.querySelectorAll('.mp-child-row').forEach(function(row){
+      var nameEl=row.querySelector('.mp-child-name');
+      var genEl =row.querySelector('.mp-child-gender');
+      var bdEl  =row.querySelector('.mp-child-birthday');
+      var n=(nameEl&&nameEl.value||'').trim(); if(!n) return;
+      res.push({
+        name:n,
+        gender:(genEl&&genEl.value)||'boy',
+        birthday:(bdEl&&bdEl.value)||null
+      });
+    });
+    return res;
+  }
+
+  /* legacy FormData parser kept for reference only */
   function parseChildren(fd){
     var res=[], i=0;
     while(true){
