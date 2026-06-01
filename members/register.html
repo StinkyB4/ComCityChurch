@@ -10,6 +10,85 @@
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="/css/members.css">
   <link rel="icon" type="image/png" href="/assets/logo.png">
+
+  <style>
+    /* ── Register-page override ──────────────────────────────────────────────
+       styles.css (18px body) prevents mp-form-group's flex from taking effect
+       on standalone form groups (those not wrapped in mp-form-row).
+       These scoped rules win on specificity and restore consistent rendering.
+       ─────────────────────────────────────────────────────────────────────── */
+
+    #register-form .mp-form-group {
+      display: flex !important;
+      flex-direction: column !important;
+      margin-bottom: 18px;
+      gap: 0;
+    }
+
+    #register-form .mp-form-group > label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 5px;
+      line-height: 1.4;
+    }
+
+    #register-form .mp-form-group > input,
+    #register-form .mp-form-group > select,
+    #register-form .mp-form-group > textarea {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 9px 12px;
+      border: 1.5px solid #dde3eb;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      background: #fff;
+      color: #222;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    #register-form .mp-form-group > input:focus,
+    #register-form .mp-form-group > select:focus,
+    #register-form .mp-form-group > textarea:focus {
+      outline: none;
+      border-color: #112E53;
+      box-shadow: 0 0 0 3px rgba(17, 46, 83, 0.1);
+    }
+
+    #register-form .mp-hint {
+      display: block;
+      font-size: 0.78rem;
+      color: #999;
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    /* Section break: text centered in a horizontal rule */
+    #register-form .reg-section-break {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 8px 0 20px;
+    }
+    #register-form .reg-section-break::before,
+    #register-form .reg-section-break::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #dde3eb;
+    }
+    #register-form .reg-section-break-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #999;
+      white-space: nowrap;
+    }
+  </style>
 </head>
 <body>
 
