@@ -365,7 +365,7 @@
           var cn = (nameEl && nameEl.value || '').trim(); if (!cn) return;
           newChildren.push({ profile_id: uid, name: cn, gender: (genEl && genEl.value) || 'boy', birthday: (bdEl && bdEl.value) || null });
         });
-        await D.getSb().rpc('save_children', { p_profile_id: uid, p_children: newChildren });
+        await D.getSb().rpc('save_children', { p_uid: uid, p_children: newChildren });
 
         /* password */
         var npw = fd.get('new_password') || '';

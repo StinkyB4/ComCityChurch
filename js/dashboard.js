@@ -1039,11 +1039,13 @@
 
       /* save children — read from DOM directly (avoids FormData bracket-name issues) */
       var newChildren=parseChildrenFromDOM('children-list');
-      var { error:childErr }=await _sb.rpc('save_children',{
-        p_profile_id:_user.id,
+      showToast('Saving '+newChildren.length+' child'+(newChildren.length!==1?'ren':'')+(newChildren.length?': '+newChildren.map(function(c){return c.name;}).join(', '):'')+'…');
+      var { data:childData, error:childErr }=await _sb.rpc('save_children',{
+        p_uid:_user.id,
         p_children:newChildren
       });
       if(childErr) error=error||childErr;
+      else if(childData&&childData.error) error=error||{message:childData.error};
 
       /* password */
       if(npw) await _sb.auth.updateUser({password:npw});
