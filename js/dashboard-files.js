@@ -45,6 +45,31 @@
     return opts;
   }
 
+  /* Same as above but skips excludeId and its entire subtree —
+     used for the Move dropdown so a folder can't be moved into itself. */
+  function gatherFolderOptionsExcluding(nodes, depth, excludeId) {
+    var opts = '';
+    (nodes || []).forEach(function (n) {
+      if (n.type !== 'folder') return;
+      if (String(n.id) === String(excludeId)) return; /* skip self + subtree */
+      opts += '<option value="' + window.mpDashboard.esc(n.id) + '">' + '-- '.repeat(depth) + window.mpDashboard.esc(n.name) + '</option>';
+      if (n.children) opts += gatherFolderOptionsExcluding(n.children, depth + 1, excludeId);
+    });
+    return opts;
+  }
+
+  /* Remove a node from the tree by id and return it. */
+  function extractNode(nodes, id) {
+    for (var i = 0; i < nodes.length; i++) {
+      if (String(nodes[i].id) === String(id)) return nodes.splice(i, 1)[0];
+      if (nodes[i].type === 'folder' && nodes[i].children) {
+        var found = extractNode(nodes[i].children, id);
+        if (found) return found;
+      }
+    }
+    return null;
+  }
+
   async function saveTree(sb, tree) {
     /* always one row */
     var { data: existing } = await sb.from('file_tree').select('id').limit(1).maybeSingle();
@@ -72,7 +97,7 @@
         : '<p class="mp-empty">No files or folders yet.</p>';
     }
 
-    /* update folder dropdowns in all three forms */
+    /* update folder dropdowns in all three create forms */
     var newOpts = gatherFolderOptions(tree, 0);
     ['folder_parent_id', 'upload_folder_id', 'link_folder_id'].forEach(function (name) {
       var sel = document.querySelector('select[name="' + name + '"]');
@@ -81,6 +106,16 @@
       sel.innerHTML = '<option value="">-- Root level --</option>' + newOpts;
       if (prev) sel.value = prev;
     });
+
+    /* update move dropdown if the panel is still open */
+    var moveSel = document.getElementById('move-dest-select');
+    var moveId  = (document.getElementById('move-id') || {}).value || '';
+    if (moveSel) {
+      var prevMove = moveSel.value;
+      moveSel.innerHTML = '<option value="">-- Root level --</option>'
+        + gatherFolderOptionsExcluding(tree, 0, moveId);
+      if (prevMove) moveSel.value = prevMove;
+    }
 
     /* reset submitted form */
     if (formEl) formEl.reset();
@@ -109,6 +144,7 @@
         if (isAdmin) {
           html += '<span class="mp-tree-admin-actions">';
           html += '<button type="button" class="mp-btn mp-btn--small mp-tree-btn" onclick="event.stopPropagation();mpShowRename(\'' + D.esc(n.id) + '\',\'' + D.esc(n.name.replace(/'/g, "\\'")) + '\')">Rename</button>';
+          html += '<button type="button" class="mp-btn mp-btn--small mp-tree-btn" onclick="event.stopPropagation();mpShowMove(\'' + D.esc(n.id) + '\',\'' + D.esc(n.name.replace(/'/g, "\\'")) + '\')">Move</button>';
           html += '<button type="button" class="mp-btn mp-btn--small mp-tree-btn" onclick="event.stopPropagation();mpShowUpload(\'' + D.esc(n.id) + '\')">+ File</button>';
           html += '<button type="button" class="mp-btn mp-btn--small mp-tree-btn mp-btn--danger" onclick="event.stopPropagation();mpDeleteNode(\'' + D.esc(n.id) + '\',\'' + D.esc(n.name.replace(/'/g, "\\'")) + '\',\'folder\')">Delete</button>';
           html += '</span>';
@@ -130,7 +166,10 @@
         html += '<div class="mp-tree-file-actions">';
         html += '<a href="' + D.esc(n.url) + '" target="_blank" rel="noopener" class="mp-btn mp-btn--small">Open</a>';
         html += '<a href="' + D.esc(n.url) + '" download="' + D.esc(n.filename || n.name) + '" class="mp-btn mp-btn--small mp-btn--outline">Download</a>';
-        if (isAdmin) html += '<button type="button" class="mp-btn mp-btn--small mp-btn--danger" onclick="mpDeleteNode(\'' + D.esc(String(n.id)) + '\',\'' + D.esc(n.name.replace(/'/g, "\\'")) + '\',\'file\')">Delete</button>';
+        if (isAdmin) {
+          html += '<button type="button" class="mp-btn mp-btn--small mp-tree-btn" onclick="mpShowMove(\'' + D.esc(String(n.id)) + '\',\'' + D.esc(n.name.replace(/'/g, "\\'")) + '\')">Move</button>';
+          html += '<button type="button" class="mp-btn mp-btn--small mp-btn--danger" onclick="mpDeleteNode(\'' + D.esc(String(n.id)) + '\',\'' + D.esc(n.name.replace(/'/g, "\\'")) + '\',\'file\')">Delete</button>';
+        }
         html += '</div></div></li>';
       } else if (n.type === 'link') {
         html += '<li class="mp-tree-file mp-tree-link" style="--indent:' + ind + 'px" data-name="' + D.esc(n.name.toLowerCase()) + '">';
@@ -142,6 +181,7 @@
         html += '<a href="' + D.esc(n.url) + '" target="_blank" rel="noopener" class="mp-btn mp-btn--small">Open</a>';
         if (isAdmin) {
           html += '<button type="button" class="mp-btn mp-btn--small mp-tree-btn" onclick="mpShowRename(\'' + D.esc(n.id) + '\',\'' + D.esc(n.name.replace(/'/g, "\\'")) + '\')">Rename</button>';
+          html += '<button type="button" class="mp-btn mp-btn--small mp-tree-btn" onclick="mpShowMove(\'' + D.esc(String(n.id)) + '\',\'' + D.esc(n.name.replace(/'/g, "\\'")) + '\')">Move</button>';
           html += '<button type="button" class="mp-btn mp-btn--small mp-btn--danger" onclick="mpDeleteNode(\'' + D.esc(String(n.id)) + '\',\'' + D.esc(n.name.replace(/'/g, "\\'")) + '\',\'link\')">Delete</button>';
         }
         html += '</div></div></li>';
@@ -217,6 +257,19 @@
       html += '<div class="mp-form-group" style="flex:1;margin:0;"><label>New Name</label><input type="text" name="rename_name" id="rename-name" required></div>';
       html += '<button type="submit" class="mp-btn mp-btn--primary mp-btn--small">Rename</button>';
       html += '<button type="button" class="mp-btn mp-btn--secondary mp-btn--small" onclick="document.getElementById(\'rename-panel\').style.display=\'none\';">Cancel</button></form></div>';
+
+      /* inline move form (hidden) */
+      html += '<div id="move-panel" style="display:none;background:#fff;border:1.5px solid var(--mp-border);border-radius:8px;padding:16px;margin-bottom:12px;">';
+      html += '<form id="move-form" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;"><input type="hidden" name="move_id" id="move-id">';
+      html += '<div class="mp-form-group" style="flex:1;margin:0;">';
+      html += '<label>Moving: <strong id="move-item-label" style="color:var(--color-navy,#112E53);"></strong></label>';
+      html += '<label style="margin-top:8px;display:block;">Move To</label>';
+      html += '<select name="move_dest_id" id="move-dest-select" style="width:100%;padding:.6rem;border:1px solid #e0e0e0;border-radius:6px;font-size:1rem;">';
+      html += '<option value="">-- Root level --</option>' + folderOpts;
+      html += '</select></div>';
+      html += '<button type="submit" class="mp-btn mp-btn--primary mp-btn--small">Move Here</button>';
+      html += '<button type="button" class="mp-btn mp-btn--secondary mp-btn--small" onclick="document.getElementById(\'move-panel\').style.display=\'none\';">Cancel</button>';
+      html += '</form></div>';
     }
 
     /* search */
@@ -350,6 +403,35 @@
         refreshFileSection(null);
       });
     }
+
+    /* ── wire move form ── */
+    var mform = document.getElementById('move-form');
+    if (mform) {
+      mform.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var fd = new FormData(mform);
+        var id     = fd.get('move_id')   || '';
+        var destId = fd.get('move_dest_id') || '';
+        if (!id) return;
+        var treeM = window._fileTree || [];
+        var node = extractNode(treeM, id);
+        if (!node) return;
+        if (destId) {
+          var dest = findNode(treeM, destId);
+          if (dest && dest.type === 'folder') {
+            dest.children = dest.children || [];
+            dest.children.push(node);
+          } else {
+            treeM.push(node); /* fallback to root if dest missing */
+          }
+        } else {
+          treeM.push(node); /* root level */
+        }
+        await saveTree(_sb, treeM);
+        document.getElementById('move-panel').style.display = 'none';
+        refreshFileSection(null);
+      });
+    }
   }
 
   /* global file tree actions */
@@ -364,10 +446,27 @@
   };
 
   window.mpShowRename = function (id, name) {
+    document.getElementById('move-panel').style.display = 'none';
     var panel = document.getElementById('rename-panel');
     document.getElementById('rename-id').value = id;
     document.getElementById('rename-name').value = name;
     if (panel) { panel.style.display = ''; document.getElementById('rename-name').focus(); }
+  };
+
+  window.mpShowMove = function (id, name) {
+    document.getElementById('rename-panel').style.display = 'none';
+    var panel  = document.getElementById('move-panel');
+    var label  = document.getElementById('move-item-label');
+    var sel    = document.getElementById('move-dest-select');
+    var hidden = document.getElementById('move-id');
+    if (!panel || !sel || !hidden) return;
+    hidden.value = id;
+    if (label) label.textContent = name;
+    /* rebuild dropdown excluding the node being moved (prevents folder→self) */
+    sel.innerHTML = '<option value="">-- Root level --</option>'
+      + gatherFolderOptionsExcluding(window._fileTree || [], 0, id);
+    panel.style.display = '';
+    sel.focus();
   };
 
   window.mpShowUpload = function (folderId) {

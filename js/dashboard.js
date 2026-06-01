@@ -113,7 +113,7 @@
 
   function collectFiles(nodes, arr){
     (nodes||[]).forEach(function(n){
-      if(n.type==='file') arr.push(n);
+      if(n.type==='file'||n.type==='link') arr.push(n);
       else if(n.type==='folder'&&n.children) collectFiles(n.children, arr);
     });
   }
@@ -338,24 +338,27 @@
     var initials=getInitials(_profile), photo=_profile.avatar_url||'';
 
     /* parallel data fetches */
-    var todayStr = new Date().toISOString().split('T')[0];
-    var [msgsRes, treeRes, pendRes, rosterRes] = await Promise.all([
+    var todayStr    = new Date().toISOString().split('T')[0];
+    var sevenDayStr = new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0];
+    var [msgsRes, treeRes, pendRes, rosterRes, evtAssignRes] = await Promise.all([
       _sb.from('admin_messages').select('*').order('published_at',{ascending:false}).limit(20),
       _sb.from('file_tree').select('tree').limit(1).maybeSingle(),
       _isAdmin ? _sb.from('profiles').select('*').eq('status','pending').order('created_at') : Promise.resolve({data:[]}),
-      _sb.from('schedule_rosters').select('date,title,type,slots').gte('date',todayStr).order('date').limit(52)
+      _sb.from('schedule_rosters').select('date,title,type,slots').gte('date',todayStr).order('date').limit(52),
+      _sb.from('events').select('id,title,event_date,event_time,slots').gte('event_date',todayStr).order('event_date').limit(52)
     ]);
     var msgs    = msgsRes.data  || [];
     var pending = pendRes.data  || [];
     var recentFiles = [];
     if(treeRes.data&&treeRes.data.tree){
       var allF=[]; collectFiles(treeRes.data.tree, allF);
-      allF.sort(function(a,b){return (b.uploaded_at||0)-(a.uploaded_at||0);});
-      recentFiles = allF.slice(0,3);
+      allF.sort(function(a,b){return (b.uploaded_at||b.added_at||0)-(a.uploaded_at||a.added_at||0);});
+      recentFiles = allF.slice(0,5);
     }
 
-    /* find upcoming serving slots for this user */
+    /* find upcoming serving: rosters + calendar event slots */
     var upcomingServing = [];
+    var urgentAssign   = [];  /* event assignments within 7 days → notification */
     (rosterRes.data || []).forEach(function(r){
       var myRoles = (r.slots || []).filter(function(s){
         return (s.assignee_type==='member' && s.assignee_id===_user.id) ||
@@ -363,6 +366,16 @@
       }).map(function(s){ return s.role||''; }).filter(Boolean);
       if(myRoles.length) upcomingServing.push({date:r.date, title:r.title||'Sunday Service', roles:myRoles});
     });
+    (evtAssignRes.data || []).forEach(function(ev){
+      var myRoles = (ev.slots || []).filter(function(s){
+        return (s.assignee_type==='member' && s.assignee_id===_user.id) ||
+               (s.assignee_type==='couple' && (s.assignee_id===_user.id || s.assignee_id_b===_user.id));
+      }).map(function(s){ return s.role||''; }).filter(Boolean);
+      if(!myRoles.length) return;
+      upcomingServing.push({date:ev.event_date, title:ev.title, roles:myRoles});
+      if(ev.event_date <= sevenDayStr) urgentAssign.push({date:ev.event_date, title:ev.title, time:ev.event_time||'', roles:myRoles});
+    });
+    upcomingServing.sort(function(a,b){ return a.date.localeCompare(b.date); });
 
     var html='';
     html += '<div class="mp-welcome-header">';
@@ -374,6 +387,37 @@
     var qs=new URLSearchParams(window.location.search);
     if(qs.get('approved')==='1') html+=alertHtml('Account approved — member notified by email.','success');
     if(qs.get('rejected')==='1') html+=alertHtml('Account rejected and removed.','warning');
+
+    /* ── upcoming event assignment notifications (within 7 days) ── */
+    if(urgentAssign.length){
+      if(!document.getElementById('mp-evtnotify-css')){
+        var sn=document.createElement('style'); sn.id='mp-evtnotify-css';
+        sn.textContent=[
+          '.mp-evtnotify{background:#fffbeb;border:1px solid #f59e0b;border-radius:8px;overflow:hidden;margin-bottom:16px;}',
+          '.mp-evtnotify-hd{background:#f59e0b;color:#fff;padding:10px 14px;display:flex;align-items:center;gap:8px;font-weight:700;font-size:0.9rem;}',
+          '.mp-evtnotify-list{list-style:none;margin:0;padding:0;}',
+          '.mp-evtnotify-row{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-bottom:1px solid #fde68a;}',
+          '.mp-evtnotify-row:last-child{border-bottom:none;}',
+          '.mp-evtnotify-date{font-size:0.76rem;font-weight:700;color:#92400e;background:#fef3c7;border-radius:4px;padding:2px 7px;white-space:nowrap;flex-shrink:0;margin-top:1px;}',
+          '.mp-evtnotify-info{flex:1;min-width:0;}',
+          '.mp-evtnotify-title{font-size:0.87rem;font-weight:600;color:#222;}',
+          '.mp-evtnotify-roles{font-size:0.8rem;color:#78350f;margin-top:1px;}'
+        ].join('');
+        document.head.appendChild(sn);
+      }
+      var bellSvg='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>';
+      html+='<div class="mp-evtnotify">';
+      html+='<div class="mp-evtnotify-hd">'+bellSvg+'Upcoming Assignments This Week</div>';
+      html+='<ul class="mp-evtnotify-list">';
+      urgentAssign.forEach(function(ev){
+        var d=new Date(ev.date+'T12:00:00');
+        var dl=isNaN(d.getTime())?ev.date:d.toLocaleDateString('en-CA',{weekday:'short',month:'short',day:'numeric'});
+        html+='<li class="mp-evtnotify-row"><span class="mp-evtnotify-date">'+esc(dl)+'</span>';
+        html+='<div class="mp-evtnotify-info"><div class="mp-evtnotify-title">'+esc(ev.title)+(ev.time?' &mdash; '+esc(ev.time):'')+'</div>';
+        html+='<div class="mp-evtnotify-roles">'+esc(ev.roles.join(', '))+'</div></div></li>';
+      });
+      html+='</ul></div>';
+    }
 
     /* ── upcoming serving card ── */
     if(upcomingServing.length){
@@ -487,14 +531,15 @@
     html+='</section>';
 
     /* ── recent files ── */
-    html+='<section style="margin-top:24px;"><h3 class="mp-section-title">Recently Added Files</h3>';
-    if(!recentFiles.length) html+='<p class="mp-empty">No files uploaded yet.</p>';
+    html+='<section style="margin-top:24px;"><h3 class="mp-section-title">Recently Added Files &amp; Links</h3>';
+    if(!recentFiles.length) html+='<p class="mp-empty">No files or links added yet.</p>';
     else{
       html+='<ul class="mp-recent-files">';
       recentFiles.forEach(function(f){
-        html+='<li class="mp-recent-file"><span class="mp-dl-label">'+esc(f.name)+'</span><div class="mp-dl-actions">';
+        var icon = f.type==='link' ? '🔗' : '📄';
+        html+='<li class="mp-recent-file"><span class="mp-dl-label">'+icon+' '+esc(f.name)+'</span><div class="mp-dl-actions">';
         html+='<a href="'+esc(f.url)+'" target="_blank" rel="noopener" class="mp-btn mp-btn--small">Open</a>';
-        html+='<a href="'+esc(f.url)+'" download="'+esc(f.filename||f.name)+'" class="mp-btn mp-btn--small mp-btn--outline">Download</a>';
+        if(f.type==='file') html+='<a href="'+esc(f.url)+'" download="'+esc(f.filename||f.name)+'" class="mp-btn mp-btn--small mp-btn--outline">Download</a>';
         html+='</div></li>';
       });
       html+='</ul>';

@@ -87,7 +87,10 @@
       '.mp-allday-row input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:#112E53;flex-shrink:0;}',
       '.mp-time-desktop{width:100%;display:block;}',
       '.mp-time-native{width:100%;display:none!important;}',
-      '@media(pointer:coarse){.mp-time-desktop{display:none!important;}.mp-time-native{display:block!important;}}'
+      '@media(pointer:coarse){.mp-time-desktop{display:none!important;}.mp-time-native{display:block!important;}}',
+      '.mp-time-row{display:flex;gap:10px;}',
+      '.mp-time-row>div{flex:1;min-width:0;}',
+      '.mp-time-sublab{font-size:0.75rem;color:#888;display:block;margin-bottom:3px;}'
     ].join('');
     document.head.appendChild(s);
   })();
@@ -205,6 +208,10 @@
     calEvents.forEach(function (ev) {
       if (!dayData[ev.event_date]) dayData[ev.event_date] = { events: [], serving: false };
       dayData[ev.event_date].events.push(ev);
+      if ((ev.slots || []).some(function (s) {
+        return (s.assignee_type === 'member' && s.assignee_id === uid) ||
+               (s.assignee_type === 'couple' && (s.assignee_id === uid || s.assignee_id_b === uid));
+      })) { dayData[ev.event_date].serving = true; }
     });
     rosters.forEach(function (r) {
       if (!dayData[r.date]) dayData[r.date] = { events: [], serving: false };
@@ -335,7 +342,8 @@
     var nextSun  = nextSunday();
 
     /* store for calendar click handler; keep raw events for editing */
-    window._mpCalData = { calEvents: calEvents, baseCalEvents: _rawCalEvents, rosters: rosters, uid: uid, D: D, canManage: _isAdmin, teams: teams, mcs: mcs, sb: _sb };
+    var _assigneeOpts = buildAssigneeOptions(profMap, guestMap);
+    window._mpCalData = { calEvents: calEvents, baseCalEvents: _rawCalEvents, rosters: rosters, uid: uid, D: D, canManage: _isAdmin, teams: teams, mcs: mcs, sb: _sb, profMap: profMap, guestMap: guestMap, assigneeOpts: _assigneeOpts };
 
     var html = '<h2 class="mp-tab-title">Schedule</h2>';
 
@@ -727,14 +735,26 @@
       }
       var recurBadge = ev.recurrence_type ? ' <span style="font-size:0.75rem;color:#5C718E;white-space:nowrap;">↻ ' + D.esc(RECUR_SHORT[ev.recurrence_type] || ev.recurrence_type) + '</span>' : '';
       html += '<div class="mp-cal-detail-event">';
-      html += '<div class="mp-cal-detail-event-title">' + D.esc(ev.title) + (ev.event_time ? ' &mdash; ' + D.esc(ev.event_time) : '') + '</div>';
+      var timeStr = ev.event_time ? D.esc(ev.event_time) + (ev.event_end_time ? ' – ' + D.esc(ev.event_end_time) : '') : '';
+      html += '<div class="mp-cal-detail-event-title">' + D.esc(ev.title) + (timeStr ? ' &mdash; ' + timeStr : '') + '</div>';
       html += '<div class="mp-cal-detail-event-meta">' + visLabel + recurBadge + '</div>';
+      /* user assignment */
+      var myEvSlots = (ev.slots || []).filter(function (s) {
+        return (s.assignee_type === 'member' && s.assignee_id === cd.uid) ||
+               (s.assignee_type === 'couple' && (s.assignee_id === cd.uid || s.assignee_id_b === cd.uid));
+      });
+      if (myEvSlots.length) {
+        html += '<div class="mp-cal-detail-serving" style="margin-top:6px;">You are assigned — ' + D.esc(myEvSlots.map(function (s) { return s.role || ''; }).join(', ')) + '</div>';
+      }
       if (ev.description) html += '<div class="mp-cal-detail-event-desc">' + D.esc(ev.description) + '</div>';
       html += buildCalExportHtml(D, ev.title, ev.event_date, ev.event_time || null, ev.description || null);
       if (cd.canManage) {
-        html += '<div style="margin-top:8px;display:flex;gap:8px;">';
+        html += '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">';
         html += '<button class="mp-btn mp-btn--secondary mp-btn--small" onclick="mpCalEditEvent(\'' + D.esc(ev.id) + '\')">Edit</button>';
         html += '<button class="mp-btn mp-btn--danger mp-btn--small" onclick="mpCalDeleteEvent(\'' + D.esc(ev.id) + '\',\'' + D.esc(ev.title) + '\',' + (ev.recurrence_type ? 'true' : 'false') + ')">Delete</button>';
+        if ((ev.slots || []).some(function (s) { return s.assignee_id; })) {
+          html += '<button class="mp-btn mp-btn--outline mp-btn--small" onclick="mpCalNotifyEvent(\'' + D.esc(ev.id) + '\',\'' + D.esc(ev.title) + '\')">&#9993; Email Assigned</button>';
+        }
         html += '</div>';
       }
       html += '</div>';
@@ -788,17 +808,23 @@
     if (isEdit) html += '<input type="hidden" name="event_id" value="' + D.esc(ev.id) + '">';
     html += '<div class="mp-form-group"><label>Title <span class="mp-required">*</span></label><input type="text" name="event_title" value="' + D.esc(isEdit ? ev.title : '') + '" required placeholder="e.g. Church Picnic"></div>';
     html += '<div class="mp-form-row"><div class="mp-form-group"><label>Date <span class="mp-required">*</span></label><input type="date" name="event_date" value="' + D.esc(isEdit ? ev.event_date : '') + '" required></div>';
-    var curTime = isEdit ? (ev.event_time || '') : '';
-    var isAllDay = !curTime;
+    var curTime    = isEdit ? (ev.event_time     || '') : '';
+    var curEndTime = isEdit ? (ev.event_end_time || '') : '';
+    var isAllDay   = !curTime;
     html += '<div class="mp-form-group">';
     html += '<label>Time <span class="mp-required" id="mp-time-req"' + (isAllDay ? ' style="display:none;"' : '') + '>*</span></label>';
     html += '<label class="mp-allday-row"><input type="checkbox" name="event_allday" id="mp-allday-cb" value="1"' + (isAllDay ? ' checked' : '') + ' onchange="mpCalAllDayChange(this.checked)"> All day</label>';
-    html += '<div id="mp-time-wrap" style="' + (isAllDay ? 'display:none;' : '') + '">';
-    html += '<select class="mp-time-desktop" onchange="mpCalSyncTime(this.value)">' + buildTimeOpts(curTime) + '</select>';
-    html += '<input type="time" class="mp-time-native" value="' + D.esc(mpTo24h(curTime)) + '" onchange="mpCalSyncTime(window.mpTo12h(this.value))">';
-    html += '<input type="hidden" name="event_time" id="mp-event-time-val" value="' + D.esc(curTime) + '">';
-    html += '</div>';
-    html += '</div></div>';
+    html += '<div id="mp-time-wrap" style="' + (isAllDay ? 'display:none;' : '') + '"><div class="mp-time-row">';
+    html += '<div><span class="mp-time-sublab">Start</span>';
+    html += '<select class="mp-time-desktop" onchange="mpCalSyncTime(\'start\',this.value)">' + buildTimeOpts(curTime) + '</select>';
+    html += '<input type="time" class="mp-time-native" value="' + D.esc(mpTo24h(curTime)) + '" onchange="mpCalSyncTime(\'start\',window.mpTo12h(this.value))">';
+    html += '<input type="hidden" name="event_time" id="mp-event-time-val" value="' + D.esc(curTime) + '"></div>';
+    html += '<div><span class="mp-time-sublab">End <em style="font-style:normal;font-size:0.75rem;color:#bbb;">(optional)</em></span>';
+    html += '<select class="mp-time-desktop" onchange="mpCalSyncTime(\'end\',this.value)">' + buildTimeOpts(curEndTime) + '</select>';
+    html += '<input type="time" class="mp-time-native" value="' + D.esc(mpTo24h(curEndTime)) + '" onchange="mpCalSyncTime(\'end\',window.mpTo12h(this.value))">';
+    html += '<input type="hidden" name="event_end_time" id="mp-event-endtime-val" value="' + D.esc(curEndTime) + '"></div>';
+    html += '</div></div>';  /* mp-time-row + mp-time-wrap */
+    html += '</div></div>';  /* mp-form-group + mp-form-row */
     html += '<div class="mp-form-group"><label>Description <span class="mp-optional">(Optional)</span></label><textarea name="event_description" rows="2" placeholder="Brief description...">' + D.esc(isEdit ? (ev.description || '') : '') + '</textarea></div>';
 
     var recType = isEdit ? (ev.recurrence_type || '') : '';
@@ -834,6 +860,19 @@
     mcs.forEach(function (m) { html += '<option value="' + D.esc(m.id) + '"' + (isEdit && ev.target_mc_id === m.id ? ' selected' : '') + '>' + D.esc(m.name) + '</option>'; });
     html += '</select></div>';
 
+    var aOpts = window._mpCalAssigneeOpts || '';
+    if (aOpts) {
+      html += '<div class="mp-section-divider" style="margin:14px 0 8px;">Volunteer Slots <span class="mp-optional">(Optional)</span></div>';
+      html += '<div id="event-slots-wrap">';
+      (isEdit && ev.slots && ev.slots.length ? ev.slots : []).forEach(function (slot, i) {
+        html += buildEventSlotRow(slot, i, aOpts, D);
+      });
+      html += '</div>';
+      html += '<button type="button" class="mp-btn mp-btn--secondary mp-btn--small" style="margin-top:6px;" onclick="mpCalEventAddSlot()">+ Add Slot</button>';
+      html += '<label style="display:flex;align-items:center;gap:7px;margin-top:10px;font-size:0.85rem;cursor:pointer;">';
+      html += '<input type="checkbox" name="event_notify" value="1"> Email assigned members when saved</label>';
+    }
+
     html += '<div class="mp-event-modal-footer">';
     html += '<button type="submit" class="mp-btn mp-btn--primary" style="flex:1;">' + (isEdit ? 'Save Changes' : 'Add Event') + '</button>';
     html += '<button type="button" class="mp-btn mp-btn--secondary" onclick="mpCalCloseModal()">Cancel</button>';
@@ -844,6 +883,8 @@
   function openEventModal(D, teams, mcs, ev) {
     var existing = document.getElementById('mp-event-modal-overlay');
     if (existing) existing.remove();
+    /* expose assignee opts before building modal HTML */
+    window._mpCalAssigneeOpts = window._mpCalData ? (window._mpCalData.assigneeOpts || '') : '';
     var div = document.createElement('div');
     div.innerHTML = buildEventModal(D, teams, mcs, ev);
     document.body.appendChild(div.firstChild);
@@ -878,12 +919,28 @@
       if (!allDay && !payload.event_time) { alert('Please select a time or check "All day".'); return; }
       if (allDay) payload.event_time = '';
       if (!payload.title || !payload.event_date) { alert('Title and date are required.'); return; }
+      /* end time */
+      payload.event_end_time = allDay ? '' : (fd.get('event_end_time') || '');
+      /* event slots */
+      var evSlots = [];
+      document.querySelectorAll('#event-slots-wrap .mp-sched-slot-row').forEach(function (el, i) {
+        var ri = el.querySelector('input[type=text]'), role = ri ? ri.value.trim() : '';
+        if (!role) return;
+        var asel = el.querySelector('select'), combined = asel ? asel.value : '';
+        var pts = combined.split(':'), hid2 = el.querySelector('input[type=hidden]');
+        evSlots.push({ id: hid2 ? hid2.value : ('evs_' + i), role: role, assignee_type: pts[0] || '', assignee_id: pts[1] || '', assignee_id_b: pts[2] || '', guest_id: pts[0] === 'guest' ? pts[1] : '' });
+      });
+      payload.slots = evSlots;
+      var doNotify = fd.get('event_notify') === '1';
       var evId = fd.get('event_id');
       var sb = window.mpDashboard.getSb();
       if (evId) {
         await sb.from('events').update(payload).eq('id', evId);
       } else {
         await sb.from('events').insert(payload);
+      }
+      if (doNotify && evSlots.some(function (s) { return s.assignee_id; })) {
+        window.mpDashboard.callEdge('send-email', { action: 'event_assignment', event_title: payload.title, event_date: payload.event_date, event_time: payload.event_time || '', slots: evSlots });
       }
       mpCalCloseModal();
       renderScheduleTab();
@@ -933,13 +990,48 @@
     var wrap = document.getElementById('mp-time-wrap');
     var req  = document.getElementById('mp-time-req');
     var hid  = document.getElementById('mp-event-time-val');
+    var hidE = document.getElementById('mp-event-endtime-val');
     if (wrap) wrap.style.display = checked ? 'none' : '';
     if (req)  req.style.display  = checked ? 'none' : '';
-    if (checked && hid) hid.value = '';  /* clear stored time when switching to all-day */
+    if (checked && hid)  hid.value  = '';
+    if (checked && hidE) hidE.value = '';
   };
-  window.mpCalSyncTime = function (val) {
-    var h = document.getElementById('mp-event-time-val');
-    if (h) h.value = val || '';
+  window.mpCalSyncTime = function (field, val) {
+    var id = field === 'end' ? 'mp-event-endtime-val' : 'mp-event-time-val';
+    var h = document.getElementById(id); if (h) h.value = val || '';
+  };
+
+  /* ── event slot helpers ──────────────────────────────────────── */
+  function buildEventSlotRow(slot, idx, opts, D) {
+    var sv = '';
+    if (slot.assignee_type === 'member'  && slot.assignee_id) sv = 'member:'  + slot.assignee_id;
+    else if (slot.assignee_type === 'couple' && slot.assignee_id) sv = 'couple:' + slot.assignee_id + ':' + (slot.assignee_id_b || '');
+    else if (slot.assignee_type === 'guest'  && slot.guest_id)  sv = 'guest:'  + slot.guest_id;
+    return '<div class="mp-sched-slot-row" data-idx="' + idx + '">'
+      + '<input type="hidden" name="ev_slots[' + idx + '][id]" value="' + D.esc(slot.id || '') + '">'
+      + '<input type="text"   name="ev_slots[' + idx + '][role]" value="' + D.esc(slot.role || '') + '" placeholder="Role" class="mp-sched-role-input">'
+      + '<select name="ev_slots[' + idx + '][assignee]" class="mp-sched-select">' + opts.replace('value="' + sv + '"', 'value="' + sv + '" selected') + '</select>'
+      + '<button type="button" class="mp-btn mp-btn--danger mp-btn--small" onclick="this.closest(\'.mp-sched-slot-row\').remove()">&#10005;</button>'
+      + '</div>';
+  }
+
+  window.mpCalEventAddSlot = function () {
+    var wrap = document.getElementById('event-slots-wrap'); if (!wrap) return;
+    var idx = wrap.querySelectorAll('.mp-sched-slot-row').length;
+    var d = document.createElement('div'); d.className = 'mp-sched-slot-row'; d.dataset.idx = idx;
+    d.innerHTML = '<input type="hidden" name="ev_slots[' + idx + '][id]" value="new_' + idx + '">'
+      + '<input type="text" name="ev_slots[' + idx + '][role]" placeholder="Role" class="mp-sched-role-input">'
+      + '<select name="ev_slots[' + idx + '][assignee]" class="mp-sched-select">' + (window._mpCalAssigneeOpts || '') + '</select>'
+      + '<button type="button" class="mp-btn mp-btn--danger mp-btn--small" onclick="this.closest(\'.mp-sched-slot-row\').remove()">&#10005;</button>';
+    wrap.appendChild(d); d.querySelector('input[type=text]').focus();
+  };
+
+  window.mpCalNotifyEvent = async function (id, title) {
+    var cd = window._mpCalData; if (!cd) return;
+    var ev = (cd.baseCalEvents || cd.calEvents).find(function (e) { return e.id === id; });
+    if (!ev || !(ev.slots || []).some(function (s) { return s.assignee_id; })) return;
+    if (!confirm('Send email notification to assigned members for "' + title + '"?')) return;
+    await window.mpDashboard.callEdge('send-email', { action: 'event_assignment', event_title: ev.title, event_date: ev.event_date, event_time: ev.event_time || '', slots: ev.slots || [] });
   };
 
   /* ── template builder helpers ───────────────────────────────── */
