@@ -194,6 +194,9 @@
     _isAdmin  = (prof.role==='admin');
     _isLeader = (prof.role==='team' || prof.role==='admin');
 
+    /* upload avatar that was deferred at registration (no session when email confirmation is required) */
+    await uploadDeferredAvatar();
+
     /* load which MCs/Teams this user leads */
     await loadLeaderContext();
 
@@ -225,6 +228,28 @@
       var p=new URLSearchParams(window.location.search);
       renderTab(p.get('tab')||'welcome');
     });
+  }
+
+  async function uploadDeferredAvatar(){
+    var b64, uid;
+    try { b64 = localStorage.getItem('mp_pending_avatar_b64'); uid = localStorage.getItem('mp_pending_avatar_uid'); }
+    catch(e) { return; }
+    if (!b64 || uid !== _user.id || _profile.avatar_url) return;
+    try {
+      localStorage.removeItem('mp_pending_avatar_b64');
+      localStorage.removeItem('mp_pending_avatar_uid');
+      var res = await fetch(b64);
+      var blob = await res.blob();
+      var path = _user.id + '/' + Date.now() + '.jpg';
+      var { error: upErr } = await _sb.storage.from('avatars').upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
+      if (!upErr) {
+        var { data: ud } = _sb.storage.from('avatars').getPublicUrl(path);
+        if (ud && ud.publicUrl) {
+          await _sb.from('profiles').update({ avatar_url: ud.publicUrl }).eq('id', _user.id);
+          _profile.avatar_url = ud.publicUrl;
+        }
+      }
+    } catch(e) { console.warn('Deferred avatar upload failed:', e); }
   }
 
   async function loadLeaderContext(){

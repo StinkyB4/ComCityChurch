@@ -182,13 +182,14 @@ document.addEventListener('DOMContentLoaded', async function () {
 
       /* upload profile photo — prefer cropped blob, fall back to raw file */
       var cropBlob = window._avatarCropBlob;
+      var avatarSaved = false;
       if (cropBlob) {
         try {
           var ppath = userId + '/' + Date.now() + '.jpg';
           var { data: upD, error: upE } = await _sb.storage.from('avatars').upload(ppath, cropBlob, { contentType: 'image/jpeg' });
           if (!upE && upD) {
             var { data: uD } = _sb.storage.from('avatars').getPublicUrl(ppath);
-            if (uD) await _sb.from('profiles').update({ avatar_url: uD.publicUrl }).eq('id', userId);
+            if (uD) { await _sb.from('profiles').update({ avatar_url: uD.publicUrl }).eq('id', userId); avatarSaved = true; }
           }
           window._avatarCropBlob = null;
         } catch (photoErr) { console.warn('Photo upload failed:', photoErr); }
@@ -200,9 +201,28 @@ document.addEventListener('DOMContentLoaded', async function () {
           var { data: upD2, error: upE2 } = await _sb.storage.from('avatars').upload(ppath2, pf2);
           if (!upE2 && upD2) {
             var { data: uD2 } = _sb.storage.from('avatars').getPublicUrl(ppath2);
-            if (uD2) await _sb.from('profiles').update({ avatar_url: uD2.publicUrl }).eq('id', userId);
+            if (uD2) { await _sb.from('profiles').update({ avatar_url: uD2.publicUrl }).eq('id', userId); avatarSaved = true; }
           }
         } catch (photoErr) { console.warn('Photo upload failed:', photoErr); }
+      }
+      /* If upload failed (no auth session when email confirmation is required),
+         persist the blob so dashboard.js can retry on first login. */
+      if (!avatarSaved) {
+        var blobToDefer = cropBlob || (hasPhoto && photoFile.files[0]);
+        if (blobToDefer) {
+          await new Promise(function(resolve) {
+            var fr = new FileReader();
+            fr.onloadend = function() {
+              try {
+                localStorage.setItem('mp_pending_avatar_b64', fr.result);
+                localStorage.setItem('mp_pending_avatar_uid', userId);
+              } catch(e) {}
+              resolve();
+            };
+            fr.onerror = resolve;
+            fr.readAsDataURL(blobToDefer);
+          });
+        }
       }
 
       /* send admin notification + user pending emails via edge function */
