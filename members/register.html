@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Create Account â€” Commissioned City Church</title>
+  <title>Create Account &mdash; Commissioned City Church</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400&family=Montserrat:wght@600;700;800&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
@@ -304,36 +304,56 @@
         </div>
       </div>
 
-      <!-- ── Bio ── -->
-      <div class=”mp-form-group”>
-        <label for=”reg-bio”>About You <span class=”mp-optional”>(Optional)</span></label>
-        <textarea id=”reg-bio” name=”bio” rows=”4” placeholder=”Tell other members about yourself”></textarea>
+      <!-- ── Bio ── (inline styles: immune to cascade issues) -->
+      <div style=”display:flex;flex-direction:column;margin-bottom:18px;”>
+        <label for=”reg-bio” style=”display:block;font-size:0.85rem;font-weight:600;color:#555;margin-bottom:5px;”>
+          About You <span style=”font-weight:400;color:#999;”>(Optional)</span>
+        </label>
+        <textarea id=”reg-bio” name=”bio” rows=”4”
+          placeholder=”Tell other members about yourself”
+          style=”display:block;width:100%;padding:9px 12px;border:1.5px solid #dde3eb;border-radius:6px;font-size:0.9rem;font-family:inherit;background:#fff;color:#222;resize:vertical;box-sizing:border-box;”></textarea>
       </div>
 
-      <!-- ── Family ── -->
-      <div class=”reg-section-break”>
-        <span class=”reg-section-break-label”>Family <span class=”mp-optional”>(Optional)</span></span>
+      <!-- ── Family section break ── -->
+      <div style=”display:flex;align-items:center;gap:12px;margin:8px 0 20px;”>
+        <span style=”flex:1;height:1px;background:#dde3eb;display:block;”></span>
+        <span style=”font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#999;white-space:nowrap;”>
+          Family <span style=”font-weight:400;text-transform:none;letter-spacing:normal;”>(Optional)</span>
+        </span>
+        <span style=”flex:1;height:1px;background:#dde3eb;display:block;”></span>
       </div>
 
-      <!-- Spouse name + invite email — side by side, like Birthday / Anniversary -->
-      <div class=”mp-form-row”>
-        <div class=”mp-form-group”>
-          <label for=”reg-spouse-name”>Spouse's Name</label>
+      <!-- ── Spouse Name + Email — two columns ── -->
+      <div style=”display:flex;gap:16px;flex-wrap:wrap;margin-bottom:18px;”>
+        <div style=”flex:1;min-width:200px;display:flex;flex-direction:column;”>
+          <label for=”reg-spouse-name” style=”display:block;font-size:0.85rem;font-weight:600;color:#555;margin-bottom:5px;”>
+            Spouse's Name
+          </label>
           <input type=”text” id=”reg-spouse-name” name=”spouse_name_text”
-                 placeholder=”e.g. Jane Smith” autocomplete=”off”>
-          <span class=”mp-hint”>You can link profiles from your settings once both accounts are active.</span>
+            placeholder=”e.g. Jane Smith” autocomplete=”off”
+            style=”display:block;width:100%;padding:9px 12px;border:1.5px solid #dde3eb;border-radius:6px;font-size:0.9rem;font-family:inherit;background:#fff;color:#222;box-sizing:border-box;”>
+          <span style=”display:block;font-size:0.78rem;color:#999;margin-top:4px;line-height:1.4;”>
+            You can link profiles from your settings once both accounts are active.
+          </span>
         </div>
-        <div class=”mp-form-group”>
-          <label for=”reg-spouse-email”>Spouse's Email <span class=”mp-optional”>(sends an invite)</span></label>
+        <div style=”flex:1;min-width:200px;display:flex;flex-direction:column;”>
+          <label for=”reg-spouse-email” style=”display:block;font-size:0.85rem;font-weight:600;color:#555;margin-bottom:5px;”>
+            Spouse's Email <span style=”font-weight:400;color:#999;”>(sends an invite)</span>
+          </label>
           <input type=”email” id=”reg-spouse-email” name=”spouse_invite_email”
-                 placeholder=”spouse@example.com” autocomplete=”off”>
-          <span class=”mp-hint”>We'll send them an invitation to create their own account.</span>
+            placeholder=”spouse@example.com” autocomplete=”off”
+            style=”display:block;width:100%;padding:9px 12px;border:1.5px solid #dde3eb;border-radius:6px;font-size:0.9rem;font-family:inherit;background:#fff;color:#222;box-sizing:border-box;”>
+          <span style=”display:block;font-size:0.78rem;color:#999;margin-top:4px;line-height:1.4;”>
+            We'll send them an invitation to create their own account.
+          </span>
         </div>
       </div>
 
-      <!-- Children -->
-      <div class=”mp-form-group”>
-        <label>Children</label>
+      <!-- ── Children ── -->
+      <div style=”display:flex;flex-direction:column;margin-bottom:18px;”>
+        <label style=”display:block;font-size:0.85rem;font-weight:600;color:#555;margin-bottom:8px;”>
+          Children <span style=”font-weight:400;color:#999;”>(Optional)</span>
+        </label>
         <div id=”reg-children-list”>
           <div class=”mp-child-row” data-index=”0”>
             <select name=”ch[0][gender]” class=”mp-child-gender”>
@@ -346,7 +366,9 @@
                     onclick=”regSaveChild(this)”>+ Add</button>
           </div>
         </div>
-        <span class=”mp-hint”>Fill in name, gender, and birthday, then click + Add. Repeat for each child.</span>
+        <span style=”display:block;font-size:0.78rem;color:#999;margin-top:6px;line-height:1.4;”>
+          Fill in name, gender, and birthday, then click + Add. Repeat for each child.
+        </span>
       </div>
 
       <!-- ── Profile Photo ── -->
