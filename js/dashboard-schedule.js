@@ -918,12 +918,11 @@
       if (window._mpSchedTemplates && window._mpSchedTemplates.length) {
         html += '<div class="mp-tpl-load-bar" style="margin-bottom:8px;">';
         html += '<span class="mp-tpl-load-label">Load template:</span>';
-        html += '<select id="ev-tpl-select" class="mp-tpl-load-select"><option value="">— none —</option>';
+        html += '<select id="ev-tpl-select" class="mp-tpl-load-select" onchange="mpCalLoadEventTemplate(this.value)"><option value="">— none —</option>';
         window._mpSchedTemplates.forEach(function (t) {
           html += '<option value="' + D.esc(t.id) + '">' + D.esc(t.name) + (t.is_default ? ' ✓' : '') + '</option>';
         });
         html += '</select>';
-        html += '<button type="button" class="mp-btn mp-btn--secondary mp-btn--small" onclick="mpCalLoadEventTemplate(document.getElementById(\'ev-tpl-select\').value)">Apply</button>';
         html += '</div>';
       }
       html += '<div id="event-slots-wrap">';
@@ -1003,12 +1002,14 @@
       var doNotify = fd.get('event_notify') === '1';
       var evId = fd.get('event_id');
       var sb = window.mpDashboard.getSb();
-      if (evId) {
-        await sb.from('events').update(payload).eq('id', evId);
-      } else {
-        await sb.from('events').insert(payload);
+      var saveResult = evId
+        ? await sb.from('events').update(payload).eq('id', evId)
+        : await sb.from('events').insert(payload);
+      if (saveResult.error) {
+        alert('Save failed: ' + saveResult.error.message);
+        return;
       }
-      if (doNotify && evSlots.some(function (s) { return s.assignee_id; })) {
+      if (doNotify && evSlots.some(function (s) { return s.assignee_id || s.guest_email; })) {
         window.mpDashboard.callEdge('send-email', { action: 'event_assignment', event_title: payload.title, event_date: payload.event_date, event_time: payload.event_time || '', slots: evSlots });
       }
       mpCalCloseModal();
