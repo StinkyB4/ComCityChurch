@@ -71,8 +71,10 @@ document.addEventListener('DOMContentLoaded', async function () {
     var anniversary= (fd.get('anniversary') || '').trim();
     var password   = fd.get('password')  || '';
     var confirm    = fd.get('confirm')   || '';
-    var gender     = fd.get('gender')    || '';
-    var bio        = (fd.get('bio') || '').trim();
+    var gender          = fd.get('gender')             || '';
+    var bio             = (fd.get('bio')               || '').trim();
+    var spouseNameText  = (fd.get('spouse_name_text')  || '').trim();
+    var spouseInvEmail  = (fd.get('spouse_invite_email')|| '').trim();
 
     /* validation */
     var errors = [];
@@ -178,8 +180,31 @@ document.addEventListener('DOMContentLoaded', async function () {
         addr_province: addrProv, addr_postal: addrPostal,
         addr_country: addrCountry, address,
         birthday: birthday || null, anniversary: anniversary || null,
-        gender, bio
+        gender, bio,
+        spouse_name_text: spouseNameText || null
       }).eq('id', userId);
+
+      /* save children */
+      var newChildren = parseRegChildren(fd);
+      if (newChildren.length) {
+        await _sb.from('children').insert(
+          newChildren.map(function (c) {
+            return { profile_id: userId, name: c.name, gender: c.gender, birthday: c.birthday || null };
+          })
+        );
+      }
+
+      /* send spouse invitation email if requested */
+      if (spouseInvEmail) {
+        try {
+          await _sb.functions.invoke('send-email', { body: {
+            action:      'spouse_invite',
+            inviter_id:  userId,
+            inviter_name: firstName + ' ' + lastName,
+            invitee_email: spouseInvEmail
+          }});
+        } catch (e) { console.warn('Spouse invite edge function unavailable:', e.message); }
+      }
 
       /* upload profile photo — prefer cropped blob, fall back to raw file */
       var cropBlob = window._avatarCropBlob;
@@ -231,3 +256,19 @@ document.addEventListener('DOMContentLoaded', async function () {
     window.location.href = '/members/pending.html';
   });
 });
+
+function parseRegChildren(fd) {
+  var res = [], i = 0;
+  while (true) {
+    var n = fd.get('ch[' + i + '][name]');
+    if (n === null) break;
+    n = n.trim();
+    if (n) res.push({
+      name:     n,
+      gender:   fd.get('ch[' + i + '][gender]') || 'boy',
+      birthday: fd.get('ch[' + i + '][birthday]') || null
+    });
+    i++;
+  }
+  return res;
+}

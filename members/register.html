@@ -225,13 +225,47 @@
         </div>
       </div>
 
-      <!-- â”€â”€ Bio â”€â”€ -->
-      <div class="mp-form-group">
-        <label for="reg-bio">About You <span class="mp-optional">(Optional)</span></label>
-        <textarea id="reg-bio" name="bio" rows="4" placeholder="Tell other members about yourself"></textarea>
+      <!-- ── Bio ── -->
+      <div class=”mp-form-group”>
+        <label for=”reg-bio”>About You <span class=”mp-optional”>(Optional)</span></label>
+        <textarea id=”reg-bio” name=”bio” rows=”4” placeholder=”Tell other members about yourself”></textarea>
       </div>
 
-      <!-- â”€â”€ Profile Photo â”€â”€ -->
+      <!-- ── Family ── -->
+      <div class=”mp-section-divider”>Family <span style=”font-weight:400;font-size:0.9em;color:#888;”>(Optional)</span></div>
+
+      <div class=”mp-form-group”>
+        <label for=”reg-spouse-name”>Spouse's Name <span class=”mp-optional”>(Optional)</span></label>
+        <input type=”text” id=”reg-spouse-name” name=”spouse_name_text”
+               placeholder=”e.g. Jane Smith” autocomplete=”off”>
+        <span class=”mp-hint”>If your spouse is also a member, you can link your profiles later from your profile settings.</span>
+      </div>
+
+      <div class=”mp-form-group”>
+        <label for=”reg-spouse-email”>Spouse's Email <span class=”mp-optional”>(Optional — sends them an invitation)</span></label>
+        <input type=”email” id=”reg-spouse-email” name=”spouse_invite_email”
+               placeholder=”spouse@example.com” autocomplete=”off”>
+        <span class=”mp-hint”>If provided, we'll send your spouse an invitation to create their own account.</span>
+      </div>
+
+      <div class=”mp-form-group”>
+        <label>Children <span class=”mp-optional”>(Optional)</span></label>
+        <div id=”reg-children-list”>
+          <div class=”mp-child-row” data-index=”0”>
+            <select name=”ch[0][gender]” class=”mp-child-gender”>
+              <option value=”boy”>Boy</option>
+              <option value=”girl”>Girl</option>
+            </select>
+            <input type=”text” name=”ch[0][name]” placeholder=”Child's name” class=”mp-child-name”>
+            <input type=”date” name=”ch[0][birthday]” class=”mp-child-birthday”>
+            <button type=”button” class=”mp-btn mp-btn--secondary mp-btn--small”
+                    onclick=”regSaveChild(this)”>+ Add</button>
+          </div>
+        </div>
+        <span class=”mp-hint”>Fill in a child's details and click + Add. Repeat for each child.</span>
+      </div>
+
+      <!-- ── Profile Photo ── -->
       <div class="mp-form-group">
         <label>Profile Photo <span class="mp-optional">(Optional)</span></label>
         <div class="mp-photo-upload-wrap">
@@ -443,6 +477,46 @@ function regCropCancel() {
   var modal = document.getElementById('reg-crop-modal');
   if (modal) modal.style.display = 'none';
   if (_regCropper) { _regCropper.destroy(); _regCropper = null; }
+}
+
+// ── Children rows ────────────────────────────────────────────────────────────
+
+function regSaveChild(btn) {
+  var row = btn.closest('.mp-child-row');
+  var n   = row.querySelector('.mp-child-name');
+  if (!n || !n.value.trim()) {
+    n.focus();
+    n.style.borderColor = '#c0392b';
+    setTimeout(function () { n.style.borderColor = ''; }, 2000);
+    return;
+  }
+  // Lock the row
+  n.readOnly = true; n.style.background = 'rgba(17,46,83,0.06)'; n.style.fontWeight = '600';
+  var bday = row.querySelector('.mp-child-birthday');
+  if (bday) { bday.readOnly = true; bday.style.background = 'rgba(17,46,83,0.06)'; }
+  // Swap button to Remove
+  btn.textContent = '✕ Remove';
+  btn.className   = 'mp-btn mp-btn--danger mp-btn--small';
+  btn.onclick = function () { row.remove(); };
+  // Add a fresh row for the next child
+  regAddChildRow();
+}
+
+function regAddChildRow() {
+  var list = document.getElementById('reg-children-list');
+  if (!list) return;
+  var idx  = list.querySelectorAll('.mp-child-row').length;
+  var row  = document.createElement('div');
+  row.className    = 'mp-child-row';
+  row.dataset.index = idx;
+  row.innerHTML =
+    '<select name="ch[' + idx + '][gender]" class="mp-child-gender">'
+    + '<option value="boy">Boy</option><option value="girl">Girl</option></select>'
+    + '<input type="text" name="ch[' + idx + '][name]" placeholder="Child\'s name" class="mp-child-name">'
+    + '<input type="date" name="ch[' + idx + '][birthday]" class="mp-child-birthday">'
+    + '<button type="button" class="mp-btn mp-btn--secondary mp-btn--small" onclick="regSaveChild(this)">+ Add</button>';
+  list.appendChild(row);
+  row.querySelector('.mp-child-name').focus();
 }
 
 // Set birthday max to 18 years ago
