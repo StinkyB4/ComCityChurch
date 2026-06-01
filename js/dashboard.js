@@ -69,6 +69,15 @@
     return '<div class="mp-alert mp-alert--'+esc(type||'error')+'" style="margin-bottom:16px;">'+msg+'</div>';
   }
 
+  function showToast(msg){
+    var t=document.createElement('div');
+    t.textContent=msg;
+    t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#112E53;color:#fff;padding:12px 20px;border-radius:8px;font-size:0.88rem;font-family:sans-serif;box-shadow:0 4px 16px rgba(0,0,0,0.2);z-index:9999;max-width:340px;text-align:center;transition:opacity .4s;';
+    document.body.appendChild(t);
+    setTimeout(function(){ t.style.opacity='0'; setTimeout(function(){ t.remove(); }, 400); }, 4600);
+  }
+  window.showToast = showToast;
+
   function setContent(html){
     var c=document.getElementById('mp-content'); if(c) c.innerHTML=html;
   }
@@ -191,7 +200,22 @@
     setupShell();
     setupLogout();
     loadNavSubmenus();
-    if(_isAdmin) loadPendingBadge();
+    if(_isAdmin) {
+      loadPendingBadge();
+      /* realtime: update badge + refresh welcome tab when a new pending profile is inserted */
+      _sb.channel('pending-registrations')
+        .on('postgres_changes', {
+          event: 'INSERT', schema: 'public', table: 'profiles',
+          filter: 'status=eq.pending'
+        }, function(payload) {
+          loadPendingBadge();
+          var curTab = new URLSearchParams(window.location.search).get('tab') || 'welcome';
+          if(curTab === 'welcome') renderWelcomeTab();
+          var name = (payload.new && (payload.new.full_name || payload.new.email)) || 'Someone';
+          showToast('New member registration: ' + name);
+        })
+        .subscribe();
+    }
 
     /* initial tab from URL */
     var params = new URLSearchParams(window.location.search);

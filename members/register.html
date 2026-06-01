@@ -314,63 +314,6 @@
           style=”display:block;width:100%;padding:9px 12px;border:1.5px solid #dde3eb;border-radius:6px;font-size:0.9rem;font-family:inherit;background:#fff;color:#222;resize:vertical;box-sizing:border-box;”></textarea>
       </div>
 
-      <!-- ── Family section break ── -->
-      <div style=”display:flex;align-items:center;gap:12px;margin:8px 0 20px;”>
-        <span style=”flex:1;height:1px;background:#dde3eb;display:block;”></span>
-        <span style=”font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#999;white-space:nowrap;”>
-          Family <span style=”font-weight:400;text-transform:none;letter-spacing:normal;”>(Optional)</span>
-        </span>
-        <span style=”flex:1;height:1px;background:#dde3eb;display:block;”></span>
-      </div>
-
-      <!-- ── Spouse Name + Email — two columns ── -->
-      <div style=”display:flex;gap:16px;flex-wrap:wrap;margin-bottom:18px;”>
-        <div class=”mp-form-group” style=”flex:1;min-width:200px;display:flex;flex-direction:column;”>
-          <label for=”reg-spouse-name” style=”display:block;font-size:0.85rem;font-weight:600;color:#555;margin-bottom:5px;”>
-            Spouse's Name
-          </label>
-          <input type=”text” id=”reg-spouse-name” name=”spouse_name_text”
-            placeholder=”e.g. Jane Smith” autocomplete=”off”
-            style=”display:block;width:100%;padding:9px 12px;border:1.5px solid #dde3eb;border-radius:6px;font-size:0.9rem;font-family:inherit;background:#fff;color:#222;box-sizing:border-box;”>
-          <span style=”display:block;font-size:0.78rem;color:#999;margin-top:4px;line-height:1.4;”>
-            You can link profiles from your settings once both accounts are active.
-          </span>
-        </div>
-        <div class=”mp-form-group” style=”flex:1;min-width:200px;display:flex;flex-direction:column;”>
-          <label for=”reg-spouse-email” style=”display:block;font-size:0.85rem;font-weight:600;color:#555;margin-bottom:5px;”>
-            Spouse's Email <span style=”font-weight:400;color:#999;”>(sends an invite)</span>
-          </label>
-          <input type=”email” id=”reg-spouse-email” name=”spouse_invite_email”
-            placeholder=”spouse@example.com” autocomplete=”off”
-            style=”display:block;width:100%;padding:9px 12px;border:1.5px solid #dde3eb;border-radius:6px;font-size:0.9rem;font-family:inherit;background:#fff;color:#222;box-sizing:border-box;”>
-          <span style=”display:block;font-size:0.78rem;color:#999;margin-top:4px;line-height:1.4;”>
-            We'll send them an invitation to create their own account.
-          </span>
-        </div>
-      </div>
-
-      <!-- ── Children ── -->
-      <div class=”mp-form-group” style=”display:flex;flex-direction:column;margin-bottom:18px;”>
-        <label style=”display:block;font-size:0.85rem;font-weight:600;color:#555;margin-bottom:8px;”>
-          Children <span style=”font-weight:400;color:#999;”>(Optional)</span>
-        </label>
-        <div id=”reg-children-list”>
-          <div class=”mp-child-row” data-index=”0”>
-            <select name=”ch[0][gender]” class=”mp-child-gender”>
-              <option value=”boy”>Boy</option>
-              <option value=”girl”>Girl</option>
-            </select>
-            <input type=”text” name=”ch[0][name]” placeholder=”Name” class=”mp-child-name”>
-            <input type=”date” name=”ch[0][birthday]” class=”mp-child-birthday” title=”Birthday (optional)”>
-            <button type=”button” class=”mp-btn mp-btn--secondary mp-btn--small”
-                    onclick=”event.preventDefault(); regSaveChild(this); return false;”>+ Add</button>
-          </div>
-        </div>
-        <span style=”display:block;font-size:0.78rem;color:#999;margin-top:6px;line-height:1.4;”>
-          Fill in name, gender, and birthday, then click + Add. Repeat for each child.
-        </span>
-      </div>
-
       <!-- ── Profile Photo ── -->
       <div class="mp-form-group">
         <label>Profile Photo <span class="mp-optional">(Optional)</span></label>
