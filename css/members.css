@@ -1468,7 +1468,7 @@ body.mp-body {
   color: var(--mp-accent); padding: 10px 0 6px; border-bottom: 1px solid var(--mp-border); margin: 20px 0 16px;
 }
 .mp-empty    { color: var(--mp-text-3); font-style: italic; text-align: center; padding: 24px 0; margin: 0; }
-.mp-hint     { display: block; font-size: 0.78rem; color: var(--mp-text-3); margin-top: 4px; }
+.mp-hint     { display: block !important; font-size: 0.78rem; color: var(--mp-text-3); margin-top: 4px; }
 .mp-required { color: #c0392b; }
 .mp-optional { color: var(--mp-text-3); font-weight: 400; font-size: 0.85em; }
 .mp-badge    { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 0.75rem; font-weight: 700; }
@@ -1522,7 +1522,22 @@ body.mp-body {
 .mp-form-row { display: flex; gap: 16px; flex-wrap: wrap; }
 .mp-form-row > .mp-form-group { flex: 1; min-width: 160px; }
 .mp-form-group { display: flex; flex-direction: column; margin-bottom: 18px; }
-.mp-form-group label { font-size: 0.85rem; font-weight: 600; color: var(--mp-text-2); margin-bottom: 5px; }
+/* Explicit block + full-width fallback — ensures label/input stack even
+   when a parent stylesheet prevents flex from taking effect.            */
+.mp-form-group > label {
+  display: block;
+  font-size: 0.85rem; font-weight: 600; color: var(--mp-text-2); margin-bottom: 5px;
+}
+.mp-form-group > input,
+.mp-form-group > select,
+.mp-form-group > textarea {
+  display: block; width: 100%;
+  padding: 9px 12px; border: 1.5px solid var(--mp-border); border-radius: 6px;
+  font-size: 0.9rem; font-family: inherit; background: #fff; color: var(--mp-text-1);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+}
+/* Styling-only rule for nested inputs (phone-wraps, password-wraps, etc.) */
 .mp-form-group input,
 .mp-form-group select,
 .mp-form-group textarea {
