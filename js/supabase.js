@@ -107,7 +107,7 @@ async function signUp(email, password, fullName) {
       // profiles row automatically as SECURITY DEFINER (bypasses RLS).
       data: { full_name: fullName },
       // After email confirmation the user lands back on the login page.
-      emailRedirectTo: window.location.origin + '/members/',
+      emailRedirectTo: 'https://commissionedcity.church/members/pending.html',
     },
   });
 

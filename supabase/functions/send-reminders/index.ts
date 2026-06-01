@@ -25,7 +25,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') || '';
-const ADMIN_EMAIL    = Deno.env.get('ADMIN_EMAIL')    || 'info@commissionedcity.church';
+const ADMIN_EMAIL    = Deno.env.get('ADMIN_EMAIL')    || 'admin@commissionedcity.church';
 const SITE_URL       = Deno.env.get('SITE_URL')       || 'https://commissionedcity.church';
 const SITE_NAME      = Deno.env.get('SITE_NAME')      || 'Commissioned City Church';
 const SUPABASE_URL   = Deno.env.get('SUPABASE_URL')   || '';

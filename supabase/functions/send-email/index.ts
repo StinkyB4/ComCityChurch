@@ -8,7 +8,7 @@
  *
  * Required secrets (Supabase → Edge Functions → Secrets):
  *   RESEND_API_KEY     — from resend.com
- *   ADMIN_EMAIL        — e.g. info@commissionedcity.church
+ *   ADMIN_EMAIL        — e.g. admin@commissionedcity.church
  *   SITE_URL           — e.g. https://commissionedcity.church
  *   SITE_NAME          — e.g. Commissioned City Church
  *   SERVICE_ROLE_KEY   — from Supabase → Project Settings → API
@@ -28,7 +28,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') || '';
-const ADMIN_EMAIL    = Deno.env.get('ADMIN_EMAIL')    || 'info@commissionedcity.church';
+const ADMIN_EMAIL    = Deno.env.get('ADMIN_EMAIL')    || 'admin@commissionedcity.church';
 const SITE_URL       = Deno.env.get('SITE_URL')       || 'https://commissionedcity.church';
 const SITE_NAME      = Deno.env.get('SITE_NAME')      || 'Commissioned City Church';
 const SUPABASE_URL   = Deno.env.get('SUPABASE_URL')   || '';
@@ -187,18 +187,20 @@ async function handleAccountPending(payload: Record<string, unknown>) {
   const first_name = String(payload.first_name || '');
   const email      = String(payload.email      || '');
 
-  const html = emailOpen('Your account is pending approval')
+  const siteUrl = SITE_URL || 'https://commissionedcity.church';
+  const html = emailOpen('Your account is being reviewed — ' + SITE_NAME)
     + emailBody(
         emailEyebrow('Member Portal')
-        + emailHeading('Account Pending Approval')
+        + emailHeading('Thanks for Joining!')
         + '<p style="margin:0 0 16px;">Hi <strong>' + first_name + '</strong>,</p>'
-        + '<p style="margin:0 0 16px;">Thank you for registering with the ' + SITE_NAME + ' member portal!</p>'
-        + '<p style="margin:0 0 24px;">Your account is currently <strong>pending approval</strong> by a site administrator. You\'ll receive an email as soon as it\'s approved &mdash; usually within one business day.</p>'
+        + '<p style="margin:0 0 16px;">Thank you for creating your ' + SITE_NAME + ' member account. Your registration is currently being reviewed by our admin team for approval &mdash; we&rsquo;re excited to have you!</p>'
+        + '<p style="margin:0 0 24px;">We&rsquo;ll send you another email as soon as your account is approved. In the meantime, feel free to listen to some of our past sermons.</p>'
         + '<p style="margin:0;font-size:13px;color:#777;">Questions? Reach us at <a href="mailto:' + ADMIN_EMAIL + '" style="color:' + RED + ';text-decoration:none;">' + ADMIN_EMAIL + '</a></p>'
       )
+    + emailButton('Listen to Past Sermons', siteUrl + '/sermons.html')
     + emailClose();
 
-  return sendEmail(email, 'Your ' + SITE_NAME + ' Account is Pending Approval', html);
+  return sendEmail(email, 'Welcome to ' + SITE_NAME + ' — Account Under Review', html);
 }
 
 async function handleAccountApproved(payload: Record<string, unknown>) {
