@@ -149,7 +149,7 @@ CREATE TABLE IF NOT EXISTS teams (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL UNIQUE, -- e.g., "Music", "Parking", "Welcome"
   description TEXT,
-  leader_id UUID NOT NULL REFERENCES profiles(id) ON DELETE SET NULL,
+  leader_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
   color HEX DEFAULT '#D5393B', -- accent from brand system
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()

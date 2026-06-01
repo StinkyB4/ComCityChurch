@@ -457,6 +457,11 @@ BEGIN
   END IF;
 END$$;
 
+-- Make teams.leader_id nullable so a team can be created without assigning a leader upfront.
+-- The original schema had NOT NULL + ON DELETE SET NULL which is contradictory (deleting a leader
+-- profile would try to set the column to NULL, violating the NOT NULL constraint).
+ALTER TABLE teams ALTER COLUMN leader_id DROP NOT NULL;
+
 -- Admins can delete teams
 DO $$
 BEGIN

@@ -663,13 +663,14 @@
           await _sb2.from('teams').update({ name }).eq('id', teamId);
           await _sb2.from('team_members').delete().eq('team_id', teamId);
         } else {
-          var { data: newT } = await _sb2.from('teams').insert({ name }).select().single();
+          var { data: newT, error: newTErr } = await _sb2.from('teams').insert({ name }).select().single();
+          if (newTErr) { alert('Error creating team: ' + newTErr.message); return; }
           teamId = newT ? newT.id : null;
         }
         if (teamId && memberIds.length) {
           await _sb2.from('team_members').insert(memberIds.map(function (pid) { return { team_id: teamId, member_id: pid, role: 'member' }; }));
         }
-        renderTeamsTab();
+        await renderTeamsTab();
       });
     }
   }
