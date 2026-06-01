@@ -1037,15 +1037,14 @@
       /* save profile */
       var { error }=await _sb.from('profiles').update(updates).eq('id',_user.id);
 
-      /* save children — read from DOM directly (avoids FormData bracket-name issues) */
+      /* save children — direct INSERT (RLS disabled on children table) */
       var newChildren=parseChildrenFromDOM('children-list');
-      showToast('Saving '+newChildren.length+' child'+(newChildren.length!==1?'ren':'')+(newChildren.length?': '+newChildren.map(function(c){return c.name;}).join(', '):'')+'…');
-      var { data:childData, error:childErr }=await _sb.rpc('save_children',{
-        p_uid:_user.id,
-        p_children:newChildren
-      });
-      if(childErr) error=error||childErr;
-      else if(childData&&childData.error) error=error||{message:childData.error};
+      await _sb.from('children').delete().eq('profile_id',_user.id);
+      if(newChildren.length){
+        var { error:childErr }=await _sb.from('children').insert(
+          newChildren.map(function(c){return {profile_id:_user.id,name:c.name,gender:c.gender,birthday:c.birthday||null};}));
+        if(childErr) error=error||childErr;
+      }
 
       /* password */
       if(npw) await _sb.auth.updateUser({password:npw});

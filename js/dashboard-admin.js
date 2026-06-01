@@ -358,14 +358,15 @@
         await _sb.from('team_members').delete().eq('member_id', uid);
         if (newTeamIds.length) await _sb.from('team_members').insert(newTeamIds.map(function (tid) { return { team_id: tid, member_id: uid, role: 'member' }; }));
 
-        /* children — read from DOM to avoid FormData bracket-name issues */
+        /* children — read from DOM, direct INSERT (RLS disabled on children) */
         var newChildren = [];
         document.querySelectorAll('#admin-children-list .mp-child-row').forEach(function (row) {
           var nameEl = row.querySelector('.mp-child-name'), genEl = row.querySelector('.mp-child-gender'), bdEl = row.querySelector('.mp-child-birthday');
           var cn = (nameEl && nameEl.value || '').trim(); if (!cn) return;
           newChildren.push({ profile_id: uid, name: cn, gender: (genEl && genEl.value) || 'boy', birthday: (bdEl && bdEl.value) || null });
         });
-        await D.getSb().rpc('save_children', { p_uid: uid, p_children: newChildren });
+        await D.getSb().from('children').delete().eq('profile_id', uid);
+        if (newChildren.length) await D.getSb().from('children').insert(newChildren);
 
         /* password */
         var npw = fd.get('new_password') || '';
