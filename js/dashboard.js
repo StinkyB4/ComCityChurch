@@ -1041,7 +1041,7 @@
       var newChildren=parseChildren(fd);
       var { error:childErr }=await _sb.rpc('save_children',{
         p_profile_id:_user.id,
-        p_children:JSON.stringify(newChildren)
+        p_children:newChildren
       });
       if(childErr) error=error||childErr;
 
