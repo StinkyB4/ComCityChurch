@@ -596,7 +596,7 @@ function renderSermonCards(container, sermons) {
     const badge     = item.series || 'Latest';
 
     const card = document.createElement('article');
-    card.className = 'sermon-card card fade-in-up';
+    card.className = 'sermon-card card';
     card.innerHTML = `
       <div class="sermon-thumb ${thumb ? '' : 'sermon-thumb-gradient'}"
            ${thumb ? `style="background-image:url('${thumb}')"` : ''}>
