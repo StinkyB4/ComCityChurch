@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', async function () {
           gender:        gender,
           bio:           bio
         },
-        emailRedirectTo: 'https://commissionedcity.church/members/pending.html'
+        emailRedirectTo: 'https://www.commissionedcity.church/members/pending'
       }
     });
 
