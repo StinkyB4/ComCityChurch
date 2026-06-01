@@ -1008,11 +1008,10 @@
       if(npw&&npw!==cpw) errors.push('Passwords do not match.');
       if(errors.length){ window._profileResult={errors}; var url=new URL(window.location.href); url.searchParams.set('edit','1'); window.history.replaceState({},'',url.toString()); renderProfileTab(); return; }
 
-      /* spouse link */
+      /* spouse link — uses SECURITY DEFINER RPC to update both profiles */
       var spId=fd.get('spouse_link_id')||'';
       if(spId&&!_profile.spouse_id){
-        await _sb.from('profiles').update({spouse_id:spId}).eq('id',_user.id);
-        await _sb.from('profiles').update({spouse_id:_user.id}).eq('id',spId);
+        await _sb.rpc('link_spouses',{p_user_a:_user.id, p_user_b:spId});
         updates.spouse_id=spId;
         callEdge('send-email',{action:'spouse_linked',linker_id:_user.id,spouse_id:spId});
       }
@@ -1024,10 +1023,14 @@
       /* save profile */
       var { error }=await _sb.from('profiles').update(updates).eq('id',_user.id);
 
-      /* save children */
+      /* save children — delete then re-insert; surface any insert error */
       var newChildren=parseChildren(fd);
       await _sb.from('children').delete().eq('profile_id',_user.id);
-      if(newChildren.length) await _sb.from('children').insert(newChildren.map(function(c){return {profile_id:_user.id,name:c.name,gender:c.gender,birthday:c.birthday||null};}));
+      if(newChildren.length){
+        var { error:childErr }=await _sb.from('children').insert(
+          newChildren.map(function(c){return {profile_id:_user.id,name:c.name,gender:c.gender,birthday:c.birthday||null};}));
+        if(childErr) error=error||childErr;
+      }
 
       /* password */
       if(npw) await _sb.auth.updateUser({password:npw});

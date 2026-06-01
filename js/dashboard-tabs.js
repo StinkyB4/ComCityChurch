@@ -64,12 +64,17 @@
       teamsByProfile[r.member_id].push(n);
     });
 
-    /* group into families */
+    /* group into families — check both directions of spouse_id so one-sided
+       links (e.g. pending RPC propagation) still form a couple card */
     var families = [], seen = {};
     members.forEach(function (m) {
       if (seen[m.id]) return;
-      var spouse = m.spouse_id ? members.find(function (x) { return x.id === m.spouse_id; }) : null;
-      if (spouse && !seen[spouse.id]) {
+      /* find spouse: this member points to them, OR they point to this member */
+      var spouse = members.find(function (x) {
+        if (seen[x.id] || x.id === m.id) return false;
+        return (m.spouse_id && m.spouse_id === x.id) || (x.spouse_id && x.spouse_id === m.id);
+      }) || null;
+      if (spouse) {
         families.push({ type: 'couple', a: m, b: spouse });
         seen[m.id] = true; seen[spouse.id] = true;
       } else {

@@ -244,9 +244,7 @@
   window.mpAdminUnlinkSpouse = async function (uid, name) {
     if (!confirm('Unlink ' + name + ' and their spouse?')) return;
     var _sb2 = window.mpDashboard.getSb();
-    var { data: prof } = await _sb2.from('profiles').select('spouse_id').eq('id', uid).single();
-    if (prof && prof.spouse_id) await _sb2.from('profiles').update({ spouse_id: null }).eq('id', prof.spouse_id);
-    await _sb2.from('profiles').update({ spouse_id: null }).eq('id', uid);
+    await _sb2.rpc('unlink_spouses', { p_uid: uid });
     renderAdminTab();
   };
 
