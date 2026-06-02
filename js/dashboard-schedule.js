@@ -42,6 +42,9 @@
       '.mp-cal-chip--team{background:#fef3c7;color:#78350f;}',
       '.mp-cal-chip--mc{background:#d1fae5;color:#065f46;}',
       '.mp-cal-chip--serving{background:#112E53;color:#fff;}',
+      '.mp-cal-chip--gathering{background:#ede9fe;color:#5b21b6;}',
+      '.mp-cal-chip--cancelled{background:#f3f4f6;color:#9ca3af;}',
+      '.mp-cal-day--cancelled{opacity:.6;}',
       '.mp-cal-detail{background:#f0f4f8;border-radius:6px;padding:16px;margin-top:12px;border-left:3px solid #112E53;}',
       '.mp-cal-detail-title{font-weight:700;font-size:0.95rem;margin:0 0 10px;color:#112E53;}',
       '.mp-cal-detail-event{background:#fff;border-radius:5px;padding:10px 12px;margin-bottom:8px;border:1px solid #dde3eb;}',
@@ -230,8 +233,12 @@
     });
     rosters.forEach(function (r) {
       if (!dayData[r.date]) dayData[r.date] = { events: [], serving: false };
+      if (r.type === 'sunday') {
+        dayData[r.date].isGathering = true;
+        dayData[r.date].cancelled   = r.cancelled === true;
+      }
       var slots = r.slots || [];
-      if (slots.some(function (s) { return (s.assignee_type === 'member' && s.assignee_id === uid) || (s.assignee_type === 'couple' && (s.assignee_id === uid || s.assignee_id_b === uid)); })) {
+      if (!r.cancelled && slots.some(function (s) { return (s.assignee_type === 'member' && s.assignee_id === uid) || (s.assignee_type === 'couple' && (s.assignee_id === uid || s.assignee_id_b === uid)); })) {
         dayData[r.date].serving = true;
       }
     });
@@ -269,14 +276,18 @@
       var isToday = dateStr === todayStr;
       var data = dayData[dateStr] || { events: [], serving: false };
       var cls = 'mp-cal-day';
-      if (isToday) cls += ' mp-cal-day--today';
+      if (isToday)        cls += ' mp-cal-day--today';
       if (data.events.length) cls += ' mp-cal-day--has-event';
-      if (data.serving) cls += ' mp-cal-day--serving';
+      if (data.serving)   cls += ' mp-cal-day--serving';
+      if (data.cancelled) cls += ' mp-cal-day--cancelled';
 
       html += '<div class="' + cls + '" data-date="' + dateStr + '" onclick="mpCalDayClick(\'' + dateStr + '\')">';
       html += '<span class="mp-cal-day-num">' + day + '</span>';
-      if (data.serving) {
-        html += '<span class="mp-cal-chip mp-cal-chip--serving">Serving</span>';
+      if (data.cancelled) {
+        html += '<span class="mp-cal-chip mp-cal-chip--cancelled">No Gathering</span>';
+      } else {
+        if (data.isGathering) html += '<span class="mp-cal-chip mp-cal-chip--gathering">Sunday</span>';
+        if (data.serving)     html += '<span class="mp-cal-chip mp-cal-chip--serving">Serving</span>';
       }
       data.events.slice(0, 2).forEach(function (ev) {
         var chipCls = 'mp-cal-chip mp-cal-chip--' + (ev.visibility || 'all');

@@ -24,7 +24,7 @@
   /* ── tab labels ─────────────────────────────────────────────── */
   var TAB_LABELS = {
     welcome:'Welcome', profile:'My Profile', directory:'Directory',
-    mcs:'MCs', teams:'Teams', schedule:'Schedule', files:'Files',
+    mcs:'MCs', teams:'Teams', schedule:'Schedule', master:'Master Schedule', files:'Files',
     email:'Email', admin:'Admin'
   };
 
