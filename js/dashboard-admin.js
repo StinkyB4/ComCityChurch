@@ -360,6 +360,12 @@
     window.history.pushState({}, '', url.toString());
     renderAdminTab();
   };
+  window.mpAdminBackToList = function () {
+    var url = new URL(window.location.href);
+    url.searchParams.set('tab', 'admin'); url.searchParams.delete('admin_edit');
+    window.history.pushState({}, '', url.toString());
+    renderAdminTab();
+  };
   window.mpAdminToggleDir = async function (uid, action) {
     var _sb2 = window.mpDashboard.getSb();
     await _sb2.from('profiles').update({ show_in_directory: action === 'show' }).eq('id', uid);
@@ -390,7 +396,7 @@
     var allTeams    = allTeamsRes.data || [];
     var mname       = ((ep.first_name || '') + (ep.last_name ? ' ' + ep.last_name : '')).trim() || ep.full_name || ep.email;
 
-    var html = '<div class="mp-admin-edit-header"><a href="#" class="mp-admin-back-link" onclick="window.mpDashboard.navigate(\'admin\');return false;">← Back to Members</a>';
+    var html = '<div class="mp-admin-edit-header"><a href="#" class="mp-admin-back-link" onclick="mpAdminBackToList();return false;">← Back to Members</a>';
     html += '<h2 class="mp-tab-title" style="margin:0;">Editing: ' + D.esc(mname) + '</h2></div>';
 
     var result = window._adminEditResult || null; window._adminEditResult = null;
@@ -450,7 +456,7 @@
     html += '<div class="mp-form-group"><label>Reset Password <span class="mp-optional">(Optional)</span></label><input type="password" name="new_password" placeholder="New password (min 8 chars)" minlength="8" autocomplete="new-password"><span class="mp-hint">Leave blank to keep current password.</span></div>';
 
     html += '<input type="hidden" name="stay_edit" id="admin-stay-edit" value="">';
-    html += '<div style="display:flex;gap:12px;margin-top:8px;"><button type="submit" class="mp-btn mp-btn--primary" style="flex:1;">Save Changes</button><a href="#" class="mp-btn mp-btn--secondary" onclick="window.mpDashboard.navigate(\'admin\');return false;">Cancel</a></div>';
+    html += '<div style="display:flex;gap:12px;margin-top:8px;"><button type="submit" class="mp-btn mp-btn--primary" style="flex:1;">Save Changes</button><a href="#" class="mp-btn mp-btn--secondary" onclick="mpAdminBackToList();return false;">Cancel</a></div>';
     html += '</form>';
 
     D.setContent(html);
