@@ -22,6 +22,7 @@
  *   message_notification — broadcast admin message to members
  *   weekly_church_email  — all-church weekly email (BCC)
  *   special_email        — ad-hoc email to custom recipient list
+ *   event_assignment     — notify all assigned members/guests for a schedule event
  */
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
@@ -409,6 +410,100 @@ async function handleSpecialEmail(payload: Record<string, unknown>) {
   return sendEmail(ADMIN_EMAIL, subject, html, { bcc: recipients });
 }
 
+async function handleEventAssignment(payload: Record<string, unknown>) {
+  const sb = getAdminSb();
+  if (!sb) return { ok: false, error: 'No admin client' };
+
+  const eventTitle = String(payload.event_title || 'Sunday Service');
+  const eventDate  = String(payload.event_date  || '');
+  const eventTime  = String(payload.event_time  || '');
+  const slots      = Array.isArray(payload.slots) ? payload.slots as Array<Record<string, unknown>> : [];
+
+  if (!slots.length) return { ok: true, note: 'No slots' };
+
+  const displayDate = eventDate
+    ? new Date(eventDate + 'T12:00:00').toLocaleDateString('en-CA', { weekday: 'long', month: 'long', day: 'numeric' })
+    : '';
+
+  const profileIds = new Set<string>();
+  const guestIds   = new Set<string>();
+  for (const slot of slots) {
+    const atype = String(slot.assignee_type || '');
+    if ((atype === 'member' || atype === 'couple') && slot.assignee_id)  profileIds.add(String(slot.assignee_id));
+    if (atype === 'couple' && slot.assignee_id_b)                        profileIds.add(String(slot.assignee_id_b));
+    if (atype === 'guest'  && slot.guest_id)                             guestIds.add(String(slot.guest_id));
+  }
+
+  type ProfRow  = { id: string; first_name: string; full_name: string; email: string };
+  type GuestRow = { id: string; name: string; email: string };
+
+  const [{ data: profiles }, { data: guests }] = await Promise.all([
+    profileIds.size ? sb.from('profiles').select('id,first_name,full_name,email').in('id', [...profileIds]) : Promise.resolve({ data: [] }),
+    guestIds.size   ? sb.from('guests').select('id,name,email').in('id', [...guestIds])                     : Promise.resolve({ data: [] }),
+  ]);
+
+  const profMap: Record<string, ProfRow> = {};
+  (profiles || []).forEach((p: ProfRow) => { profMap[p.id] = p; });
+  const guestMap: Record<string, GuestRow> = {};
+  (guests || []).forEach((g: GuestRow) => { guestMap[g.id] = g; });
+
+  const personRoles: Record<string, { firstName: string; roles: string[] }> = {};
+  function addRole(email: string, firstName: string, role: string) {
+    if (!email) return;
+    if (!personRoles[email]) personRoles[email] = { firstName, roles: [] };
+    if (role) personRoles[email].roles.push(role);
+  }
+
+  for (const slot of slots) {
+    const atype = String(slot.assignee_type || '');
+    const role  = String(slot.role || '');
+    if (atype === 'member' && slot.assignee_id) {
+      const p = profMap[String(slot.assignee_id)];
+      if (p) addRole(p.email, p.first_name || (p.full_name || '').split(' ')[0], role);
+    } else if (atype === 'couple') {
+      for (const id of [String(slot.assignee_id || ''), String(slot.assignee_id_b || '')].filter(Boolean)) {
+        const p = profMap[id];
+        if (p) addRole(p.email, p.first_name || (p.full_name || '').split(' ')[0], role);
+      }
+    } else if (atype === 'guest' && slot.guest_id) {
+      const g = guestMap[String(slot.guest_id)];
+      if (g && g.email) addRole(g.email, g.name.split(' ')[0] || g.name, role);
+    } else if (atype === 'guest_inline' && slot.guest_email) {
+      const name = String(slot.guest_name || '');
+      addRole(String(slot.guest_email), name.split(' ')[0] || name || 'Friend', role);
+    }
+  }
+
+  const dashUrl = SITE_URL + '/members/dashboard.html?tab=schedule';
+  let sentCount = 0;
+
+  for (const [email, { firstName, roles }] of Object.entries(personRoles)) {
+    const rolesText = roles.filter(Boolean).join(' & ') || 'Serving';
+    const dateStr   = [displayDate, eventTime].filter(Boolean).join(' at ');
+
+    const html = emailOpen('You\'re serving at ' + eventTitle)
+      + emailBody(
+          emailEyebrow('Serving Assignment')
+          + emailHeading('You\'re on the schedule!')
+          + '<p style="margin:0 0 16px;">Hi <strong>' + firstName + '</strong>,</p>'
+          + '<p style="margin:0 0 16px;">You\'ve been scheduled for an upcoming ' + SITE_NAME + ' service:</p>'
+          + '<div style="background:#F4F5F7;border-left:4px solid ' + NAVY + ';border-radius:6px;padding:16px 20px;margin-bottom:24px;">'
+          + (dateStr ? '<p style="margin:0 0 8px;font-size:13px;color:' + RED + ';font-weight:bold;">' + dateStr + '</p>' : '')
+          + '<p style="margin:0 0 4px;font-size:12px;color:#777;text-transform:uppercase;letter-spacing:0.06em;">' + eventTitle + '</p>'
+          + '<p style="margin:0;font-size:17px;font-weight:bold;color:' + NAVY + ';">' + rolesText + '</p>'
+          + '</div>'
+          + '<p style="margin:0;font-size:13px;color:#777;">Questions? Reply to this email or reach us at <a href="mailto:' + ADMIN_EMAIL + '" style="color:' + RED + ';text-decoration:none;">' + ADMIN_EMAIL + '</a></p>'
+        )
+      + emailButton('View Schedule', dashUrl)
+      + emailClose();
+
+    await sendEmail(email, SITE_NAME + ' — You\'re serving: ' + rolesText + (displayDate ? ' (' + displayDate + ')' : ''), html);
+    sentCount++;
+  }
+
+  return { ok: true, sent: sentCount };
+}
+
 /* ════════════════════════════════════════════════════════════
    ROUTER
    ════════════════════════════════════════════════════════════ */
@@ -430,6 +525,7 @@ serve(async (req: Request) => {
       case 'message_notification': result = await handleMessageNotification(rest); break;
       case 'weekly_church_email':  result = await handleWeeklyChurchEmail(rest);   break;
       case 'special_email':        result = await handleSpecialEmail(rest);        break;
+      case 'event_assignment':     result = await handleEventAssignment(rest);     break;
       default:
         return new Response(
           JSON.stringify({ error: 'Unknown action: ' + action }),

@@ -1145,9 +1145,15 @@
   window.mpCalNotifyEvent = async function (id, title) {
     var cd = window._mpCalData; if (!cd) return;
     var ev = (cd.baseCalEvents || cd.calEvents).find(function (e) { return e.id === id; });
-    if (!ev || !(ev.slots || []).some(function (s) { return s.assignee_id || s.guest_email; })) return;
+    if (!ev || !(ev.slots || []).some(function (s) { return s.assignee_id || s.guest_id || s.guest_email; })) return;
     if (!confirm('Send email notification to all assigned members for "' + title + '"?')) return;
-    await window.mpDashboard.callEdge('send-email', { action: 'event_assignment', event_title: ev.title, event_date: ev.event_date, event_time: ev.event_time || '', slots: ev.slots || [] });
+    try {
+      var result = await window.mpDashboard.callEdge('send-email', { action: 'event_assignment', event_title: ev.title, event_date: ev.event_date, event_time: ev.event_time || '', slots: ev.slots || [] });
+      var sent = (result && result.sent) || 0;
+      alert('Emails sent to ' + sent + ' person' + (sent !== 1 ? 's' : '') + '.');
+    } catch (e) {
+      alert('Failed to send emails. Please try again.');
+    }
   };
 
   /* ── template builder helpers ───────────────────────────────── */

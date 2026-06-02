@@ -132,7 +132,10 @@
   }
 
   async function callEdge(name, payload){
-    try{ await _sb.functions.invoke(name,{body:payload}); }
+    try{
+      var res = await _sb.functions.invoke(name,{body:payload});
+      return res && res.data;
+    }
     catch(e){ console.warn('Edge fn '+name+':', e.message); }
   }
 
