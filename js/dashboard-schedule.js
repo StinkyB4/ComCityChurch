@@ -778,25 +778,54 @@
       if (myEvSlots.length) {
         html += '<div class="mp-cal-detail-serving" style="margin-top:6px;">You are assigned — ' + D.esc(myEvSlots.map(function (s) { return s.role || ''; }).join(', ')) + '</div>';
       }
-      /* slot roster summary (admins/leaders) */
-      if (cd.canManage && (ev.slots || []).length) {
-        html += '<details style="margin-top:7px;font-size:0.82rem;"><summary style="cursor:pointer;color:#5C718E;">Slots (' + (ev.slots || []).length + ')</summary>';
-        html += '<table style="width:100%;margin-top:5px;border-collapse:collapse;">';
+      /* full serving roster — visible to all users */
+      if ((ev.slots || []).length) {
+        /* parent's children who are serving this event */
+        var myKidSlots = (ev.slots || []).filter(function (s) {
+          if (s.assignee_type !== 'child' || !s.assignee_id || !cd.childMap) return false;
+          var ch = cd.childMap[s.assignee_id];
+          return ch && ch.profile_id === cd.uid;
+        });
+        if (myKidSlots.length) {
+          html += '<div class="mp-cal-detail-serving" style="margin-top:6px;">';
+          html += 'Your ' + (myKidSlots.length === 1 ? 'child' : 'children') + ' serving &mdash; ';
+          html += D.esc(myKidSlots.map(function (s) {
+            var ch = cd.childMap[s.assignee_id];
+            return (ch ? ch.name : '') + (s.role ? ' (' + s.role + ')' : '');
+          }).join(', '));
+          html += '</div>';
+        }
+        html += '<div style="margin-top:7px;border-top:1px solid #eef2f8;padding-top:6px;">';
+        html += '<div style="font-size:0.74rem;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Serving</div>';
         (ev.slots || []).forEach(function (s) {
-          var name = '';
+          var name = '', isChildSlot = s.assignee_type === 'child';
           if (s.assignee_type === 'guest_inline') {
-            name = D.esc(s.guest_name || '') || '<em style="color:#bbb;">name not provided</em>';
+            name = D.esc(s.guest_name || '');
+          } else if (isChildSlot && s.assignee_id && cd.childMap) {
+            var ch = cd.childMap[s.assignee_id]; if (ch) name = D.esc(ch.name);
           } else if (s.assignee_type === 'member' && s.assignee_id && cd.profMap) {
             var pm = cd.profMap[s.assignee_id];
-            if (pm) name = D.esc(((pm.first_name || '') + (pm.last_name ? ' ' + pm.last_name : '')).trim() || pm.full_name || '');
+            if (pm) name = D.esc(((pm.first_name||'')+(pm.last_name?' '+pm.last_name:'')).trim()||pm.full_name||'');
           } else if (s.assignee_type === 'couple' && s.assignee_id && cd.profMap) {
             var pa = cd.profMap[s.assignee_id], pb = s.assignee_id_b ? cd.profMap[s.assignee_id_b] : null;
-            name = (pa && pb) ? D.esc(D.coupleDisplayName(pa, pb)) : (pa ? D.esc(pa.first_name || pa.full_name || '') : '');
+            name = (pa && pb) ? D.esc(D.coupleDisplayName(pa, pb)) : (pa ? D.esc(pa.first_name||pa.full_name||'') : '');
           }
-          html += '<tr><td style="color:#555;padding:2px 10px 2px 0;white-space:nowrap;">' + D.esc(s.role || '') + '</td>';
-          html += '<td style="color:' + (name ? '#222' : '#ccc') + ';">' + (name || '— TBD —') + '</td></tr>';
+          var isMe = (s.assignee_type==='member' && s.assignee_id===cd.uid) ||
+                     (s.assignee_type==='couple' && (s.assignee_id===cd.uid||s.assignee_id_b===cd.uid));
+          var isMyKid = isChildSlot && myKidSlots.some(function(k){ return k.assignee_id===s.assignee_id; });
+          html += '<div style="display:flex;align-items:baseline;gap:6px;font-size:0.82rem;padding:1px 0;">';
+          html += '<span style="color:#777;min-width:90px;flex-shrink:0;white-space:nowrap;">' + D.esc(s.role||'') + '</span>';
+          if (name) {
+            var nameStyle = 'color:' + (isMe||isMyKid ? '#112E53' : '#333') + ';font-weight:' + (isMe||isMyKid ? '700' : '400') + ';';
+            html += '<span style="' + nameStyle + '">' + name;
+            if (isChildSlot) html += ' <span style="font-size:0.73rem;color:#9ca3af;">(child)</span>';
+            html += '</span>';
+          } else {
+            html += '<span style="color:#ccc;font-style:italic;">TBD</span>';
+          }
+          html += '</div>';
         });
-        html += '</table></details>';
+        html += '</div>';
       }
       if (ev.description) html += '<div class="mp-cal-detail-event-desc">' + D.esc(ev.description) + '</div>';
       html += buildCalExportHtml(D, ev.title, ev.event_date, ev.event_time || null, ev.description || null);
@@ -995,7 +1024,13 @@
           evSlots.push({ id: hid2 ? hid2.value : ('evs_' + i), role: role, assignee_type: 'guest_inline', guest_name: gnEl ? gnEl.value.trim() : '', guest_email: geEl ? geEl.value.trim() : '' });
         } else {
           var pts = combined.split(':');
-          evSlots.push({ id: hid2 ? hid2.value : ('evs_' + i), role: role, assignee_type: pts[0] || '', assignee_id: pts[1] || '', assignee_id_b: pts[2] || '', guest_id: pts[0] === 'guest' ? pts[1] : '' });
+          var slotObj = { id: hid2 ? hid2.value : ('evs_' + i), role: role, assignee_type: pts[0] || '', assignee_id: pts[1] || '', assignee_id_b: pts[2] || '', guest_id: pts[0] === 'guest' ? pts[1] : '' };
+          /* embed child name so it's readable without a secondary lookup */
+          if (pts[0] === 'child' && pts[1] && window._mpCalData && window._mpCalData.childMap) {
+            var chRec = window._mpCalData.childMap[pts[1]];
+            if (chRec) slotObj.child_name = chRec.name;
+          }
+          evSlots.push(slotObj);
         }
       });
       payload.slots = evSlots;
@@ -1010,7 +1045,18 @@
         return;
       }
       if (doNotify && evSlots.some(function (s) { return s.assignee_id || s.guest_email; })) {
-        window.mpDashboard.callEdge('send-email', { action: 'event_assignment', event_title: payload.title, event_date: payload.event_date, event_time: payload.event_time || '', slots: evSlots });
+        var _cd = window._mpCalData;
+        var enriched = evSlots.map(function (s) {
+          if (s.assignee_type === 'child' && s.assignee_id && _cd && _cd.childMap) {
+            var ch = _cd.childMap[s.assignee_id];
+            if (ch) {
+              var par = _cd.profMap ? _cd.profMap[ch.profile_id] : null;
+              return Object.assign({}, s, { child_name: ch.name, parent_id: ch.profile_id, parent_email: par ? par.email : '' });
+            }
+          }
+          return s;
+        });
+        window.mpDashboard.callEdge('send-email', { action: 'event_assignment', event_title: payload.title, event_date: payload.event_date, event_time: payload.event_time || '', slots: enriched });
       }
       mpCalCloseModal();
       renderScheduleTab();
@@ -1079,6 +1125,7 @@
       if (slot.assignee_type === 'member'  && slot.assignee_id) sv = 'member:'  + slot.assignee_id;
       else if (slot.assignee_type === 'couple' && slot.assignee_id) sv = 'couple:' + slot.assignee_id + ':' + (slot.assignee_id_b || '');
       else if (slot.assignee_type === 'guest'  && slot.guest_id)  sv = 'guest:'  + slot.guest_id;
+      else if (slot.assignee_type === 'child'  && slot.assignee_id) sv = 'child:' + slot.assignee_id;
     }
     /* inject "Non-member" option right after the unassigned placeholder */
     var extOpts = opts.replace(
@@ -1147,8 +1194,19 @@
     var ev = (cd.baseCalEvents || cd.calEvents).find(function (e) { return e.id === id; });
     if (!ev || !(ev.slots || []).some(function (s) { return s.assignee_id || s.guest_id || s.guest_email; })) return;
     if (!confirm('Send email notification to all assigned members for "' + title + '"?')) return;
+    /* enrich child slots with parent info so the edge function can email the right person */
+    var enriched = (ev.slots || []).map(function (s) {
+      if (s.assignee_type === 'child' && s.assignee_id && cd.childMap) {
+        var ch = cd.childMap[s.assignee_id];
+        if (ch) {
+          var par = cd.profMap ? cd.profMap[ch.profile_id] : null;
+          return Object.assign({}, s, { child_name: ch.name, parent_id: ch.profile_id, parent_email: par ? par.email : '' });
+        }
+      }
+      return s;
+    });
     try {
-      var result = await window.mpDashboard.callEdge('send-email', { action: 'event_assignment', event_title: ev.title, event_date: ev.event_date, event_time: ev.event_time || '', slots: ev.slots || [] });
+      var result = await window.mpDashboard.callEdge('send-email', { action: 'event_assignment', event_title: ev.title, event_date: ev.event_date, event_time: ev.event_time || '', slots: enriched });
       var sent = (result && result.sent) || 0;
       alert('Emails sent to ' + sent + ' person' + (sent !== 1 ? 's' : '') + '.');
     } catch (e) {

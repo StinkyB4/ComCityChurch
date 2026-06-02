@@ -405,13 +405,14 @@
     var todayStr    = new Date().toISOString().split('T')[0];
     var sevenDayStr = new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0];
     /* also fetch user's team memberships for message filtering */
-    var [msgsRes, treeRes, pendRes, rosterRes, evtAssignRes, myTeamsRes] = await Promise.all([
+    var [msgsRes, treeRes, pendRes, rosterRes, evtAssignRes, myTeamsRes, myChildrenRes] = await Promise.all([
       _sb.from('admin_messages').select('*').order('published_at',{ascending:false}).limit(40),
       _sb.from('file_tree').select('tree').limit(1).maybeSingle(),
       _isAdmin ? _sb.from('profiles').select('*').eq('status','pending').order('created_at') : Promise.resolve({data:[]}),
       _sb.from('schedule_rosters').select('date,title,type,slots').gte('date',todayStr).order('date').limit(52),
       _sb.from('events').select('id,title,event_date,event_time,slots').gte('event_date',todayStr).order('event_date').limit(52),
-      _sb.from('team_members').select('team_id').eq('member_id',_user.id)
+      _sb.from('team_members').select('team_id').eq('member_id',_user.id),
+      _sb.from('children').select('id,name').eq('profile_id',_user.id).order('name')
     ]);
     var myTeamIds = (myTeamsRes.data||[]).map(function(r){ return r.team_id; });
     /* filter messages: show 'all', plus mc/team messages that target this user */
@@ -443,15 +444,35 @@
       }).map(function(s){ return s.role||''; }).filter(Boolean);
       if(myRoles.length) upcomingServing.push({date:r.date, title:r.title||'Sunday Service', roles:myRoles});
     });
+    var myChildren   = myChildrenRes.data || [];
+    var myChildIdSet = {};
+    myChildren.forEach(function(c){ myChildIdSet[c.id] = c.name; });
+
+    var urgentChildAssign = [];   /* events where the user's children are serving this week */
     (evtAssignRes.data || []).forEach(function(ev){
       var myRoles = (ev.slots || []).filter(function(s){
         return (s.assignee_type==='member'  && s.assignee_id===_user.id) ||
                (s.assignee_type==='couple'  && (s.assignee_id===_user.id || s.assignee_id_b===_user.id));
-        /* guest_inline slots never match a logged-in user profile */
       }).map(function(s){ return s.role||''; }).filter(Boolean);
-      if(!myRoles.length) return;
-      upcomingServing.push({date:ev.event_date, title:ev.title, roles:myRoles});
-      if(ev.event_date <= sevenDayStr) urgentAssign.push({date:ev.event_date, title:ev.title, time:ev.event_time||'', roles:myRoles});
+      /* check if any of the user's children are in this event */
+      var myKidSlots = (ev.slots || []).filter(function(s){
+        return s.assignee_type==='child' && myChildIdSet[s.assignee_id];
+      });
+      if(myRoles.length){
+        upcomingServing.push({date:ev.event_date, title:ev.title, roles:myRoles});
+        if(ev.event_date <= sevenDayStr) urgentAssign.push({
+          date:ev.event_date, title:ev.title, time:ev.event_time||'', roles:myRoles,
+          allSlots: ev.slots || []
+        });
+      }
+      if(myKidSlots.length && ev.event_date <= sevenDayStr){
+        urgentChildAssign.push({
+          date: ev.event_date, title: ev.title, time: ev.event_time||'',
+          children: myKidSlots.map(function(s){
+            return { name: s.child_name || myChildIdSet[s.assignee_id] || '', role: s.role||'' };
+          })
+        });
+      }
     });
     upcomingServing.sort(function(a,b){ return a.date.localeCompare(b.date); });
 
@@ -492,7 +513,44 @@
         var dl=isNaN(d.getTime())?ev.date:d.toLocaleDateString('en-CA',{weekday:'short',month:'short',day:'numeric'});
         html+='<li class="mp-evtnotify-row"><span class="mp-evtnotify-date">'+esc(dl)+'</span>';
         html+='<div class="mp-evtnotify-info"><div class="mp-evtnotify-title">'+esc(ev.title)+(ev.time?' &mdash; '+esc(ev.time):'')+'</div>';
-        html+='<div class="mp-evtnotify-roles">'+esc(ev.roles.join(', '))+'</div></div></li>';
+        html+='<div class="mp-evtnotify-roles">Your role: '+esc(ev.roles.join(', '))+'</div>';
+        /* show the full serving roster for this event */
+        if(ev.allSlots && ev.allSlots.length){
+          var rosterLines = ev.allSlots.map(function(s){
+            var isMe = (s.assignee_type==='member' && s.assignee_id===_user.id) ||
+                       (s.assignee_type==='couple' && (s.assignee_id===_user.id||s.assignee_id_b===_user.id));
+            var name = s.assignee_type==='guest_inline' ? s.guest_name :
+                       s.assignee_type==='child'        ? (s.child_name||'') : '';
+            return esc(s.role||'') + (name?' — '+esc(name):'') + (isMe?' <em>(you)</em>':'');
+          });
+          html+='<div style="font-size:0.78rem;color:#92400e;margin-top:3px;line-height:1.6;">Full roster: '+rosterLines.join(' &nbsp;·&nbsp; ')+'</div>';
+        }
+        html+='</div></li>';
+      });
+      html+='</ul></div>';
+    }
+
+    /* ── children serving this week (parent notification) ── */
+    if(urgentChildAssign.length){
+      if(!document.getElementById('mp-evtnotify-css')){
+        var sn2=document.createElement('style'); sn2.id='mp-evtnotify-css';
+        sn2.textContent='.mp-evtnotify{background:#fffbeb;border:1px solid #f59e0b;border-radius:8px;overflow:hidden;margin-bottom:16px;}.mp-evtnotify-hd{background:#f59e0b;color:#fff;padding:10px 14px;display:flex;align-items:center;gap:8px;font-weight:700;font-size:0.9rem;}.mp-evtnotify-list{list-style:none;margin:0;padding:0;}.mp-evtnotify-row{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-bottom:1px solid #fde68a;}.mp-evtnotify-row:last-child{border-bottom:none;}.mp-evtnotify-date{font-size:0.76rem;font-weight:700;color:#92400e;background:#fef3c7;border-radius:4px;padding:2px 7px;white-space:nowrap;flex-shrink:0;margin-top:1px;}.mp-evtnotify-info{flex:1;min-width:0;}.mp-evtnotify-title{font-size:0.87rem;font-weight:600;color:#222;}.mp-evtnotify-roles{font-size:0.8rem;color:#78350f;margin-top:1px;}';
+        document.head.appendChild(sn2);
+      }
+      var kidSvg='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>';
+      html+='<div class="mp-evtnotify" style="border-color:#818cf8;">';
+      html+='<div class="mp-evtnotify-hd" style="background:#4f46e5;">'+kidSvg+'Your Children Are Serving This Week</div>';
+      html+='<ul class="mp-evtnotify-list">';
+      urgentChildAssign.forEach(function(ev){
+        var d=new Date(ev.date+'T12:00:00');
+        var dl=isNaN(d.getTime())?ev.date:d.toLocaleDateString('en-CA',{weekday:'short',month:'short',day:'numeric'});
+        html+='<li class="mp-evtnotify-row" style="border-color:#e0e7ff;">';
+        html+='<span class="mp-evtnotify-date" style="color:#3730a3;background:#e0e7ff;">'+esc(dl)+'</span>';
+        html+='<div class="mp-evtnotify-info"><div class="mp-evtnotify-title">'+esc(ev.title)+(ev.time?' &mdash; '+esc(ev.time):'')+'</div>';
+        ev.children.forEach(function(ch){
+          html+='<div class="mp-evtnotify-roles" style="color:#3730a3;">'+esc(ch.name)+' &mdash; '+esc(ch.role)+'</div>';
+        });
+        html+='</div></li>';
       });
       html+='</ul></div>';
     }
