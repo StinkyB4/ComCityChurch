@@ -514,6 +514,9 @@ footer {
 .page-hero--navy h1, .page-hero--navy .page-hero-sub { color: var(--white); }
 .page-hero--charcoal { background: var(--charcoal); }
 .page-hero--charcoal h1, .page-hero--charcoal .page-hero-sub { color: var(--white); }
+.page-hero--left {
+  text-align: left;
+}
 .page-hero-sub {
   font-size: 18px;
   color: rgba(255,255,255,.75);
@@ -521,6 +524,9 @@ footer {
   max-width: 600px;
   margin-left: auto;
   margin-right: auto;
+}
+.page-hero--left .page-hero-sub {
+  margin-left: 0;
 }
 
 /* ---------- FULL-VIEWPORT HERO ---------- */
