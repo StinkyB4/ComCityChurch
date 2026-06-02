@@ -1,1 +1,11 @@
-{"version":"0.0.1","configurations":[{"name":"static","runtimeExecutable":"npx","runtimeArgs":["serve","-l","3456","."],"port":3456}]}
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "static",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["http-server", ".", "-p", "3456", "--cors", "-c-1"],
+      "port": 3456
+    }
+  ]
+}
