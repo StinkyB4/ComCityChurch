@@ -1988,6 +1988,35 @@ details[open] .mp-group-accordion-chevron { transform: rotate(90deg); }
 .mp-admin-edit-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
 
 /* ══════════════════════════════════════════════════════════════════════════
+   GROUP FOCUSED VIEW  (single Team / MC exclusive panel)
+   ══════════════════════════════════════════════════════════════════════════ */
+.mp-back-link {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 0.84rem; font-weight: 600; color: var(--mp-accent, #112E53);
+  text-decoration: none; margin-bottom: 14px;
+}
+.mp-back-link:hover { text-decoration: underline; }
+
+.mp-group-focused {
+  background: #fff; border: 1px solid var(--mp-border, #dde3eb);
+  border-radius: 10px; padding: 20px 24px;
+}
+.mp-group-focused-header {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.mp-group-focused-title {
+  font-size: 1.18rem; font-weight: 700; color: #112E53;
+}
+.mp-group-focused-actions {
+  display: flex; gap: 8px; margin-bottom: 10px;
+}
+.mp-group-focused-meta {
+  font-size: 0.84rem; color: var(--mp-text-2, #5C718E);
+  margin-bottom: 16px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
    PENDING PAGE
    ══════════════════════════════════════════════════════════════════════════ */
 .mp-pending-wrap {

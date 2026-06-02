@@ -309,8 +309,8 @@
       var sub=document.getElementById('mp-nav-sub-mcs');
       if(sub){ mcs.forEach(function(mc){
         var a=document.createElement('a');
-        a.href='?tab=mcs'; a.className='mp-nav-subitem'; a.textContent=mc.name;
-        a.addEventListener('click',function(e){ e.preventDefault(); navigate('mcs'); });
+        a.href='?tab=mcs&mc_id='+encodeURIComponent(mc.id); a.className='mp-nav-subitem'; a.textContent=mc.name;
+        (function(mcId){ a.addEventListener('click',function(e){ e.preventDefault(); navigateGroup('mcs',mcId); }); })(mc.id);
         sub.appendChild(a);
       }); }
     }
@@ -320,8 +320,8 @@
       var sub2=document.getElementById('mp-nav-sub-teams');
       if(sub2){ teams.forEach(function(t){
         var a=document.createElement('a');
-        a.href='?tab=teams'; a.className='mp-nav-subitem'; a.textContent=t.name;
-        a.addEventListener('click',function(e){ e.preventDefault(); navigate('teams'); });
+        a.href='?tab=teams&team_id='+encodeURIComponent(t.id); a.className='mp-nav-subitem'; a.textContent=t.name;
+        (function(tId){ a.addEventListener('click',function(e){ e.preventDefault(); navigateGroup('teams',tId); }); })(t.id);
         sub2.appendChild(a);
       }); }
     }
@@ -331,8 +331,20 @@
   function navigate(tab, replace){
     var url=new URL(window.location.href);
     url.searchParams.set('tab',tab);
+    url.searchParams.delete('team_id');
+    url.searchParams.delete('mc_id');
     if(replace) window.history.replaceState({tab},'',url.toString());
     else         window.history.pushState({tab},'',url.toString());
+    renderTab(tab);
+  }
+
+  function navigateGroup(tab, id){
+    var url=new URL(window.location.href);
+    url.searchParams.set('tab',tab);
+    url.searchParams.delete('team_id');
+    url.searchParams.delete('mc_id');
+    if(id) url.searchParams.set(tab==='teams'?'team_id':'mc_id', id);
+    window.history.pushState({tab:tab},'',url.toString());
     renderTab(tab);
   }
 
@@ -755,12 +767,12 @@
       }
       if(myMCs.length){
         html+=dlRow('Missional Community',myMCs.map(function(mc){
-          return '<a href="#" class="mp-profile-team-link" onclick="window.mpDashboard.navigate(\'mcs\');return false;">'+esc(mc.name)+'</a>';
+          return '<a href="#" class="mp-profile-team-link" onclick="window.mpDashboard.navigateMC(\''+esc(mc.id)+'\');return false;">'+esc(mc.name)+'</a>';
         }).join(', '));
       }
       if(myTeams.length){
         html+=dlRow('Teams',myTeams.map(function(t){
-          return '<a href="#" class="mp-profile-team-link" onclick="window.mpDashboard.navigate(\'teams\');return false;">'+esc(t.name)+'</a>';
+          return '<a href="#" class="mp-profile-team-link" onclick="window.mpDashboard.navigateTeam(\''+esc(t.id)+'\');return false;">'+esc(t.name)+'</a>';
         }).join(', '));
       }
       html+='</dl>';
@@ -1113,8 +1125,10 @@
      PUBLIC API
      ══════════════════════════════════════════════════════════════ */
   window.mpDashboard = {
-    navigate:    navigate,
-    init:        init,
+    navigate:     navigate,
+    navigateTeam: function(id){ navigateGroup('teams',id); },
+    navigateMC:   function(id){ navigateGroup('mcs',id); },
+    init:         init,
     getSb:       function(){ return _sb; },
     getProfile:  function(){ return _profile; },
     getUser:     function(){ return _user; },

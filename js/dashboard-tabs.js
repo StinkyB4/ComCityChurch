@@ -302,18 +302,12 @@
 
     /* deep-link navigation from directory cards */
     window.mpDirNavMC = function (id) {
-      window.mpDashboard.navigate('mcs');
-      if (id) setTimeout(function () {
-        var el = document.getElementById('mc-' + id);
-        if (el) { el.open = true; el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-      }, 150);
+      if (id) window.mpDashboard.navigateMC(id);
+      else    window.mpDashboard.navigate('mcs');
     };
     window.mpDirNavTeam = function (id) {
-      window.mpDashboard.navigate('teams');
-      if (id) setTimeout(function () {
-        var el = document.getElementById('team-' + id);
-        if (el) { el.open = true; el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-      }, 150);
+      if (id) window.mpDashboard.navigateTeam(id);
+      else    window.mpDashboard.navigate('teams');
     };
 
     window.mpDirFilter = function (q) {
@@ -355,6 +349,103 @@
     /* approved profiles map for fast lookup */
     var profMap = {};
     approved.forEach(function (p) { profMap[p.id] = p; });
+
+    /* ── focused single-MC view ───────────────────────────────── */
+    var focusedMCId = new URLSearchParams(window.location.search).get('mc_id') || '';
+    if (focusedMCId) {
+      var focusedMC = mcs.find(function (mc) { return mc.id === focusedMCId; });
+      var fHtml = '<h2 class="mp-tab-title">Missional Communities</h2>';
+      fHtml += '<a href="#" class="mp-back-link" onclick="window.mpDashboard.navigate(\'mcs\');return false;">&#8592; All MCs</a>';
+      if (!focusedMC) { fHtml += '<p class="mp-empty">MC not found.</p>'; D.setContent(fHtml); return; }
+
+      var fMems = mcMap[focusedMC.id] || [];
+      var fIsMine = fMems.some(function (mm) { return mm.profile_id === uid; }) || focusedMC.leader_id === uid;
+      var fCanEdit = _isAdmin || (_isLeader && _ledMCIds.indexOf(focusedMC.id) !== -1);
+
+      /* fetch profiles for this MC's members (and leader) */
+      var fProfMap = {};
+      var fIds = fMems.map(function (mm) { return mm.profile_id; });
+      if (focusedMC.leader_id && fIds.indexOf(focusedMC.leader_id) === -1) fIds.push(focusedMC.leader_id);
+      if (fIds.length) {
+        var { data: fProfs } = await _sb.from('profiles')
+          .select('id,first_name,last_name,full_name,email,phone1,phone1_type,avatar_url')
+          .in('id', fIds);
+        (fProfs || []).forEach(function (p) { fProfMap[p.id] = p; });
+      }
+
+      var leaderProf = focusedMC.leader_id ? fProfMap[focusedMC.leader_id] : null;
+      var lName = leaderProf ? (((leaderProf.first_name || '') + (leaderProf.last_name ? ' ' + leaderProf.last_name : '')).trim() || leaderProf.full_name || '') : '';
+
+      fHtml += '<div class="mp-group-focused">';
+      fHtml += '<div class="mp-group-focused-header">';
+      fHtml += '<span class="mp-group-focused-title">' + D.esc(focusedMC.name) + '</span>';
+      if (fIsMine) fHtml += '<span class="mp-group-mine-badge">My MC</span>';
+      fHtml += '</div>';
+      if (fCanEdit) {
+        fHtml += '<div class="mp-group-focused-actions">';
+        fHtml += '<a href="#" class="mp-btn mp-btn--small mp-btn--outline" onclick="mpMcEdit(\'' + D.esc(focusedMC.id) + '\');return false;">Edit</a>';
+        if (_isAdmin) fHtml += '<button class="mp-btn mp-btn--small mp-btn--danger" onclick="mpMcDelete(\'' + D.esc(focusedMC.id) + '\',\'' + D.esc(focusedMC.name) + '\');event.stopPropagation();">Delete</button>';
+        fHtml += '</div>';
+      }
+      var metaParts = [fMems.length + ' member' + (fMems.length !== 1 ? 's' : '')];
+      if (lName) metaParts.push('Leader: ' + lName);
+      fHtml += '<div class="mp-group-focused-meta">' + D.esc(metaParts.join(' · ')) + '</div>';
+
+      if (!fMems.length) {
+        fHtml += '<p class="mp-empty" style="margin:12px 0;">No members assigned yet.</p>';
+      } else {
+        fHtml += '<ul class="mp-group-dir-list">';
+        fMems.forEach(function (mm) {
+          var p = fProfMap[mm.profile_id]; if (!p) return;
+          var pn = ((p.first_name || '') + (p.last_name ? ' ' + p.last_name : '')).trim() || p.full_name || p.email;
+          fHtml += '<li class="mp-group-dir-row">' + D.renderAvatar(D.getInitials(p), p.avatar_url || '', '') + '<div class="mp-group-dir-info">';
+          fHtml += '<span class="mp-group-dir-name">' + D.esc(pn) + (mm.is_leader ? ' <span class="mp-group-dir-role">Leader</span>' : '') + '</span>';
+          fHtml += '<span class="mp-group-dir-contact"><a href="mailto:' + D.esc(p.email) + '">' + D.esc(p.email) + '</a>';
+          if (p.phone1) fHtml += ' <span class="mp-group-dir-sep">·</span> ' + D.esc((p.phone1_type || 'Cell') + ': ' + p.phone1);
+          fHtml += '</span></div></li>';
+        });
+        fHtml += '</ul>';
+      }
+
+      if (fCanEdit) {
+        fHtml += '<div class="mp-post-msg-wrap" style="margin-top:16px;padding-top:16px;border-top:1px solid #e8ecf0;">';
+        fHtml += '<details class="mp-admin-panel" id="mc-msg-panel-' + D.esc(focusedMC.id) + '">';
+        fHtml += '<summary class="mp-admin-toggle" style="font-size:0.88em;">Post Message to ' + D.esc(focusedMC.name) + ' <span class="mp-admin-badge">Leader</span></summary>';
+        fHtml += '<div class="mp-admin-body"><form id="mc-msg-form-' + D.esc(focusedMC.id) + '" data-mc-id="' + D.esc(focusedMC.id) + '" data-mc-name="' + D.esc(focusedMC.name) + '">';
+        fHtml += '<div class="mp-form-group"><label>Subject <span class="mp-required">*</span></label><input type="text" name="msg_title" required placeholder="e.g. Meeting this week"></div>';
+        fHtml += '<div class="mp-form-group"><label>Message <span class="mp-required">*</span></label><textarea name="msg_body" rows="4" required placeholder="Write your message here…" style="width:100%;padding:9px 12px;border:1px solid var(--mp-border,#dde3eb);border-radius:6px;font-size:0.9em;font-family:inherit;resize:vertical;"></textarea></div>';
+        fHtml += '<div class="mp-notify-section"><label class="mp-checkbox-label" style="display:flex;align-items:center;gap:8px;font-size:0.88em;cursor:pointer;"><input type="checkbox" name="send_email" value="1" checked> Notify members by email</label></div>';
+        fHtml += '<div style="margin-top:12px;"><button type="submit" class="mp-btn mp-btn--primary mp-btn--small">Post Message</button></div>';
+        fHtml += '</form></div></details>';
+        fHtml += '</div>';
+      }
+      fHtml += '</div>';
+      D.setContent(fHtml);
+
+      var fForm = document.getElementById('mc-msg-form-' + focusedMC.id);
+      if (fForm) {
+        fForm.addEventListener('submit', async function (e) {
+          e.preventDefault();
+          var mcId = fForm.dataset.mcId, mcName = fForm.dataset.mcName;
+          var title = (fForm.querySelector('[name=msg_title]').value || '').trim();
+          var body  = (fForm.querySelector('[name=msg_body]').value  || '').trim();
+          var notify = fForm.querySelector('[name=send_email]') && fForm.querySelector('[name=send_email]').checked;
+          if (!title || !body) { alert('Subject and message are required.'); return; }
+          var { data: newMsg, error } = await _sb.from('admin_messages').insert({
+            author_id: D.getUser().id, title: title, content: body,
+            type: 'announcement', target_audience: 'mc', target_mc_id: mcId,
+            published_at: new Date().toISOString()
+          }).select().single();
+          if (error) { alert('Error posting message: ' + error.message); return; }
+          if (notify && newMsg) D.callEdge('send-email', { action: 'message_notification', title, body, target_type: 'mc', target_id: mcId, message_id: newMsg.id });
+          var panel = document.getElementById('mc-msg-panel-' + mcId);
+          if (panel) panel.open = false;
+          fForm.reset();
+          alert('Message posted to ' + mcName + (notify ? ' — members will be notified by email.' : '.'));
+        });
+      }
+      return;
+    }
 
     var editId = new URLSearchParams(window.location.search).get('mc_edit') || '';
 
@@ -514,6 +605,7 @@
   window.mpMcEdit = function (id) {
     var url = new URL(window.location.href);
     url.searchParams.set('tab', 'mcs'); url.searchParams.set('mc_edit', id);
+    url.searchParams.delete('mc_id');
     window.history.pushState({}, '', url.toString());
     renderMCsTab();
   };
@@ -550,6 +642,97 @@
 
     var profMap = {};
     approved.forEach(function (p) { profMap[p.id] = p; });
+
+    /* ── focused single-team view ─────────────────────────────── */
+    var focusedTeamId = new URLSearchParams(window.location.search).get('team_id') || '';
+    if (focusedTeamId) {
+      var focusedTeam = teams.find(function (t) { return t.id === focusedTeamId; });
+      var fHtml = '<h2 class="mp-tab-title">Teams</h2>';
+      fHtml += '<a href="#" class="mp-back-link" onclick="window.mpDashboard.navigate(\'teams\');return false;">&#8592; All Teams</a>';
+      if (!focusedTeam) { fHtml += '<p class="mp-empty">Team not found.</p>'; D.setContent(fHtml); return; }
+
+      var fMems = teamMap[focusedTeam.id] || [];
+      var fIsMine = fMems.some(function (tm) { return tm.member_id === uid; });
+      var fCanEdit = _isAdmin || (_isLeader && _ledTeamIds.indexOf(focusedTeam.id) !== -1);
+
+      /* fetch profiles for this team's members so all users can see names */
+      var fProfMap = {};
+      var fIds = fMems.map(function (tm) { return tm.member_id; });
+      if (fIds.length) {
+        var { data: fProfs } = await _sb.from('profiles')
+          .select('id,first_name,last_name,full_name,email,phone1,phone1_type,avatar_url')
+          .in('id', fIds);
+        (fProfs || []).forEach(function (p) { fProfMap[p.id] = p; });
+      }
+
+      fHtml += '<div class="mp-group-focused">';
+      fHtml += '<div class="mp-group-focused-header">';
+      fHtml += '<span class="mp-group-focused-title">' + D.esc(focusedTeam.name) + '</span>';
+      if (fIsMine) fHtml += '<span class="mp-group-mine-badge">My Team</span>';
+      fHtml += '</div>';
+      if (fCanEdit) {
+        fHtml += '<div class="mp-group-focused-actions">';
+        fHtml += '<a href="#" class="mp-btn mp-btn--small mp-btn--outline" onclick="mpTeamEdit(\'' + D.esc(focusedTeam.id) + '\');return false;">Edit</a>';
+        if (_isAdmin) fHtml += '<button class="mp-btn mp-btn--small mp-btn--danger" onclick="mpTeamDelete(\'' + D.esc(focusedTeam.id) + '\',\'' + D.esc(focusedTeam.name) + '\');event.stopPropagation();">Delete</button>';
+        fHtml += '</div>';
+      }
+      fHtml += '<div class="mp-group-focused-meta">' + fMems.length + ' member' + (fMems.length !== 1 ? 's' : '') + '</div>';
+
+      if (!fMems.length) {
+        fHtml += '<p class="mp-empty" style="margin:12px 0;">No members assigned yet.</p>';
+      } else {
+        fHtml += '<ul class="mp-group-dir-list">';
+        fMems.forEach(function (tm) {
+          var p = fProfMap[tm.member_id]; if (!p) return;
+          var pn = ((p.first_name || '') + (p.last_name ? ' ' + p.last_name : '')).trim() || p.full_name || p.email;
+          fHtml += '<li class="mp-group-dir-row">' + D.renderAvatar(D.getInitials(p), p.avatar_url || '', '') + '<div class="mp-group-dir-info">';
+          fHtml += '<span class="mp-group-dir-name">' + D.esc(pn) + (tm.role === 'leader' ? ' <span class="mp-group-dir-role">Leader</span>' : '') + '</span>';
+          fHtml += '<span class="mp-group-dir-contact"><a href="mailto:' + D.esc(p.email) + '">' + D.esc(p.email) + '</a>';
+          if (p.phone1) fHtml += ' <span class="mp-group-dir-sep">·</span> ' + D.esc((p.phone1_type || 'Cell') + ': ' + p.phone1);
+          fHtml += '</span></div></li>';
+        });
+        fHtml += '</ul>';
+      }
+
+      if (fCanEdit) {
+        fHtml += '<div class="mp-post-msg-wrap" style="margin-top:16px;padding-top:16px;border-top:1px solid #e8ecf0;">';
+        fHtml += '<details class="mp-admin-panel" id="team-msg-panel-' + D.esc(focusedTeam.id) + '">';
+        fHtml += '<summary class="mp-admin-toggle" style="font-size:0.88em;">Post Message to ' + D.esc(focusedTeam.name) + ' <span class="mp-admin-badge">Leader</span></summary>';
+        fHtml += '<div class="mp-admin-body"><form id="team-msg-form-' + D.esc(focusedTeam.id) + '" data-team-id="' + D.esc(focusedTeam.id) + '" data-team-name="' + D.esc(focusedTeam.name) + '">';
+        fHtml += '<div class="mp-form-group"><label>Subject <span class="mp-required">*</span></label><input type="text" name="msg_title" required placeholder="e.g. Heads up for Sunday"></div>';
+        fHtml += '<div class="mp-form-group"><label>Message <span class="mp-required">*</span></label><textarea name="msg_body" rows="4" required placeholder="Write your message here…" style="width:100%;padding:9px 12px;border:1px solid var(--mp-border,#dde3eb);border-radius:6px;font-size:0.9em;font-family:inherit;resize:vertical;"></textarea></div>';
+        fHtml += '<div class="mp-notify-section"><label class="mp-checkbox-label" style="display:flex;align-items:center;gap:8px;font-size:0.88em;cursor:pointer;"><input type="checkbox" name="send_email" value="1" checked> Notify members by email</label></div>';
+        fHtml += '<div style="margin-top:12px;"><button type="submit" class="mp-btn mp-btn--primary mp-btn--small">Post Message</button></div>';
+        fHtml += '</form></div></details>';
+        fHtml += '</div>';
+      }
+      fHtml += '</div>';
+      D.setContent(fHtml);
+
+      var fForm = document.getElementById('team-msg-form-' + focusedTeam.id);
+      if (fForm) {
+        fForm.addEventListener('submit', async function (e) {
+          e.preventDefault();
+          var tId = fForm.dataset.teamId, tName = fForm.dataset.teamName;
+          var title = (fForm.querySelector('[name=msg_title]').value || '').trim();
+          var body  = (fForm.querySelector('[name=msg_body]').value  || '').trim();
+          var notify = fForm.querySelector('[name=send_email]') && fForm.querySelector('[name=send_email]').checked;
+          if (!title || !body) { alert('Subject and message are required.'); return; }
+          var { data: newMsg, error } = await _sb.from('admin_messages').insert({
+            author_id: D.getUser().id, title: title, content: body,
+            type: 'announcement', target_audience: 'team', target_team_id: tId,
+            published_at: new Date().toISOString()
+          }).select().single();
+          if (error) { alert('Error posting message: ' + error.message); return; }
+          if (notify && newMsg) D.callEdge('send-email', { action: 'message_notification', title, body, target_type: 'team', target_id: tId, message_id: newMsg.id });
+          var panel = document.getElementById('team-msg-panel-' + tId);
+          if (panel) panel.open = false;
+          fForm.reset();
+          alert('Message posted to ' + tName + (notify ? ' — members will be notified by email.' : '.'));
+        });
+      }
+      return;
+    }
 
     var editId = new URLSearchParams(window.location.search).get('team_edit') || '';
 
@@ -706,6 +889,7 @@
   window.mpTeamEdit = function (id) {
     var url = new URL(window.location.href);
     url.searchParams.set('tab', 'teams'); url.searchParams.set('team_edit', id);
+    url.searchParams.delete('team_id');
     window.history.pushState({}, '', url.toString());
     renderTeamsTab();
   };
