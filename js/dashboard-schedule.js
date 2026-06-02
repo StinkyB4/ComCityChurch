@@ -44,7 +44,16 @@
       '.mp-cal-chip--serving{background:#112E53;color:#fff;}',
       '.mp-cal-chip--gathering{background:#ede9fe;color:#5b21b6;}',
       '.mp-cal-chip--cancelled{background:#f3f4f6;color:#9ca3af;}',
+      '.mp-cal-day--serving{border:2px solid #f97316 !important;}',
+      '.mp-cal-day--serving .mp-cal-day-num{color:#c2410c;}',
       '.mp-cal-day--cancelled{opacity:.6;}',
+      '.mp-cal-legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;padding:8px 4px;border-top:1px solid #eef2f8;}',
+      '.mp-cal-legend-item{display:flex;align-items:center;gap:6px;font-size:0.74rem;color:#555;}',
+      '.mp-cal-legend-swatch{width:16px;height:16px;border-radius:3px;flex-shrink:0;}',
+      '.mp-cal-legend-swatch--serving{background:#f7f9fc;border:2px solid #f97316;}',
+      '.mp-cal-legend-swatch--today{background:#e5ecf8;border:1px solid #112E53;}',
+      '.mp-cal-legend-swatch--gathering{background:#ede9fe;}',
+      '.mp-cal-legend-swatch--event{background:#dce7f7;}',
       '.mp-cal-detail{background:#f0f4f8;border-radius:6px;padding:16px;margin-top:12px;border-left:3px solid #112E53;}',
       '.mp-cal-detail-title{font-weight:700;font-size:0.95rem;margin:0 0 10px;color:#112E53;}',
       '.mp-cal-detail-event{background:#fff;border-radius:5px;padding:10px 12px;margin-bottom:8px;border:1px solid #dde3eb;}',
@@ -307,6 +316,12 @@
     }
 
     html += '</div>'; /* grid */
+    html += '<div class="mp-cal-legend">';
+    html += '<div class="mp-cal-legend-item"><div class="mp-cal-legend-swatch mp-cal-legend-swatch--serving"></div><span>You\'re assigned</span></div>';
+    html += '<div class="mp-cal-legend-item"><div class="mp-cal-legend-swatch mp-cal-legend-swatch--today"></div><span>Today</span></div>';
+    html += '<div class="mp-cal-legend-item"><div class="mp-cal-legend-swatch mp-cal-legend-swatch--gathering"></div><span>Sunday Gathering</span></div>';
+    html += '<div class="mp-cal-legend-item"><div class="mp-cal-legend-swatch mp-cal-legend-swatch--event"></div><span>Event</span></div>';
+    html += '</div>'; /* legend */
     html += '<div id="mp-cal-detail" style="display:none;"></div>';
     html += '</div>'; /* section */
 
@@ -736,7 +751,8 @@
 
     var dayEvents = cd.calEvents.filter(function (ev) { return ev.event_date === dateStr; });
     var dayRoster = cd.rosters.find(function (r) { return r.date === dateStr; });
-    var isServing = dayRoster && (dayRoster.slots || []).some(function (s) {
+    /* don't count as "serving" on a cancelled Sunday */
+    var isServing = dayRoster && !dayRoster.cancelled && (dayRoster.slots || []).some(function (s) {
       return (s.assignee_type === 'member' && s.assignee_id === cd.uid) ||
              (s.assignee_type === 'couple' && (s.assignee_id === cd.uid || s.assignee_id_b === cd.uid));
     });
@@ -751,22 +767,67 @@
 
     var html = '<div class="mp-cal-detail-title">' + D.esc(label) + '</div>';
 
-    if (isServing) {
-      var mySlots = (dayRoster.slots || []).filter(function (s) {
-        return (s.assignee_type === 'member' && s.assignee_id === cd.uid) ||
-               (s.assignee_type === 'couple' && (s.assignee_id === cd.uid || s.assignee_id_b === cd.uid));
-      });
-      var servingRoles = mySlots.map(function (s) { return s.role || ''; }).join(', ');
-      html += '<div class="mp-cal-detail-serving">You are serving — ';
-      html += D.esc(servingRoles);
-      html += ' (' + D.esc(dayRoster.title || 'Sunday Service') + ')';
-      html += buildCalExportHtml(D, dayRoster.title || 'Sunday Service', dateStr, null, 'Serving: ' + servingRoles);
+    if (dayRoster && dayRoster.cancelled) {
+      /* cancelled Sunday — shown before calendar events */
+      html += '<div class="mp-cal-detail-event" style="border-left:3px solid #fca5a5;">';
+      html += '<div class="mp-cal-detail-event-title" style="color:#dc2626;">No Gathering</div>';
+      html += '<div class="mp-cal-detail-event-meta">This Sunday gathering has been cancelled.</div>';
+      if (cd.canManage) html += '<div style="margin-top:6px;"><button class="mp-btn mp-btn--secondary mp-btn--small" onclick="window.mpDashboard.navigate(\'master\')">Restore in Master Schedule</button></div>';
       html += '</div>';
-    } else if (dayRoster) {
-      html += '<div class="mp-cal-detail-event"><div class="mp-cal-detail-event-title">' + D.esc(dayRoster.title || 'Sunday Service') + '</div>';
-      html += '<div class="mp-cal-detail-event-meta">Church roster event</div>';
-      html += buildCalExportHtml(D, dayRoster.title || 'Sunday Service', dateStr, null, null);
-      html += '</div>';
+    } else {
+      /* personal serving banner */
+      if (isServing) {
+        var mySlots = (dayRoster.slots || []).filter(function (s) {
+          return (s.assignee_type === 'member' && s.assignee_id === cd.uid) ||
+                 (s.assignee_type === 'couple' && (s.assignee_id === cd.uid || s.assignee_id_b === cd.uid));
+        });
+        var servingRoles = mySlots.map(function (s) { return s.role || ''; }).join(', ');
+        html += '<div class="mp-cal-detail-serving">You are serving — ';
+        html += D.esc(servingRoles);
+        html += ' (' + D.esc(dayRoster.title || 'Sunday Gathering') + ')';
+        html += buildCalExportHtml(D, dayRoster.title || 'Sunday Gathering', dateStr, '10:30 AM', 'Serving: ' + servingRoles);
+        html += '</div>';
+      }
+      /* Sunday Gathering card — full roster visible to everyone */
+      if (dayRoster && dayRoster.type === 'sunday') {
+        html += '<div class="mp-cal-detail-event">';
+        html += '<div class="mp-cal-detail-event-title">Sunday Gathering &mdash; 10:30 AM – 12:00 PM</div>';
+        html += '<div class="mp-cal-detail-event-meta">All Sundays at Commissioned City Church</div>';
+        var rsSlots = (dayRoster.slots || []).filter(function (s) { return s.role; });
+        if (rsSlots.length) {
+          html += '<div style="margin-top:7px;border-top:1px solid #eef2f8;padding-top:6px;">';
+          html += '<div style="font-size:0.74rem;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Serving</div>';
+          rsSlots.forEach(function (s) {
+            var name = '', isChild = s.assignee_type === 'child';
+            if (s.assignee_type === 'guest_inline') name = D.esc(s.guest_name || '');
+            else if (isChild && cd.childMap && cd.childMap[s.assignee_id]) name = D.esc(cd.childMap[s.assignee_id].name);
+            else if (s.assignee_type === 'member' && s.assignee_id && cd.profMap) {
+              var pm = cd.profMap[s.assignee_id];
+              if (pm) name = D.esc(((pm.first_name||'')+(pm.last_name?' '+pm.last_name:'')).trim()||pm.full_name||'');
+            } else if (s.assignee_type === 'couple' && s.assignee_id && cd.profMap) {
+              var pa = cd.profMap[s.assignee_id], pb = s.assignee_id_b ? cd.profMap[s.assignee_id_b] : null;
+              name = (pa&&pb) ? D.esc(D.coupleDisplayName(pa,pb)) : (pa?D.esc(pa.first_name||pa.full_name||''):'');
+            }
+            var isMe = (s.assignee_type==='member'&&s.assignee_id===cd.uid)||(s.assignee_type==='couple'&&(s.assignee_id===cd.uid||s.assignee_id_b===cd.uid));
+            html += '<div style="display:flex;align-items:baseline;gap:6px;font-size:0.82rem;padding:1px 0;">';
+            html += '<span style="color:#777;min-width:90px;flex-shrink:0;white-space:nowrap;">' + D.esc(s.role||'') + '</span>';
+            html += name
+              ? '<span style="color:'+(isMe?'#112E53':'#333')+';font-weight:'+(isMe?'700':'400')+';">' + name + (isChild?' <span style="font-size:0.73rem;color:#9ca3af;">(child)</span>':'') + '</span>'
+              : '<span style="color:#ccc;font-style:italic;">TBD</span>';
+            html += '</div>';
+          });
+          html += '</div>';
+        }
+        if (!isServing) html += buildCalExportHtml(D, 'Sunday Gathering', dateStr, '10:30 AM', null);
+        if (cd.canManage) html += '<div style="margin-top:7px;"><button class="mp-btn mp-btn--secondary mp-btn--small" onclick="window.mpDashboard.navigate(\'master\')">Edit in Master Schedule</button></div>';
+        html += '</div>';
+      } else if (dayRoster) {
+        /* non-Sunday roster (special events etc.) */
+        html += '<div class="mp-cal-detail-event"><div class="mp-cal-detail-event-title">' + D.esc(dayRoster.title || 'Event') + '</div>';
+        html += '<div class="mp-cal-detail-event-meta">Church roster event</div>';
+        html += buildCalExportHtml(D, dayRoster.title || 'Event', dateStr, null, null);
+        html += '</div>';
+      }
     }
 
     dayEvents.forEach(function (ev) {

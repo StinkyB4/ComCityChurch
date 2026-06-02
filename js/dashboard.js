@@ -412,7 +412,10 @@
       _sb.from('schedule_rosters').select('date,title,type,slots').gte('date',todayStr).order('date').limit(52),
       _sb.from('events').select('id,title,event_date,event_time,slots').gte('event_date',todayStr).order('event_date').limit(52),
       _sb.from('team_members').select('team_id').eq('member_id',_user.id),
-      _sb.from('children').select('id,name').eq('profile_id',_user.id).order('name')
+      /* fetch children for both parents in the family so both get notified */
+      _profile.spouse_id
+        ? _sb.from('children').select('id,name,profile_id').in('profile_id', [_user.id, _profile.spouse_id]).order('name')
+        : _sb.from('children').select('id,name,profile_id').eq('profile_id', _user.id).order('name')
     ]);
     var myTeamIds = (myTeamsRes.data||[]).map(function(r){ return r.team_id; });
     /* filter messages: show 'all', plus mc/team messages that target this user */

@@ -750,6 +750,18 @@
       html += '<input type="hidden" name="action_type" value="' + (editTeam ? 'edit' : 'create') + '">';
       if (editTeam) html += '<input type="hidden" name="team_id" value="' + D.esc(editTeam.id) + '">';
       html += '<div class="mp-form-group"><label>Team Name <span class="mp-required">*</span></label><input type="text" name="team_name" value="' + D.esc(editTeam ? editTeam.name : '') + '" required placeholder="e.g. Worship Team"></div>';
+      /* Sunday Gathering role settings */
+      var isSun = editTeam && editTeam.is_sunday_serving;
+      html += '<div class="mp-form-group" style="background:#f7f9fc;border:1px solid #dde3eb;border-radius:6px;padding:12px 14px;">';
+      html += '<label class="mp-checkbox-label" style="display:flex;align-items:center;gap:8px;font-size:0.88rem;cursor:pointer;">';
+      html += '<input type="checkbox" name="is_sunday_serving" id="tm-sun-cb" value="1"' + (isSun ? ' checked' : '') + ' onchange="document.getElementById(\'tm-sun-opts\').style.display=this.checked?\'\':\' none\'"> ';
+      html += '<strong>Sunday serving team</strong> — appears as a role in the Master Schedule</label>';
+      html += '<div id="tm-sun-opts" style="' + (isSun ? '' : 'display:none;') + 'margin-top:10px;padding-left:20px;display:' + (isSun ? 'block' : 'none') + ';">';
+      html += '<label class="mp-checkbox-label" style="font-size:0.85rem;display:flex;align-items:center;gap:7px;"><input type="checkbox" name="allow_children" value="1"' + (editTeam && editTeam.allow_children ? ' checked' : '') + '> Allow children to be assigned to this role</label><br>';
+      html += '<label class="mp-checkbox-label" style="font-size:0.85rem;display:flex;align-items:center;gap:7px;margin-top:4px;"><input type="checkbox" name="allow_nonmembers" value="1"' + (editTeam && editTeam.allow_nonmembers ? ' checked' : '') + '> Allow non-member volunteers to be assigned</label>';
+      html += '<div class="mp-form-group" style="max-width:160px;margin-top:10px;margin-bottom:0;"><label style="font-size:0.82rem;">Display order (0 = first)</label>';
+      html += '<input type="number" name="serving_order" min="0" max="99" value="' + (editTeam ? (editTeam.serving_order || 0) : 0) + '" style="width:100%;"></div>';
+      html += '</div></div>';
       html += '<div class="mp-form-group"><label>Members</label><div class="mp-group-member-picker">';
       var editMemIds = editTeam ? (teamMap[editTeam.id] || []).map(function (tm) { return tm.member_id; }) : [];
       approved.forEach(function (p) {
@@ -869,12 +881,19 @@
         var action = fd.get('action_type'), teamId = fd.get('team_id') || '', name = (fd.get('team_name') || '').trim();
         var memberIds = fd.getAll('member_ids');
         if (!name) { alert('Team name is required.'); return; }
+        var teamData = {
+          name: name,
+          is_sunday_serving:  fd.get('is_sunday_serving')  === '1',
+          allow_children:     fd.get('allow_children')     === '1',
+          allow_nonmembers:   fd.get('allow_nonmembers')   === '1',
+          serving_order:      parseInt(fd.get('serving_order') || '0', 10)
+        };
         var _sb2 = D.getSb();
         if (action === 'edit' && teamId) {
-          await _sb2.from('teams').update({ name }).eq('id', teamId);
+          await _sb2.from('teams').update(teamData).eq('id', teamId);
           await _sb2.from('team_members').delete().eq('team_id', teamId);
         } else {
-          var { data: newT, error: newTErr } = await _sb2.from('teams').insert({ name }).select().single();
+          var { data: newT, error: newTErr } = await _sb2.from('teams').insert(teamData).select().single();
           if (newTErr) { alert('Error creating team: ' + newTErr.message); return; }
           teamId = newT ? newT.id : null;
         }

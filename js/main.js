@@ -590,14 +590,14 @@ function renderSermonCards(container, sermons) {
 
     const thumb     = item.thumb || '';
     const listenUrl = item.link  || SPOTIFY_SHOW;
-    const badge     = item.series || 'Latest';
+    const badge     = item.series || '';
 
     const card = document.createElement('article');
     card.className = 'sermon-card card';
     card.innerHTML = `
       <div class="sermon-thumb ${thumb ? '' : 'sermon-thumb-gradient'}"
            ${thumb ? `style="background-image:url('${thumb}')"` : ''}>
-        <span class="sermon-series">${badge}</span>
+        ${badge ? `<span class="sermon-series">${badge}</span>` : ''}
       </div>
       <div class="sermon-body">
         ${dateStr ? `<p class="sermon-reference eyebrow">${dateStr}</p>` : ''}
