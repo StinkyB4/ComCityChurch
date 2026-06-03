@@ -650,6 +650,15 @@
     window._mpSchedTemplates = templates;
     D.setContent(html);
 
+    /* auto-open a specific day's detail if navigated here via mpNavToCalDate */
+    if (window._pendingCalDate) {
+      var _pd = window._pendingCalDate;
+      window._pendingCalDate = null;
+      requestAnimationFrame(function () {
+        if (typeof window.mpCalDayClick === 'function') window.mpCalDayClick(_pd);
+      });
+    }
+
     /* scroll sync */
     if (_isAdmin) {
       requestAnimationFrame(function () {
@@ -927,6 +936,18 @@
     if (_calState.month === 11) { _calState.month = 0; _calState.year++; }
     else { _calState.month++; }
     renderScheduleTab();
+  };
+
+  /* Navigate to the Schedule tab and auto-open the day detail for a specific date.
+     Called from the "Upcoming Assignments" notification links on the Welcome tab. */
+  window.mpNavToCalDate = function (dateStr) {
+    var d = new Date(dateStr + 'T12:00:00');
+    if (!isNaN(d.getTime())) {
+      _calState.year  = d.getFullYear();
+      _calState.month = d.getMonth();
+    }
+    window._pendingCalDate = dateStr;
+    window.mpDashboard.navigate('schedule');
   };
 
   /* ── event modal helpers ─────────────────────────────────────── */

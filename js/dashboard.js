@@ -336,6 +336,8 @@
     url.searchParams.set('tab',tab);
     url.searchParams.delete('team_id');
     url.searchParams.delete('mc_id');
+    url.searchParams.delete('team_edit');
+    url.searchParams.delete('mc_edit');
     if(replace) window.history.replaceState({tab},'',url.toString());
     else         window.history.pushState({tab},'',url.toString());
     renderTab(tab);
@@ -346,6 +348,8 @@
     url.searchParams.set('tab',tab);
     url.searchParams.delete('team_id');
     url.searchParams.delete('mc_id');
+    url.searchParams.delete('team_edit');
+    url.searchParams.delete('mc_edit');
     if(id) url.searchParams.set(tab==='teams'?'team_id':'mc_id', id);
     window.history.pushState({tab:tab},'',url.toString());
     renderTab(tab);
@@ -500,7 +504,8 @@
           '.mp-evtnotify-list{list-style:none;margin:0;padding:0;}',
           '.mp-evtnotify-row{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-bottom:1px solid #fde68a;}',
           '.mp-evtnotify-row:last-child{border-bottom:none;}',
-          '.mp-evtnotify-date{font-size:0.76rem;font-weight:700;color:#92400e;background:#fef3c7;border-radius:4px;padding:2px 7px;white-space:nowrap;flex-shrink:0;margin-top:1px;}',
+          '.mp-evtnotify-date{display:inline-block;font-size:0.76rem;font-weight:700;color:#92400e;background:#fef3c7;border-radius:4px;padding:2px 7px;white-space:nowrap;flex-shrink:0;margin-top:1px;text-decoration:none;cursor:pointer;}',
+          '.mp-evtnotify-date:hover{opacity:0.8;}',
           '.mp-evtnotify-info{flex:1;min-width:0;}',
           '.mp-evtnotify-title{font-size:0.87rem;font-weight:600;color:#222;}',
           '.mp-evtnotify-roles{font-size:0.8rem;color:#78350f;margin-top:1px;}'
@@ -514,20 +519,10 @@
       urgentAssign.forEach(function(ev){
         var d=new Date(ev.date+'T12:00:00');
         var dl=isNaN(d.getTime())?ev.date:d.toLocaleDateString('en-CA',{weekday:'short',month:'short',day:'numeric'});
-        html+='<li class="mp-evtnotify-row"><span class="mp-evtnotify-date">'+esc(dl)+'</span>';
+        html+='<li class="mp-evtnotify-row">';
+        html+='<a class="mp-evtnotify-date" href="#" onclick="mpNavToCalDate(\''+esc(ev.date)+'\');return false;">'+esc(dl)+'</a>';
         html+='<div class="mp-evtnotify-info"><div class="mp-evtnotify-title">'+esc(ev.title)+(ev.time?' &mdash; '+esc(ev.time):'')+'</div>';
-        html+='<div class="mp-evtnotify-roles">Your role: '+esc(ev.roles.join(', '))+'</div>';
-        /* show the full serving roster for this event */
-        if(ev.allSlots && ev.allSlots.length){
-          var rosterLines = ev.allSlots.map(function(s){
-            var isMe = (s.assignee_type==='member' && s.assignee_id===_user.id) ||
-                       (s.assignee_type==='couple' && (s.assignee_id===_user.id||s.assignee_id_b===_user.id));
-            var name = s.assignee_type==='guest_inline' ? s.guest_name :
-                       s.assignee_type==='child'        ? (s.child_name||'') : '';
-            return esc(s.role||'') + (name?' — '+esc(name):'') + (isMe?' <em>(you)</em>':'');
-          });
-          html+='<div style="font-size:0.78rem;color:#92400e;margin-top:3px;line-height:1.6;">Full roster: '+rosterLines.join(' &nbsp;·&nbsp; ')+'</div>';
-        }
+        html+='<div class="mp-evtnotify-roles">'+esc(ev.roles.join(', '))+'</div>';
         html+='</div></li>';
       });
       html+='</ul></div>';
