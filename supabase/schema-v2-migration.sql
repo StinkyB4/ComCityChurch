@@ -59,8 +59,10 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS must_reset_password BOOLEAN DEFAUL
 
 -- Rename 'status' logic: we keep status='approved' from original schema,
 -- but also add a boolean shortcut used in JS comparisons
-CREATE OR REPLACE VIEW profiles_approved AS
-  SELECT * FROM profiles WHERE status = 'approved';
+DROP VIEW IF EXISTS public.profiles_approved;
+CREATE VIEW public.profiles_approved
+  WITH (security_invoker = true)
+  AS SELECT * FROM profiles WHERE status = 'approved';
 
 -- Index for spouse lookups
 CREATE INDEX IF NOT EXISTS idx_profiles_spouse ON profiles(spouse_id);
@@ -289,12 +291,18 @@ CREATE TABLE IF NOT EXISTS swap_tokens (
 
 CREATE INDEX IF NOT EXISTS idx_swap_tokens_expires ON swap_tokens(expires_at);
 
--- No RLS — accessed without auth (token is the secret). Validated by expires_at.
-ALTER TABLE swap_tokens DISABLE ROW LEVEL SECURITY;
+-- RLS enabled. The edge function uses the service role key which bypasses RLS,
+-- so enabling RLS here does not affect the swap-token edge function.
+-- Anon users have no direct PostgREST access; the token is validated server-side.
+ALTER TABLE swap_tokens ENABLE ROW LEVEL SECURITY;
 
--- Allow the edge function (service role) to insert/select tokens.
--- Public reads are intentional — the token itself is the authorisation.
-GRANT SELECT, INSERT, DELETE ON swap_tokens TO anon, authenticated;
+-- Revoke any prior broad grant to anon
+REVOKE SELECT, INSERT, DELETE ON public.swap_tokens FROM anon;
+
+-- Admins can manage tokens (e.g. manual cleanup)
+CREATE POLICY "admins_manage_swap_tokens"
+  ON swap_tokens FOR ALL
+  USING (public.is_admin());
 
 
 -- ──────────────────────────────────────────────────────────────────────────
@@ -420,7 +428,7 @@ BEGIN
 
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- Trigger already exists from v1; DROP + RECREATE to pick up function changes
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;

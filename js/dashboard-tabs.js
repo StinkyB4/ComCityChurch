@@ -627,14 +627,16 @@
     var _canEdit  = _isAdmin || _isLeader;
     var uid = _profile.id;
 
-    var [teamsRes, memsRes, approvedRes] = await Promise.all([
+    var [teamsRes, memsRes, approvedRes, childrenRes] = await Promise.all([
       _sb.from('teams').select('*').order('name'),
-      _sb.from('team_members').select('team_id, member_id, role'),
-      _canEdit ? _sb.from('profiles').select('id,first_name,last_name,full_name,email,phone1,phone1_type').eq('status','approved').order('last_name') : Promise.resolve({ data: [] })
+      _sb.from('team_members').select('team_id, member_id, role, member_type, child_id, nonmember_name, nonmember_email'),
+      _canEdit ? _sb.from('profiles').select('id,first_name,last_name,full_name,email,phone1,phone1_type,spouse_id').eq('status','approved').order('last_name') : Promise.resolve({ data: [] }),
+      _sb.from('children').select('id,name,profile_id').order('name')
     ]);
     var teams    = teamsRes.data || [];
     var tmMems   = memsRes.data || [];
     var approved = approvedRes.data || [];
+    var allChildren = childrenRes.data || [];
 
     var teamMap = {};
     teams.forEach(function (t) { teamMap[t.id] = []; });
@@ -642,6 +644,28 @@
 
     var profMap = {};
     approved.forEach(function (p) { profMap[p.id] = p; });
+
+    var childMap = {}, childrenByParent = {};
+    allChildren.forEach(function (c) {
+      childMap[c.id] = c;
+      if (!childrenByParent[c.profile_id]) childrenByParent[c.profile_id] = [];
+      childrenByParent[c.profile_id].push(c);
+    });
+
+    /* helper: readable name + email for any team_member row */
+    function tmName(tm) {
+      var mt = tm.member_type || 'member';
+      if (mt === 'nonmember') return tm.nonmember_name || 'Non-member';
+      if (mt === 'child') { var ch = childMap[tm.child_id]; return ch ? ch.name : 'Child'; }
+      var p = profMap[tm.member_id] || {};
+      return ((p.first_name || '') + (p.last_name ? ' ' + p.last_name : '')).trim() || p.full_name || p.email || 'Unknown';
+    }
+    function tmEmail(tm) {
+      var mt = tm.member_type || 'member';
+      if (mt === 'nonmember') return tm.nonmember_email || '';
+      if (mt === 'child') { var ch = childMap[tm.child_id]; if (ch) { var par = profMap[ch.profile_id]; return par ? par.email : ''; } return ''; }
+      return (profMap[tm.member_id] || {}).email || '';
+    }
 
     /* ── focused single-team view ─────────────────────────────── */
     var focusedTeamId = new URLSearchParams(window.location.search).get('team_id') || '';
@@ -655,15 +679,17 @@
       var fIsMine = fMems.some(function (tm) { return tm.member_id === uid; });
       var fCanEdit = _isAdmin || (_isLeader && _ledTeamIds.indexOf(focusedTeam.id) !== -1);
 
-      /* fetch profiles for this team's members so all users can see names */
+      /* fetch profiles for member-type rows so all users can see names */
       var fProfMap = {};
-      var fIds = fMems.map(function (tm) { return tm.member_id; });
-      if (fIds.length) {
+      var fMemberIds = fMems.filter(function(tm){ return (tm.member_type||'member') === 'member' && tm.member_id; }).map(function(tm){ return tm.member_id; });
+      if (fMemberIds.length) {
         var { data: fProfs } = await _sb.from('profiles')
           .select('id,first_name,last_name,full_name,email,phone1,phone1_type,avatar_url')
-          .in('id', fIds);
+          .in('id', fMemberIds);
         (fProfs || []).forEach(function (p) { fProfMap[p.id] = p; });
       }
+      /* merge fProfMap into profMap for tmName/tmEmail helpers */
+      Object.keys(fProfMap).forEach(function(k){ if (!profMap[k]) profMap[k] = fProfMap[k]; });
 
       fHtml += '<div class="mp-group-focused">';
       fHtml += '<div class="mp-group-focused-header">';
@@ -683,13 +709,23 @@
       } else {
         fHtml += '<ul class="mp-group-dir-list">';
         fMems.forEach(function (tm) {
-          var p = fProfMap[tm.member_id]; if (!p) return;
-          var pn = ((p.first_name || '') + (p.last_name ? ' ' + p.last_name : '')).trim() || p.full_name || p.email;
-          fHtml += '<li class="mp-group-dir-row">' + D.renderAvatar(D.getInitials(p), p.avatar_url || '', '') + '<div class="mp-group-dir-info">';
-          fHtml += '<span class="mp-group-dir-name">' + D.esc(pn) + (tm.role === 'leader' ? ' <span class="mp-group-dir-role">Leader</span>' : '') + '</span>';
-          fHtml += '<span class="mp-group-dir-contact"><a href="mailto:' + D.esc(p.email) + '">' + D.esc(p.email) + '</a>';
-          if (p.phone1) fHtml += ' <span class="mp-group-dir-sep">·</span> ' + D.esc((p.phone1_type || 'Cell') + ': ' + p.phone1);
-          fHtml += '</span></div></li>';
+          var mt = tm.member_type || 'member';
+          var displayName = tmName(tm);
+          var displayEmail = tmEmail(tm);
+          var p = (mt === 'member') ? (fProfMap[tm.member_id] || profMap[tm.member_id]) : null;
+          var avatarHtml = p ? D.renderAvatar(D.getInitials(p), p.avatar_url || '', '') : D.renderAvatar(displayName.charAt(0).toUpperCase(), '', '');
+          fHtml += '<li class="mp-group-dir-row">' + avatarHtml + '<div class="mp-group-dir-info">';
+          fHtml += '<span class="mp-group-dir-name">' + D.esc(displayName);
+          if (tm.role === 'leader') fHtml += ' <span class="mp-group-dir-role">Leader</span>';
+          if (mt === 'nonmember') fHtml += ' <span class="mp-group-dir-role" style="background:#f0a500;color:#fff;">Non-member</span>';
+          if (mt === 'child') fHtml += ' <span class="mp-group-dir-role" style="background:#4a8c6f;color:#fff;">Child</span>';
+          fHtml += '</span>';
+          if (displayEmail) {
+            fHtml += '<span class="mp-group-dir-contact"><a href="mailto:' + D.esc(displayEmail) + '">' + D.esc(displayEmail) + '</a>';
+            if (p && p.phone1) fHtml += ' <span class="mp-group-dir-sep">·</span> ' + D.esc((p.phone1_type || 'Cell') + ': ' + p.phone1);
+            fHtml += '</span>';
+          }
+          fHtml += '</div></li>';
         });
         fHtml += '</ul>';
       }
@@ -762,13 +798,68 @@
       html += '<div class="mp-form-group" style="max-width:160px;margin-top:10px;margin-bottom:0;"><label style="font-size:0.82rem;">Display order (0 = first)</label>';
       html += '<input type="number" name="serving_order" min="0" max="99" value="' + (editTeam ? (editTeam.serving_order || 0) : 0) + '" style="width:100%;"></div>';
       html += '</div></div>';
-      html += '<div class="mp-form-group"><label>Members</label><div class="mp-group-member-picker">';
-      var editMemIds = editTeam ? (teamMap[editTeam.id] || []).map(function (tm) { return tm.member_id; }) : [];
+      /* build lookup of what's currently on this team */
+      var editTmRows = editTeam ? (teamMap[editTeam.id] || []) : [];
+      var editMemIds      = editTmRows.filter(function(tm){ return (tm.member_type||'member')==='member'; }).map(function(tm){ return tm.member_id; });
+      var editChildIds    = editTmRows.filter(function(tm){ return tm.member_type==='child'; }).map(function(tm){ return tm.child_id; });
+      var editNonmembers  = editTmRows.filter(function(tm){ return tm.member_type==='nonmember'; });
+
+      /* store picker data for the family-select helper */
+      var _pickerProf = {}, _pickerChildren = {};
+      approved.forEach(function(p){ _pickerProf[p.id] = p; });
+      allChildren.forEach(function(c){ _pickerChildren[c.id] = c; });
+
+      html += '<div class="mp-form-group"><label>Members</label>';
+      html += '<input type="text" id="tm-member-search" placeholder="Filter members…" oninput="mpTeamMemberSearch(this.value)" autocomplete="off" style="width:100%;margin-bottom:8px;padding:7px 10px;border:1px solid var(--mp-border,#dde3eb);border-radius:6px;font-size:0.88rem;">';
+
+      /* ── Section 1: Approved members ─────────────────────────── */
+      html += '<div style="font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#7a8ea8;margin:6px 0 4px;">Members</div>';
+      html += '<div class="mp-group-member-picker" id="tm-member-list">';
       approved.forEach(function (p) {
         var pn = ((p.first_name || '') + (p.last_name ? ' ' + p.last_name : '')).trim() || p.full_name || p.email;
-        html += '<label class="mp-group-member-check"><input type="checkbox" name="member_ids" value="' + D.esc(p.id) + '"' + (editMemIds.indexOf(p.id) !== -1 ? ' checked' : '') + '> ' + D.esc(pn) + '</label>';
+        /* compute family: spouse ID + child IDs across both parents */
+        var spouseId = p.spouse_id || '';
+        var myChildIds = (childrenByParent[p.id] || []).map(function(c){ return c.id; });
+        var spouseChildIds = spouseId ? (childrenByParent[spouseId] || []).map(function(c){ return c.id; }) : [];
+        var allFamilyChildIds = myChildIds.concat(spouseChildIds.filter(function(id){ return myChildIds.indexOf(id) === -1; }));
+        var hasFamilyExtras = spouseId || allFamilyChildIds.length;
+        html += '<div class="mp-picker-row" data-name="' + D.esc(pn.toLowerCase()) + '" style="display:flex;align-items:center;justify-content:space-between;padding:3px 0;">';
+        html += '<label class="mp-group-member-check" style="flex:1;margin:0;"><input type="checkbox" name="member_ids" class="mp-member-check" value="' + D.esc(p.id) + '"' + (editMemIds.indexOf(p.id) !== -1 ? ' checked' : '') + '> ' + D.esc(pn) + '</label>';
+        if (hasFamilyExtras) {
+          html += '<button type="button" class="mp-btn mp-btn--small mp-btn--outline" style="font-size:0.75rem;padding:2px 8px;white-space:nowrap;" '
+            + 'data-spouse="' + D.esc(spouseId) + '" data-children="' + D.esc(allFamilyChildIds.join(',')) + '" data-self="' + D.esc(p.id) + '" '
+            + 'onclick="mpTeamPickFamily(this)">+ Whole family</button>';
+        }
+        html += '</div>';
       });
-      html += '</div></div>';
+      html += '</div>';
+
+      /* ── Section 2: Children ──────────────────────────────────── */
+      if (allChildren.length) {
+        html += '<div style="font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#7a8ea8;margin:10px 0 4px;">Children</div>';
+        html += '<div class="mp-group-member-picker" id="tm-child-list">';
+        allChildren.forEach(function (c) {
+          var parentProf = profMap[c.profile_id] || {};
+          var parentName = ((parentProf.first_name || '') + (parentProf.last_name ? ' ' + parentProf.last_name : '')).trim() || parentProf.full_name || '';
+          var label = D.esc(c.name) + (parentName ? ' <span style="color:#8a9bb0;font-size:0.85em;">(child of ' + D.esc(parentName) + ')</span>' : '');
+          html += '<label class="mp-group-member-check mp-child-check-label"><input type="checkbox" name="child_ids" class="mp-child-check" value="' + D.esc(c.id) + '" data-parent-id="' + D.esc(c.profile_id) + '"' + (editChildIds.indexOf(c.id) !== -1 ? ' checked' : '') + '> ' + label + '</label>';
+        });
+        html += '</div>';
+      }
+
+      /* ── Section 3: Non-member volunteers ────────────────────── */
+      html += '<div style="font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#7a8ea8;margin:10px 0 4px;">Non-member volunteers</div>';
+      html += '<div id="tm-nonmember-list">';
+      editNonmembers.forEach(function(nm) {
+        html += '<div class="mp-nonmember-row" style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">'
+          + '<input type="text" data-nm="name" placeholder="Full name" value="' + D.esc(nm.nonmember_name || '') + '" style="flex:1;padding:6px 9px;border:1px solid var(--mp-border,#dde3eb);border-radius:6px;font-size:0.88rem;">'
+          + '<input type="email" data-nm="email" placeholder="Email address" value="' + D.esc(nm.nonmember_email || '') + '" style="flex:1.5;padding:6px 9px;border:1px solid var(--mp-border,#dde3eb);border-radius:6px;font-size:0.88rem;">'
+          + '<button type="button" onclick="mpTeamRemoveNonmember(this)" style="background:none;border:none;color:#c0392b;font-size:1.1rem;cursor:pointer;padding:0 4px;" title="Remove">✕</button>'
+          + '</div>';
+      });
+      html += '</div>';
+      html += '<button type="button" onclick="mpTeamAddNonmember()" class="mp-btn mp-btn--outline mp-btn--small" style="margin-top:4px;">+ Add non-member volunteer</button>';
+      html += '</div>';
       html += '<div style="display:flex;gap:10px;margin-top:16px;"><button type="submit" class="mp-btn mp-btn--primary" style="flex:1;">' + (editTeam ? 'Save Changes' : 'Create Team') + '</button>';
       if (editTeam) html += '<a href="#" class="mp-btn mp-btn--secondary" onclick="window.mpDashboard.navigate(\'teams\');return false;">Cancel</a>';
       html += '</div></form></div></details>';
@@ -801,14 +892,24 @@
         else {
           html += '<ul class="mp-group-dir-list">';
           mems.forEach(function (tm) {
-            var prof = profMap[tm.member_id];
-            if (!prof) return;
-            var pn = ((prof.first_name || '') + (prof.last_name ? ' ' + prof.last_name : '')).trim() || prof.full_name || prof.email;
-            html += '<li class="mp-group-dir-row">' + D.renderAvatar(D.getInitials(prof), '', '') + '<div class="mp-group-dir-info">';
-            html += '<span class="mp-group-dir-name">' + D.esc(pn) + '</span>';
-            html += '<span class="mp-group-dir-contact"><a href="mailto:' + D.esc(prof.email) + '">' + D.esc(prof.email) + '</a>';
-            if (prof.phone1) html += ' <span class="mp-group-dir-sep">·</span> ' + D.esc((prof.phone1_type || 'Cell') + ': ' + prof.phone1);
-            html += '</span></div></li>';
+            var mt = tm.member_type || 'member';
+            var displayName = tmName(tm);
+            var displayEmail = tmEmail(tm);
+            var prof = (mt === 'member') ? profMap[tm.member_id] : null;
+            /* skip unknown regular members (profMap empty for non-editors) */
+            if (mt === 'member' && !prof && !displayEmail) return;
+            var initials = prof ? D.getInitials(prof) : displayName.charAt(0).toUpperCase();
+            html += '<li class="mp-group-dir-row">' + D.renderAvatar(initials, '', '') + '<div class="mp-group-dir-info">';
+            html += '<span class="mp-group-dir-name">' + D.esc(displayName);
+            if (mt === 'nonmember') html += ' <span class="mp-group-dir-role" style="background:#f0a500;color:#fff;font-size:0.72rem;padding:1px 6px;border-radius:10px;">Non-member</span>';
+            if (mt === 'child')     html += ' <span class="mp-group-dir-role" style="background:#4a8c6f;color:#fff;font-size:0.72rem;padding:1px 6px;border-radius:10px;">Child</span>';
+            html += '</span>';
+            if (displayEmail) {
+              html += '<span class="mp-group-dir-contact"><a href="mailto:' + D.esc(displayEmail) + '">' + D.esc(displayEmail) + '</a>';
+              if (prof && prof.phone1) html += ' <span class="mp-group-dir-sep">·</span> ' + D.esc((prof.phone1_type || 'Cell') + ': ' + prof.phone1);
+              html += '</span>';
+            }
+            html += '</div></li>';
           });
           html += '</ul>';
         }
@@ -880,6 +981,19 @@
         var fd = new FormData(form);
         var action = fd.get('action_type'), teamId = fd.get('team_id') || '', name = (fd.get('team_name') || '').trim();
         var memberIds = fd.getAll('member_ids');
+        /* collect child rows */
+        var childRows = [];
+        document.querySelectorAll('.mp-child-check:checked').forEach(function(cb) {
+          childRows.push({ child_id: cb.value, parent_id: cb.dataset.parentId });
+        });
+        /* collect non-member rows from DOM */
+        var nonmemberRows = [];
+        document.querySelectorAll('#tm-nonmember-list .mp-nonmember-row').forEach(function(row) {
+          var nm = (row.querySelector('[data-nm="name"]') || {}).value || '';
+          var ne = (row.querySelector('[data-nm="email"]') || {}).value || '';
+          nm = nm.trim(); ne = ne.trim();
+          if (nm) nonmemberRows.push({ name: nm, email: ne });
+        });
         if (!name) { alert('Team name is required.'); return; }
         var isEdit = action === 'edit' && teamId;
         var _savingToast = null;
@@ -924,8 +1038,23 @@
           teamId = newT ? newT.id : null;
           if (!hasSundayCols) alert('Team created. Run the SQL migration to enable Sunday serving features.');
         }
-        if (teamId && memberIds.length) {
-          await _sb2.from('team_members').insert(memberIds.map(function (pid) { return { team_id: teamId, member_id: pid, role: 'member' }; }));
+        if (teamId && (memberIds.length || childRows.length || nonmemberRows.length)) {
+          var insertRows = [];
+          memberIds.forEach(function(pid) {
+            insertRows.push({ team_id: teamId, member_id: pid, role: 'member', member_type: 'member' });
+          });
+          childRows.forEach(function(cr) {
+            insertRows.push({ team_id: teamId, member_id: cr.parent_id || null, child_id: cr.child_id, role: 'member', member_type: 'child' });
+          });
+          nonmemberRows.forEach(function(nm) {
+            insertRows.push({ team_id: teamId, member_id: null, role: 'member', member_type: 'nonmember', nonmember_name: nm.name, nonmember_email: nm.email });
+          });
+          var insRes = await _sb2.from('team_members').insert(insertRows);
+          if (insRes.error && insRes.error.message && insRes.error.message.indexOf('column') !== -1) {
+            /* new columns not migrated yet — fall back to members only */
+            if (memberIds.length) await _sb2.from('team_members').insert(memberIds.map(function(pid){ return { team_id: teamId, member_id: pid, role: 'member' }; }));
+            showToast('Saved (run DB migration to enable children & non-member support).');
+          }
         }
         /* close edit and show confirmation */
         if (isEdit) {
@@ -953,6 +1082,47 @@
     await _sb2.from('team_members').delete().eq('team_id', id);
     await _sb2.from('teams').delete().eq('id', id);
     renderTeamsTab();
+  };
+
+  /* ── Team member picker helpers ──────────────────────────────── */
+  window.mpTeamPickFamily = function (btn) {
+    var selfId     = btn.dataset.self     || '';
+    var spouseId   = btn.dataset.spouse   || '';
+    var childIds   = btn.dataset.children ? btn.dataset.children.split(',').filter(Boolean) : [];
+    /* check/uncheck toggle: if all already checked, uncheck all; otherwise check all */
+    var selfCb   = selfId   ? document.querySelector('.mp-member-check[value="' + selfId + '"]')   : null;
+    var spouseCb = spouseId ? document.querySelector('.mp-member-check[value="' + spouseId + '"]') : null;
+    var childCbs = childIds.map(function(id){ return document.querySelector('.mp-child-check[value="' + id + '"]'); }).filter(Boolean);
+    var allChecked = (!selfCb || selfCb.checked) && (!spouseCb || spouseCb.checked) && childCbs.every(function(c){ return c.checked; });
+    var target = !allChecked;
+    if (selfCb)   selfCb.checked   = target;
+    if (spouseCb) spouseCb.checked = target;
+    childCbs.forEach(function(c){ c.checked = target; });
+    btn.textContent = target ? '✓ Family' : '+ Whole family';
+  };
+
+  window.mpTeamAddNonmember = function () {
+    var list = document.getElementById('tm-nonmember-list'); if (!list) return;
+    var row = document.createElement('div');
+    row.className = 'mp-nonmember-row';
+    row.style.cssText = 'display:flex;gap:6px;align-items:center;margin-bottom:6px;';
+    row.innerHTML = '<input type="text" data-nm="name" placeholder="Full name" style="flex:1;padding:6px 9px;border:1px solid var(--mp-border,#dde3eb);border-radius:6px;font-size:0.88rem;">'
+      + '<input type="email" data-nm="email" placeholder="Email address" style="flex:1.5;padding:6px 9px;border:1px solid var(--mp-border,#dde3eb);border-radius:6px;font-size:0.88rem;">'
+      + '<button type="button" onclick="mpTeamRemoveNonmember(this)" style="background:none;border:none;color:#c0392b;font-size:1.1rem;cursor:pointer;padding:0 4px;" title="Remove">✕</button>';
+    list.appendChild(row);
+    row.querySelector('[data-nm="name"]').focus();
+  };
+
+  window.mpTeamRemoveNonmember = function (btn) {
+    var row = btn.closest('.mp-nonmember-row'); if (row) row.remove();
+  };
+
+  window.mpTeamMemberSearch = function (q) {
+    q = (q || '').toLowerCase().trim();
+    var rows = document.querySelectorAll('#tm-member-list .mp-picker-row');
+    rows.forEach(function(row) {
+      row.style.display = (!q || (row.dataset.name || '').indexOf(q) !== -1) ? '' : 'none';
+    });
   };
 
 })();

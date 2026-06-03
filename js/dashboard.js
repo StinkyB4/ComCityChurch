@@ -774,16 +774,23 @@
     var qs=new URLSearchParams(window.location.search);
     var editMode=qs.get('edit')==='1';
 
+    /* find effective spouse ID — own spouse_id OR reverse lookup (other person linked to me) */
+    var effectiveSpouseId = _profile.spouse_id || null;
+    if(!effectiveSpouseId){
+      var { data:revLink } = await _sb.from('profiles').select('id').eq('spouse_id',_user.id).maybeSingle();
+      if(revLink) effectiveSpouseId = revLink.id;
+    }
+
     /* parallel fetches — also pull spouse's children so both parents see the full list */
     var [childRes, teamRes, spouseRes, mcRes, spouseChildRes] = await Promise.all([
       _sb.from('children').select('*').eq('profile_id',_user.id).order('id'),
       _sb.from('team_members').select('team_id, teams(id,name)').eq('member_id',_user.id),
-      _profile.spouse_id
-        ? _sb.from('profiles').select('id,first_name,last_name,full_name,email,phone1,phone1_type,avatar_url').eq('id',_profile.spouse_id).maybeSingle()
+      effectiveSpouseId
+        ? _sb.from('profiles').select('id,first_name,last_name,full_name,email,phone1,phone1_type,avatar_url').eq('id',effectiveSpouseId).maybeSingle()
         : Promise.resolve({data:null}),
       _sb.from('mc_members').select('missional_communities(id,name)').eq('profile_id',_user.id),
-      _profile.spouse_id
-        ? _sb.from('children').select('*').eq('profile_id',_profile.spouse_id).order('id')
+      effectiveSpouseId
+        ? _sb.from('children').select('*').eq('profile_id',effectiveSpouseId).order('id')
         : Promise.resolve({data:[]})
     ]);
     /* merge own + spouse's children, deduplicated by name */
@@ -854,9 +861,9 @@
       /* ── EDIT MODE ── */
       var result=window._profileResult||null; window._profileResult=null;
 
-      /* eligible spouses (for linking) */
+      /* eligible spouses (for linking) — only when not already linked either direction */
       var eligible=[];
-      if(!p.spouse_id){
+      if(!effectiveSpouseId){
         var { data:allM }=await _sb.from('profiles').select('id,first_name,last_name,full_name').eq('status','approved').is('spouse_id',null).neq('id',_user.id).order('last_name');
         eligible=allM||[];
       }
@@ -892,7 +899,7 @@
 
       /* family */
       html+='<div class="mp-section-divider">Family</div>';
-      if(p.spouse_id&&spouse){
+      if(effectiveSpouseId&&spouse){
         var sn2=((spouse.first_name||'')+(spouse.last_name?' '+spouse.last_name:'')).trim()||spouse.full_name||'';
         html+='<div class="mp-family-linked-notice"><span>Linked to <strong>'+esc(sn2)+'</strong></span><span class="mp-hint" style="display:block;margin-top:4px;">To unlink, contact an administrator.</span></div>';
         html+='<div class="mp-form-group"><label>Wedding Anniversary <span class="mp-required">*</span></label><input type="date" name="anniversary" value="'+esc(p.anniversary||'')+'" required></div>';
@@ -953,7 +960,7 @@
       html+='</form>';
 
       setContent(html);
-      wireProfileForm(children);
+      wireProfileForm(children, effectiveSpouseId);
     }
   }
 
@@ -1079,7 +1086,7 @@
     list.appendChild(row); row.querySelector('.mp-child-name').focus();
   };
 
-  function wireProfileForm(existingChildren){
+  function wireProfileForm(existingChildren, effectiveSpouseId){
     var form=document.getElementById('profile-form'); if(!form) return;
     form.addEventListener('submit', async function(e){
       e.preventDefault();
@@ -1114,14 +1121,14 @@
 
       /* spouse link — uses SECURITY DEFINER RPC to update both profiles */
       var spId=fd.get('spouse_link_id')||'';
-      if(spId&&!_profile.spouse_id){
+      if(spId&&!effectiveSpouseId){
         await _sb.rpc('link_spouses',{p_user_a:_user.id, p_user_b:spId});
         updates.spouse_id=spId;
         callEdge('send-email',{action:'spouse_linked',linker_id:_user.id,spouse_id:spId});
       }
       /* spouse invite */
       var invEmail=fd.get('spouse_invite_email')||'';
-      if(invEmail&&!spId&&!_profile.spouse_id)
+      if(invEmail&&!spId&&!effectiveSpouseId)
         callEdge('send-email',{action:'spouse_invite',inviter_id:_user.id,invitee_email:invEmail});
 
       /* save profile */

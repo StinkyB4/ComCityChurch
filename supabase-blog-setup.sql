@@ -23,7 +23,7 @@ create table if not exists blog_posts (
 
 -- 2. UPDATED_AT trigger
 create or replace function update_updated_at_column()
-returns trigger language plpgsql as $$
+returns trigger language plpgsql set search_path = public as $$
 begin
   new.updated_at = now();
   return new;
@@ -121,7 +121,7 @@ create policy "Authenticated users upload blog images"
   to authenticated
   with check (bucket_id = 'blog-images');
 
-create policy "Anyone reads blog images"
-  on storage.objects for select
-  to anon, authenticated
-  using (bucket_id = 'blog-images');
+-- No SELECT policy on storage.objects for blog-images.
+-- Objects in a public bucket are accessible via their direct CDN URL without
+-- a PostgREST SELECT policy. Omitting the policy prevents clients from listing
+-- all files in the bucket via the API.
