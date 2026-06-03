@@ -263,10 +263,8 @@
       html += '<a href="#" class="mp-btn mp-btn--primary mp-btn--small" onclick="mpAdminEdit(\'' + D.esc(m.id) + '\');return false;">Edit</a>';
       html += '<button class="mp-btn mp-btn--small mp-btn--outline" onclick="mpAdminToggleDir(\'' + D.esc(m.id) + '\',\'' + (hidden ? 'show' : 'hide') + '\')" title="' + (hidden ? 'Show in directory' : 'Hide from directory') + '">' + (hidden ? '👁 Show' : '👁 Hide') + '</button>';
       if (m.spouse_id) html += '<button class="mp-btn mp-btn--danger mp-btn--small" onclick="mpAdminUnlinkSpouse(\'' + D.esc(m.id) + '\',\'' + D.esc(mname) + '\')">Unlink</button>';
-      if (!approved2) {
-        html += '<button class="mp-btn mp-btn--approve mp-btn--small" onclick="mpApproveUser(\'' + D.esc(m.id) + '\')">Approve</button>';
-        html += '<button class="mp-btn mp-btn--danger mp-btn--small" onclick="mpRejectUser(\'' + D.esc(m.id) + '\',\'' + D.esc(mname) + '\')">Delete</button>';
-      }
+      if (!approved2) html += '<button class="mp-btn mp-btn--approve mp-btn--small" onclick="mpApproveUser(\'' + D.esc(m.id) + '\')">Approve</button>';
+      html += '<button class="mp-btn mp-btn--danger mp-btn--small" onclick="mpAdminDeleteUser(\'' + D.esc(m.id) + '\',\'' + D.esc(mname) + '\')">Delete</button>';
       html += '</div></div>';
     });
     html += '</div>';
@@ -377,6 +375,14 @@
     await _sb2.rpc('unlink_spouses', { p_uid: uid });
     renderAdminTab();
   };
+  window.mpAdminDeleteUser = async function (uid, name) {
+    if (!confirm('Permanently delete the account for ' + name + '?\n\nThis will remove all their data including family links, team memberships, and schedule assignments. This cannot be undone.')) return;
+    var _sb2 = window.mpDashboard.getSb();
+    var { error } = await _sb2.from('profiles').delete().eq('id', uid);
+    if (error) { alert('Error deleting account: ' + error.message); return; }
+    window.mpDashboard.loadPendingBadge();
+    renderAdminTab();
+  };
 
   /* ── Admin member edit form ── */
   async function renderAdminMemberEdit(editUid) {
@@ -458,6 +464,15 @@
     html += '<input type="hidden" name="stay_edit" id="admin-stay-edit" value="">';
     html += '<div style="display:flex;gap:12px;margin-top:8px;"><button type="submit" class="mp-btn mp-btn--primary" style="flex:1;">Save Changes</button><a href="#" class="mp-btn mp-btn--secondary" onclick="mpAdminBackToList();return false;">Cancel</a></div>';
     html += '</form>';
+
+    html += '<div style="margin-top:32px;border:1px solid #fca5a5;border-radius:8px;overflow:hidden;">';
+    html += '<div style="background:#fee2e2;padding:10px 16px;font-weight:700;font-size:0.88rem;color:#991b1b;display:flex;align-items:center;gap:7px;">';
+    html += '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+    html += 'Danger Zone</div>';
+    html += '<div style="padding:14px 16px;background:#fff;">';
+    html += '<p style="margin:0 0 12px;font-size:0.87rem;color:#374151;">Permanently delete this account and all associated data (family links, team memberships, schedule assignments). <strong>This cannot be undone.</strong></p>';
+    html += '<button type="button" class="mp-btn mp-btn--danger" onclick="mpAdminDeleteUser(\'' + D.esc(editUid) + '\',\'' + D.esc(mname) + '\')">Delete Account</button>';
+    html += '</div></div>';
 
     D.setContent(html);
 
