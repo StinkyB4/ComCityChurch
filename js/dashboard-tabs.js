@@ -881,6 +881,14 @@
         var action = fd.get('action_type'), teamId = fd.get('team_id') || '', name = (fd.get('team_name') || '').trim();
         var memberIds = fd.getAll('member_ids');
         if (!name) { alert('Team name is required.'); return; }
+        var isEdit = action === 'edit' && teamId;
+        var _savingToast = null;
+        if (isEdit) {
+          _savingToast = document.createElement('div');
+          _savingToast.textContent = 'Saving changes…';
+          _savingToast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#112E53;color:#fff;padding:12px 20px;border-radius:8px;font-size:0.88rem;font-family:sans-serif;box-shadow:0 4px 16px rgba(0,0,0,0.2);z-index:9999;max-width:340px;text-align:center;transition:opacity .4s;';
+          document.body.appendChild(_savingToast);
+        }
         var teamData = {
           name: name,
           is_sunday_serving:  fd.get('is_sunday_serving')  === '1',
@@ -892,7 +900,7 @@
         /* strip new columns if they don't exist yet (graceful fallback) */
         var hasSundayCols = true;
         var fullData = teamData;
-        if (action === 'edit' && teamId) {
+        if (isEdit) {
           var upRes = await _sb2.from('teams').update(fullData).eq('id', teamId);
           if (upRes.error && upRes.error.message && upRes.error.message.indexOf('column') !== -1) {
             /* columns not migrated yet — retry with just name */
@@ -919,7 +927,15 @@
         if (teamId && memberIds.length) {
           await _sb2.from('team_members').insert(memberIds.map(function (pid) { return { team_id: teamId, member_id: pid, role: 'member' }; }));
         }
-        await renderTeamsTab();
+        /* close edit and show confirmation */
+        if (isEdit) {
+          if (_savingToast) { _savingToast.style.opacity = '0'; setTimeout(function(){ _savingToast.remove(); }, 400); }
+          showToast('Changes saved.');
+          D.navigate('teams');
+        } else {
+          showToast('Team created.');
+          await renderTeamsTab();
+        }
       });
     }
   }

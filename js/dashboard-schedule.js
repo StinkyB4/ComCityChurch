@@ -1097,6 +1097,14 @@
     html += '<div class="mp-form-group"><label>Ends <span class="mp-optional">(Optional — leave blank for no end)</span></label>';
     html += '<input type="date" name="event_recurrence_end" value="' + D.esc(isEdit && ev.recurrence_end_date ? ev.recurrence_end_date : '') + '"></div>';
     if (isEdit && recType) html += '<p style="font-size:0.8rem;color:#888;margin:0 0 12px;">Saving updates all occurrences.</p>';
+    if (!isEdit) {
+      html += '<div class="mp-form-group" id="mp-recur-roster-wrap">';
+      html += '<label>Roster for future occurrences</label>';
+      html += '<div style="display:flex;flex-direction:column;gap:6px;margin-top:4px;">';
+      html += '<label style="display:flex;align-items:flex-start;gap:8px;font-weight:normal;cursor:pointer;"><input type="radio" name="recur_roster" value="blank" checked style="margin-top:3px;"> <span><strong>Start blank</strong> — each occurrence begins with no one assigned (roles are kept as placeholders)</span></label>';
+      html += '<label style="display:flex;align-items:flex-start;gap:8px;font-weight:normal;cursor:pointer;"><input type="radio" name="recur_roster" value="carry" style="margin-top:3px;"> <span><strong>Carry over</strong> — all occurrences share the same roster as the first</span></label>';
+      html += '</div></div>';
+    }
     html += '</div>';
 
     html += '<div class="mp-form-group"><label>Visible To</label>';
@@ -1210,9 +1218,16 @@
           evSlots.push(slotObj);
         }
       });
+      var evId = fd.get('event_id');
+      /* for new recurring events, honour the roster preference */
+      var recurRoster = fd.get('recur_roster') || 'carry';
+      if (!evId && recType && recurRoster === 'blank') {
+        evSlots = evSlots.map(function (s) {
+          return { id: s.id, role: s.role, assignee_type: '', assignee_id: '', assignee_id_b: '', guest_id: '', guest_name: '', guest_email: '', child_name: '' };
+        });
+      }
       payload.slots = evSlots;
       var doNotify = fd.get('event_notify') === '1';
-      var evId = fd.get('event_id');
       var sb = window.mpDashboard.getSb();
       var saveResult = evId
         ? await sb.from('events').update(payload).eq('id', evId)
