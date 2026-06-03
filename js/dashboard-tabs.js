@@ -889,13 +889,32 @@
           serving_order:      parseInt(fd.get('serving_order') || '0', 10)
         };
         var _sb2 = D.getSb();
+        /* strip new columns if they don't exist yet (graceful fallback) */
+        var hasSundayCols = true;
+        var fullData = teamData;
         if (action === 'edit' && teamId) {
-          await _sb2.from('teams').update(teamData).eq('id', teamId);
+          var upRes = await _sb2.from('teams').update(fullData).eq('id', teamId);
+          if (upRes.error && upRes.error.message && upRes.error.message.indexOf('column') !== -1) {
+            /* columns not migrated yet — retry with just name */
+            hasSundayCols = false;
+            var upRes2 = await _sb2.from('teams').update({ name: name }).eq('id', teamId);
+            if (upRes2.error) { alert('Save failed: ' + upRes2.error.message); return; }
+          } else if (upRes.error) {
+            alert('Save failed: ' + upRes.error.message); return;
+          }
           await _sb2.from('team_members').delete().eq('team_id', teamId);
         } else {
-          var { data: newT, error: newTErr } = await _sb2.from('teams').insert(teamData).select().single();
-          if (newTErr) { alert('Error creating team: ' + newTErr.message); return; }
+          var insertData = hasSundayCols ? fullData : { name: name };
+          var { data: newT, error: newTErr } = await _sb2.from('teams').insert(insertData).select().single();
+          if (newTErr && newTErr.message && newTErr.message.indexOf('column') !== -1) {
+            var { data: newT2, error: newTErr2 } = await _sb2.from('teams').insert({ name: name }).select().single();
+            if (newTErr2) { alert('Error creating team: ' + newTErr2.message); return; }
+            newT = newT2;
+          } else if (newTErr) {
+            alert('Error creating team: ' + newTErr.message); return;
+          }
           teamId = newT ? newT.id : null;
+          if (!hasSundayCols) alert('Team created. Run the SQL migration to enable Sunday serving features.');
         }
         if (teamId && memberIds.length) {
           await _sb2.from('team_members').insert(memberIds.map(function (pid) { return { team_id: teamId, member_id: pid, role: 'member' }; }));
