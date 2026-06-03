@@ -489,6 +489,37 @@
     html += '<h2 class="mp-welcome-name">'+esc(greeting)+', '+esc(firstName)+'!</h2>';
     html += '</div>';
 
+    /* ── profile completion reminder (shown once until dismissed) ── */
+    if(!_profile.profile_reminder_dismissed){
+      if(!document.getElementById('mp-profile-reminder-css')){
+        var prcss=document.createElement('style'); prcss.id='mp-profile-reminder-css';
+        prcss.textContent=[
+          '.mp-profile-reminder{background:#f0f7ff;border:1px solid #3b82f6;border-radius:8px;overflow:hidden;margin-bottom:20px;}',
+          '.mp-profile-reminder-hd{background:#112E53;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:9px;font-weight:700;font-size:0.93rem;}',
+          '.mp-profile-reminder-body{padding:16px;}',
+          '.mp-profile-reminder-intro{margin:0 0 12px;font-size:0.9rem;color:#1e3a5f;line-height:1.5;}',
+          '.mp-profile-reminder-questions{list-style:none;margin:0 0 16px;padding:0;display:flex;flex-direction:column;gap:8px;}',
+          '.mp-profile-reminder-question{background:#fff;border:1px solid #bfdbfe;border-radius:6px;padding:10px 14px;font-size:0.87rem;color:#1e293b;line-height:1.5;}',
+          '.mp-profile-reminder-question strong{color:#112E53;display:block;margin-bottom:2px;}',
+          '.mp-profile-reminder-actions{display:flex;gap:10px;flex-wrap:wrap;}'
+        ].join('');
+        document.head.appendChild(prcss);
+      }
+      var personSvg='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+      html+='<div class="mp-profile-reminder" id="mp-profile-reminder">';
+      html+='<div class="mp-profile-reminder-hd">'+personSvg+'Finish Setting Up Your Profile</div>';
+      html+='<div class="mp-profile-reminder-body">';
+      html+='<p class="mp-profile-reminder-intro">Welcome! Your account is all set. Here are a couple of things you can add to make your profile complete:</p>';
+      html+='<ul class="mp-profile-reminder-questions">';
+      html+='<li class="mp-profile-reminder-question"><strong>Do you have a spouse who is also a member?</strong>You can link your profiles together so your connection shows in the directory and your family info stays in sync.</li>';
+      html+='<li class="mp-profile-reminder-question"><strong>Do you have children you\'d like to add?</strong>You can add your children\'s names, birthdays, and genders to your profile.</li>';
+      html+='</ul>';
+      html+='<div class="mp-profile-reminder-actions">';
+      html+='<button class="mp-btn mp-btn--primary" onclick="mpDismissProfileReminder(true)">Set Up Now</button>';
+      html+='<button class="mp-btn mp-btn--secondary" onclick="mpDismissProfileReminder(false)">Not Right Now</button>';
+      html+='</div></div></div>';
+    }
+
     /* flash messages */
     var qs=new URLSearchParams(window.location.search);
     if(qs.get('approved')==='1') html+=alertHtml('Account approved — member notified by email.','success');
@@ -970,6 +1001,15 @@
     _profile.child_notif_optout=optout;
     showToast(optout?'You will no longer receive child serving reminders.':'You will now receive child serving reminders.');
   };
+
+  window.mpDismissProfileReminder = async function(goToProfile){
+    await _sb.from('profiles').update({profile_reminder_dismissed:true}).eq('id',_user.id);
+    _profile.profile_reminder_dismissed = true;
+    var card = document.getElementById('mp-profile-reminder');
+    if(card) card.remove();
+    if(goToProfile) mpProfileEdit();
+  };
+
   window.mpProfileEdit = function(){
     var url=new URL(window.location.href);
     url.searchParams.set('edit','1'); url.searchParams.set('tab','profile');
