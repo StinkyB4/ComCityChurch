@@ -213,14 +213,13 @@
     _sundays = computeSundays(4, 52);
     var rs = _sundays[0], re = _sundays[_sundays.length - 1];
 
-    var [rRes, tRes, tmRes, pRes, gRes, cRes, evRes, defTplRes] = await Promise.all([
+    var [rRes, tRes, tmRes, pRes, gRes, cRes, defTplRes] = await Promise.all([
       _sb.from('schedule_rosters').select('*').gte('date', rs).lte('date', re).eq('type', 'sunday').order('date'),
       _sb.from('teams').select('*').eq('is_sunday_serving', true).order('serving_order').order('name'),
       _sb.from('team_members').select('team_id,member_id'),
       _sb.from('profiles').select('id,first_name,last_name,full_name,spouse_id').eq('status', 'approved'),
       _sb.from('guests').select('*'),
       _sb.from('children').select('id,name,profile_id').order('name'),
-      _sb.from('events').select('event_date,slots').gte('event_date', rs).lte('event_date', re).order('event_date'),
       _sb.from('schedule_templates').select('*').eq('is_default', true).limit(1)
     ]);
 
@@ -244,27 +243,6 @@
         _teams.forEach(function (t) { _tmMap[t.id] = []; });
       }
     }
-
-    /* ── merge slot assignments from calendar events into roster display ── */
-    (evRes.data || []).forEach(function (ev) {
-      var d = new Date(ev.event_date + 'T12:00:00');
-      if (d.getDay() !== 0 || !(ev.slots || []).length) return;
-      var r = rosterFor(ev.event_date); if (!r) return;
-      ev.slots.forEach(function (es) {
-        if (!es.assignee_type || (!es.assignee_id && !es.guest_name)) return;
-        var match = (r.slots || []).find(function (rs) {
-          return (rs.team_id && rs.team_id === es.team_id) ||
-                 ((rs.role || '').toLowerCase() === (es.role || '').toLowerCase());
-        });
-        if (match && !match.assignee_type) {
-          match.assignee_type = es.assignee_type;
-          match.assignee_id   = es.assignee_id   || '';
-          match.assignee_id_b = es.assignee_id_b || '';
-          match.guest_name    = es.guest_name    || '';
-          match.guest_email   = es.guest_email   || '';
-        }
-      });
-    });
 
     if (_canEdit && _teams.length) await autoGen();
     renderGrid();
