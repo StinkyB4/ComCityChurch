@@ -47,6 +47,25 @@
       '.mp-cal-day--serving{border:2px solid #f97316 !important;}',
       '.mp-cal-day--serving .mp-cal-day-num{color:#c2410c;}',
       '.mp-cal-day--cancelled{opacity:.6;}',
+      /* My Schedule serving list */
+      '.mp-my-serving-list{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;}',
+      '.mp-my-serving-item{background:#fff;border:1px solid #dde3eb;border-radius:8px;overflow:hidden;}',
+      '.mp-my-serving-item[open]{border-color:#112E53;}',
+      '.mp-my-serving-summary{padding:12px 16px;cursor:pointer;list-style:none;display:flex;align-items:center;gap:12px;}',
+      '.mp-my-serving-summary::-webkit-details-marker{display:none;}',
+      '.mp-my-serving-summary::before{content:"›";font-size:1.1rem;color:#9ca3af;flex-shrink:0;transition:transform .15s;line-height:1;}',
+      '.mp-my-serving-item[open] .mp-my-serving-summary::before{transform:rotate(90deg);color:#112E53;}',
+      '.mp-my-serving-info{flex:1;min-width:0;}',
+      '.mp-my-serving-date{font-size:0.78rem;color:#5C718E;font-weight:600;}',
+      '.mp-my-serving-title{font-size:0.9rem;font-weight:700;color:#222;margin:1px 0;}',
+      '.mp-my-serving-role{font-size:0.82rem;color:#112E53;font-weight:600;}',
+      '.mp-my-serving-body{padding:0 16px 14px;border-top:1px solid #eef2f8;margin-top:0;}',
+      '.mp-my-serving-roster{display:flex;flex-direction:column;gap:2px;margin-top:10px;}',
+      '.mp-my-serving-slot{display:flex;align-items:baseline;gap:8px;font-size:0.83rem;padding:3px 0;border-bottom:1px solid #f7f9fc;}',
+      '.mp-my-serving-slot:last-child{border-bottom:none;}',
+      '.mp-my-serving-slot-role{color:#777;min-width:110px;flex-shrink:0;white-space:nowrap;}',
+      '.mp-sched-member-link{color:#112E53;text-decoration:none;font-weight:500;}',
+      '.mp-sched-member-link:hover{text-decoration:underline;}',
       '.mp-cal-legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;padding:8px 4px;border-top:1px solid #eef2f8;}',
       '.mp-cal-legend-item{display:flex;align-items:center;gap:6px;font-size:0.74rem;color:#555;}',
       '.mp-cal-legend-swatch{width:16px;height:16px;border-radius:3px;flex-shrink:0;}',
@@ -522,6 +541,71 @@
 
     /* ── CALENDAR ── */
     html += renderCalendarSection(calYear, calMonth, rosters, calEvents, uid, _isAdmin, D, teams, mcs);
+
+    /* ── MY UPCOMING SERVING ── */
+    var myServItems = [];
+    rosters.forEach(function (r) {
+      if (r.date < todayStr || r.cancelled) return;
+      var mine = (r.slots || []).filter(function (s) {
+        return (s.assignee_type === 'member' && s.assignee_id === uid) ||
+               (s.assignee_type === 'couple' && (s.assignee_id === uid || s.assignee_id_b === uid));
+      });
+      if (mine.length) myServItems.push({ date: r.date, title: r.title || 'Sunday Gathering', time: '10:30 AM', roles: mine.map(function (s) { return s.role || ''; }).filter(Boolean), allSlots: r.slots || [] });
+    });
+    calEvents.forEach(function (ev) {
+      if (ev.event_date < todayStr) return;
+      var mine = (ev.slots || []).filter(function (s) {
+        return (s.assignee_type === 'member' && s.assignee_id === uid) ||
+               (s.assignee_type === 'couple' && (s.assignee_id === uid || s.assignee_id_b === uid));
+      });
+      if (mine.length) myServItems.push({ date: ev.event_date, title: ev.title, time: ev.event_time || '', roles: mine.map(function (s) { return s.role || ''; }).filter(Boolean), allSlots: ev.slots || [] });
+    });
+    myServItems.sort(function (a, b) { return a.date.localeCompare(b.date); });
+
+    if (myServItems.length) {
+      html += '<div class="mp-section-divider" style="margin:16px 0 12px;">My Upcoming Serving</div>';
+      html += '<div class="mp-my-serving-list">';
+      myServItems.forEach(function (item) {
+        var d = new Date(item.date + 'T12:00:00');
+        var dl = d.toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+        html += '<details class="mp-my-serving-item">';
+        html += '<summary class="mp-my-serving-summary"><div class="mp-my-serving-info">';
+        html += '<div class="mp-my-serving-date">' + D.esc(dl) + (item.time ? ' &mdash; ' + D.esc(item.time) : '') + '</div>';
+        html += '<div class="mp-my-serving-title">' + D.esc(item.title) + '</div>';
+        html += '<div class="mp-my-serving-role">' + D.esc(item.roles.join(', ')) + '</div>';
+        html += '</div></summary>';
+        html += '<div class="mp-my-serving-body"><div style="font-size:0.74rem;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;padding-top:10px;">Full Roster</div>';
+        html += '<div class="mp-my-serving-roster">';
+        (item.allSlots || []).forEach(function (s) {
+          if (!s.role) return;
+          var name = '', profileId = null, isChild = s.assignee_type === 'child';
+          if (s.assignee_type === 'guest_inline') { name = s.guest_name || ''; }
+          else if (isChild && childMap[s.assignee_id]) { name = childMap[s.assignee_id].name; }
+          else if (s.assignee_type === 'member' && s.assignee_id && profMap[s.assignee_id]) {
+            var pm = profMap[s.assignee_id]; profileId = s.assignee_id;
+            name = ((pm.first_name || '') + (pm.last_name ? ' ' + pm.last_name : '')).trim() || pm.full_name || '';
+          } else if (s.assignee_type === 'couple' && s.assignee_id && profMap[s.assignee_id]) {
+            var pa = profMap[s.assignee_id], pb = s.assignee_id_b ? profMap[s.assignee_id_b] : null;
+            profileId = s.assignee_id;
+            name = (pa && pb) ? D.coupleDisplayName(pa, pb) : ((pa.first_name || '') + (pa.last_name ? ' ' + pa.last_name : '')).trim() || '';
+          }
+          var isMe = (s.assignee_type === 'member' && s.assignee_id === uid) || (s.assignee_type === 'couple' && (s.assignee_id === uid || s.assignee_id_b === uid));
+          var nameHtml = '';
+          if (!name) {
+            nameHtml = '<span style="color:#ccc;font-style:italic;">TBD</span>';
+          } else if (isMe) {
+            nameHtml = '<strong style="color:#112E53;">' + D.esc(name) + ' (you)</strong>';
+          } else if (profileId) {
+            nameHtml = '<a href="#" class="mp-sched-member-link" onclick="mpNavToMember(' + JSON.stringify(name) + ');return false;">' + D.esc(name) + (isChild ? ' <span style="font-size:0.73rem;color:#9ca3af;">(child)</span>' : '') + '</a>';
+          } else {
+            nameHtml = '<span>' + D.esc(name) + (isChild ? ' <span style="font-size:0.73rem;color:#9ca3af;">(child)</span>' : '') + '</span>';
+          }
+          html += '<div class="mp-my-serving-slot"><span class="mp-my-serving-slot-role">' + D.esc(s.role) + '</span>' + nameHtml + '</div>';
+        });
+        html += '</div></div></details>';
+      });
+      html += '</div>';
+    }
 
     /* ── ROSTER STRIP (admins/leaders only) ── */
     if (_isAdmin) {
@@ -1188,6 +1272,14 @@
   window.mpCalRecurrenceChange = function (val) {
     var el = document.getElementById('mp-recurrence-opts');
     if (el) el.style.display = val ? '' : 'none';
+  };
+  window.mpNavToMember = function (name) {
+    /* navigate to directory and pre-filter to that person's name */
+    window.mpDashboard.navigate('directory');
+    setTimeout(function () {
+      var inp = document.getElementById('dir-search');
+      if (inp) { inp.value = name; if (window.mpDirFilter) window.mpDirFilter(name); }
+    }, 350);
   };
   window.mpTo12h = function (t) {
     if (!t) return '';

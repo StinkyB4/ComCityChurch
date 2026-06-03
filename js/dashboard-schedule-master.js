@@ -138,6 +138,8 @@
       '.mp-ms-hd-date{font-weight:700;font-size:0.84rem;color:#112E53;display:block;line-height:1.2;}',
       '.mp-ms-hd-dow{font-size:0.68rem;color:#9ca3af;display:block;margin-bottom:2px;}',
       '.mp-ms-hd.mp-ms-today{background:#e5ecf8!important;}',
+      '.mp-ms-hd.mp-ms-next{background:#ede9fe!important;border-bottom:3px solid #7c3aed;}',
+      '.mp-ms-cell.mp-ms-next-c{background:#faf5ff!important;}',
       '.mp-ms-hd.mp-ms-past{background:#f9fafb;} .mp-ms-hd.mp-ms-past .mp-ms-hd-date{color:#9ca3af;}',
       '.mp-ms-hd.mp-ms-canc{background:#f3f4f6;} .mp-ms-hd.mp-ms-canc .mp-ms-hd-date{color:#d1d5db;text-decoration:line-through;}',
       '.mp-ms-no-g{font-size:0.68rem;color:#9ca3af;font-style:italic;display:block;margin:2px 0 1px;}',
@@ -211,13 +213,15 @@
     _sundays = computeSundays(4, 52);
     var rs = _sundays[0], re = _sundays[_sundays.length - 1];
 
-    var [rRes, tRes, tmRes, pRes, gRes, cRes] = await Promise.all([
+    var [rRes, tRes, tmRes, pRes, gRes, cRes, evRes, defTplRes] = await Promise.all([
       _sb.from('schedule_rosters').select('*').gte('date', rs).lte('date', re).eq('type', 'sunday').order('date'),
       _sb.from('teams').select('*').eq('is_sunday_serving', true).order('serving_order').order('name'),
       _sb.from('team_members').select('team_id,member_id'),
       _sb.from('profiles').select('id,first_name,last_name,full_name,spouse_id').eq('status', 'approved'),
       _sb.from('guests').select('*'),
-      _sb.from('children').select('id,name,profile_id').order('name')
+      _sb.from('children').select('id,name,profile_id').order('name'),
+      _sb.from('events').select('event_date,slots').gte('event_date', rs).lte('event_date', re).order('event_date'),
+      _sb.from('schedule_templates').select('*').eq('is_default', true).limit(1)
     ]);
 
     _rosters = rRes.data || []; _teams = tRes.data || [];
@@ -227,6 +231,40 @@
     (cRes.data || []).forEach(function (c) { _childMap[c.id] = c; });
     _teams.forEach(function (t) { _tmMap[t.id] = []; });
     (tmRes.data || []).forEach(function (tm) { if (_tmMap[tm.team_id]) _tmMap[tm.team_id].push(tm.member_id); });
+
+    /* ── auto-create Sunday serving teams from default template if none exist ── */
+    var defTpl = (defTplRes.data || [])[0];
+    if (_canEdit && _teams.length === 0 && defTpl && (defTpl.slots || []).length) {
+      var toCreate = defTpl.slots.map(function (s, i) {
+        return { name: s.role, is_sunday_serving: true, allow_children: false, allow_nonmembers: false, serving_order: i * 10 };
+      });
+      var autoTRes = await _sb.from('teams').insert(toCreate).select();
+      if (!autoTRes.error && autoTRes.data) {
+        _teams = autoTRes.data;
+        _teams.forEach(function (t) { _tmMap[t.id] = []; });
+      }
+    }
+
+    /* ── merge slot assignments from calendar events into roster display ── */
+    (evRes.data || []).forEach(function (ev) {
+      var d = new Date(ev.event_date + 'T12:00:00');
+      if (d.getDay() !== 0 || !(ev.slots || []).length) return;
+      var r = rosterFor(ev.event_date); if (!r) return;
+      ev.slots.forEach(function (es) {
+        if (!es.assignee_type || (!es.assignee_id && !es.guest_name)) return;
+        var match = (r.slots || []).find(function (rs) {
+          return (rs.team_id && rs.team_id === es.team_id) ||
+                 ((rs.role || '').toLowerCase() === (es.role || '').toLowerCase());
+        });
+        if (match && !match.assignee_type) {
+          match.assignee_type = es.assignee_type;
+          match.assignee_id   = es.assignee_id   || '';
+          match.assignee_id_b = es.assignee_id_b || '';
+          match.guest_name    = es.guest_name    || '';
+          match.guest_email   = es.guest_email   || '';
+        }
+      });
+    });
 
     if (_canEdit && _teams.length) await autoGen();
     renderGrid();
@@ -238,6 +276,14 @@
     var now = new Date(); var dow = now.getDay();
     var thisSun = new Date(now); thisSun.setDate(now.getDate() - dow);
     var thisSunStr = thisSun.toISOString().split('T')[0];
+    /* next upcoming (non-cancelled) Sunday gathering to highlight */
+    var upcomingSunStr = '';
+    for (var si = 0; si < _sundays.length; si++) {
+      if (_sundays[si] >= todayStr) {
+        var rsi = rosterFor(_sundays[si]);
+        if (!rsi || !rsi.cancelled) { upcomingSunStr = _sundays[si]; break; }
+      }
+    }
     var MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     var cw = Math.round(100 * _zoom / 100);  /* cell width */
     var fs = (_zoom / 100 * 0.83).toFixed(3) + 'rem';
@@ -277,6 +323,7 @@
       var lbl = MON[d.getMonth()] + ' ' + d.getDate();
       var cls = 'mp-ms-hd';
       if (canc) cls += ' mp-ms-canc'; else if (isToday) cls += ' mp-ms-today'; else if (isPast) cls += ' mp-ms-past';
+      if (date === upcomingSunStr && !canc) cls += ' mp-ms-next';
       html += '<th class="' + cls + '" style="min-width:' + cw + 'px;width:' + cw + 'px;">';
       html += '<span class="mp-ms-hd-dow">Sunday</span>';
       html += '<span class="mp-ms-hd-date">' + esc(lbl) + '</span>';
@@ -305,6 +352,7 @@
         else if (_canEdit) cCls += ' mp-ms-ed';
         if (isPast && !isToday) cCls += ' mp-ms-past-c';
         if (isToday && !canc)   cCls += ' mp-ms-today-c';
+        if (date === upcomingSunStr && !canc) cCls += ' mp-ms-next-c';
         var inner = '';
         if (canc) {
           inner = '<span style="color:#e9e9e9;">—</span>';
@@ -332,10 +380,10 @@
 
     window.mpDashboard.setContent(html);
 
-    /* auto-scroll to this Sunday */
+    /* auto-scroll to the next upcoming Sunday */
     requestAnimationFrame(function () {
       var outer = document.getElementById('ms-outer');
-      var th    = document.querySelector('.mp-ms-hd.mp-ms-today');
+      var th    = document.querySelector('.mp-ms-hd.mp-ms-next') || document.querySelector('.mp-ms-hd.mp-ms-today');
       if (outer && th) outer.scrollLeft = Math.max(0, th.offsetLeft - 148);
     });
   }
