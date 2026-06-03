@@ -774,16 +774,27 @@
     var qs=new URLSearchParams(window.location.search);
     var editMode=qs.get('edit')==='1';
 
-    /* parallel fetches */
-    var [childRes, teamRes, spouseRes, mcRes] = await Promise.all([
+    /* parallel fetches — also pull spouse's children so both parents see the full list */
+    var [childRes, teamRes, spouseRes, mcRes, spouseChildRes] = await Promise.all([
       _sb.from('children').select('*').eq('profile_id',_user.id).order('id'),
       _sb.from('team_members').select('team_id, teams(id,name)').eq('member_id',_user.id),
       _profile.spouse_id
         ? _sb.from('profiles').select('id,first_name,last_name,full_name,email,phone1,phone1_type,avatar_url').eq('id',_profile.spouse_id).maybeSingle()
         : Promise.resolve({data:null}),
-      _sb.from('mc_members').select('missional_communities(id,name)').eq('profile_id',_user.id)
+      _sb.from('mc_members').select('missional_communities(id,name)').eq('profile_id',_user.id),
+      _profile.spouse_id
+        ? _sb.from('children').select('*').eq('profile_id',_profile.spouse_id).order('id')
+        : Promise.resolve({data:[]})
     ]);
-    var children = childRes.data||[];
+    /* merge own + spouse's children, deduplicated by name */
+    var _ownChildren    = childRes.data||[];
+    var _spouseChildren = spouseChildRes.data||[];
+    var _seenNames={};
+    var children=[];
+    _ownChildren.concat(_spouseChildren).forEach(function(c){
+      var key=(c.name||'').toLowerCase().trim();
+      if(key&&!_seenNames[key]){ _seenNames[key]=true; children.push(c); }
+    });
     var myTeams  = (teamRes.data||[]).map(function(r){return r.teams;}).filter(Boolean);
     var spouse   = spouseRes.data||null;
     var myMCs    = (mcRes.data||[]).map(function(r){return r.missional_communities;}).filter(Boolean);
