@@ -311,11 +311,12 @@
 
       html += '<div class="' + cls + '" data-date="' + dateStr + '" onclick="mpCalDayClick(\'' + dateStr + '\')">';
       html += '<span class="mp-cal-day-num">' + day + '</span>';
+      var isSundayCell = new Date(dateStr + 'T12:00:00').getDay() === 0;
       if (data.cancelled) {
         html += '<span class="mp-cal-chip mp-cal-chip--cancelled">No Gathering</span>';
       } else {
-        if (data.isGathering) html += '<span class="mp-cal-chip mp-cal-chip--gathering">Sunday</span>';
-        if (data.serving)     html += '<span class="mp-cal-chip mp-cal-chip--serving">Serving</span>';
+        if (isSundayCell || data.isGathering) html += '<span class="mp-cal-chip mp-cal-chip--gathering">Gathering</span>';
+        if (data.serving)                      html += '<span class="mp-cal-chip mp-cal-chip--serving">Serving</span>';
       }
       data.events.slice(0, 2).forEach(function (ev) {
         var chipCls = 'mp-cal-chip mp-cal-chip--' + (ev.visibility || 'all');
@@ -843,6 +844,7 @@
     if (!detail) return;
 
     var todayStr = new Date().toISOString().split('T')[0];
+    var isSunday = new Date(dateStr + 'T12:00:00').getDay() === 0;
     var dayEvents = cd.calEvents.filter(function (ev) { return ev.event_date === dateStr; });
     var dayRoster = cd.rosters.find(function (r) { return r.date === dateStr; });
     /* don't count as "serving" on a cancelled Sunday */
@@ -851,7 +853,7 @@
              (s.assignee_type === 'couple' && (s.assignee_id === cd.uid || s.assignee_id_b === cd.uid));
     });
 
-    if (!dayEvents.length && !dayRoster) {
+    if (!dayEvents.length && !dayRoster && !isSunday) {
       detail.style.display = 'none'; return;
     }
 
@@ -882,12 +884,12 @@
         html += buildCalExportHtml(D, dayRoster.title || 'Sunday Gathering', dateStr, '10:30 AM', 'Serving: ' + servingRoles);
         html += '</div>';
       }
-      /* Sunday Gathering card — full roster visible to everyone */
-      if (dayRoster && dayRoster.type === 'sunday') {
+      /* Sunday Gathering card — shown on every Sunday; roster pulled from schedule_rosters */
+      if (isSunday) {
         html += '<div class="mp-cal-detail-event">';
         html += '<div class="mp-cal-detail-event-title">Sunday Gathering &mdash; 10:30 AM – 12:00 PM</div>';
         html += '<div class="mp-cal-detail-event-meta">All Sundays at Commissioned City Church</div>';
-        var rsSlots = (dayRoster.slots || []).filter(function (s) { return s.role; });
+        var rsSlots = dayRoster ? (dayRoster.slots || []).filter(function (s) { return s.role; }) : [];
         if (rsSlots.length) {
           html += '<div style="margin-top:7px;border-top:1px solid #eef2f8;padding-top:6px;">';
           html += '<div style="font-size:0.74rem;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Serving</div>';
@@ -911,6 +913,8 @@
             html += '</div>';
           });
           html += '</div>';
+        } else {
+          html += '<p style="font-size:0.84rem;color:#bbb;font-style:italic;margin:8px 0 4px;">Roster not yet assigned.</p>';
         }
         if (!isServing) html += buildCalExportHtml(D, 'Sunday Gathering', dateStr, '10:30 AM', null);
         if (cd.canManage) {
