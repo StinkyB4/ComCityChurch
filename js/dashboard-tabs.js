@@ -809,57 +809,121 @@
       approved.forEach(function(p){ _pickerProf[p.id] = p; });
       allChildren.forEach(function(c){ _pickerChildren[c.id] = c; });
 
-      html += '<div class="mp-form-group"><label>Members</label>';
-      html += '<input type="text" id="tm-member-search" placeholder="Filter members…" oninput="mpTeamMemberSearch(this.value)" autocomplete="off" style="width:100%;margin-bottom:8px;padding:7px 10px;border:1px solid var(--mp-border,#dde3eb);border-radius:6px;font-size:0.88rem;">';
+      /* ── Build alpha groups for approved members (sorted by last name) ── */
+      var alphaGroups = {};   /* letter → [profile, ...] */
+      var activeLetters = {};
+      approved.forEach(function(p) {
+        var sortKey = (p.last_name || p.full_name || p.email || '').trim();
+        var letter  = sortKey ? sortKey.charAt(0).toUpperCase() : '#';
+        if (!/[A-Z]/.test(letter)) letter = '#';
+        if (!alphaGroups[letter]) alphaGroups[letter] = [];
+        alphaGroups[letter].push(p);
+        activeLetters[letter] = true;
+      });
+      var sortedLetters = Object.keys(alphaGroups).sort();
 
-      /* ── Section 1: Approved members ─────────────────────────── */
-      html += '<div style="font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#7a8ea8;margin:6px 0 4px;">Members</div>';
-      html += '<div class="mp-group-member-picker" id="tm-member-list">';
-      approved.forEach(function (p) {
-        var pn = ((p.first_name || '') + (p.last_name ? ' ' + p.last_name : '')).trim() || p.full_name || p.email;
-        /* compute family: spouse ID + child IDs across both parents */
-        var spouseId = p.spouse_id || '';
-        var myChildIds = (childrenByParent[p.id] || []).map(function(c){ return c.id; });
-        var spouseChildIds = spouseId ? (childrenByParent[spouseId] || []).map(function(c){ return c.id; }) : [];
-        var allFamilyChildIds = myChildIds.concat(spouseChildIds.filter(function(id){ return myChildIds.indexOf(id) === -1; }));
-        var hasFamilyExtras = spouseId || allFamilyChildIds.length;
-        html += '<div class="mp-picker-row" data-name="' + D.esc(pn.toLowerCase()) + '" style="display:flex;align-items:center;justify-content:space-between;padding:3px 0;">';
-        html += '<label class="mp-group-member-check" style="flex:1;margin:0;"><input type="checkbox" name="member_ids" class="mp-member-check" value="' + D.esc(p.id) + '"' + (editMemIds.indexOf(p.id) !== -1 ? ' checked' : '') + '> ' + D.esc(pn) + '</label>';
-        if (hasFamilyExtras) {
-          html += '<button type="button" class="mp-btn mp-btn--small mp-btn--outline" style="font-size:0.75rem;padding:2px 8px;white-space:nowrap;" '
-            + 'data-spouse="' + D.esc(spouseId) + '" data-children="' + D.esc(allFamilyChildIds.join(',')) + '" data-self="' + D.esc(p.id) + '" '
-            + 'onclick="mpTeamPickFamily(this)">+ Whole family</button>';
-        }
-        html += '</div>';
+      /* ── Wrapper ─────────────────────────────────────────────── */
+      html += '<div class="mp-form-group">';
+      html += '<label>Members</label>';
+
+      /* Search bar */
+      html += '<input type="text" id="tm-member-search" placeholder="Search members, children…" oninput="mpTeamMemberSearch(this.value)" autocomplete="off" '
+        + 'style="width:100%;margin-bottom:8px;padding:8px 12px;border:1px solid var(--mp-border,#dde3eb);border-radius:6px;font-size:0.9rem;box-sizing:border-box;">';
+
+      /* Alpha index bar */
+      html += '<div id="tm-alpha-bar" style="display:flex;flex-wrap:wrap;gap:2px;margin-bottom:6px;">';
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(function(l) {
+        var active = !!activeLetters[l];
+        html += '<button type="button" data-alpha="' + l + '" onclick="mpTeamAlphaJump(\'' + l + '\')" '
+          + 'style="min-width:26px;height:26px;padding:0;border:1px solid ' + (active ? '#c5d0de' : '#e8ecf0') + ';border-radius:4px;'
+          + 'background:' + (active ? '#fff' : '#f5f7fa') + ';cursor:' + (active ? 'pointer' : 'default') + ';'
+          + 'font-size:0.75rem;font-weight:700;color:' + (active ? '#112E53' : '#c5cdd6') + ';'
+          + 'pointer-events:' + (active ? 'auto' : 'none') + ';">'
+          + l + '</button>';
       });
       html += '</div>';
 
-      /* ── Section 2: Children ──────────────────────────────────── */
-      if (allChildren.length) {
-        html += '<div style="font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#7a8ea8;margin:10px 0 4px;">Children</div>';
-        html += '<div class="mp-group-member-picker" id="tm-child-list">';
-        allChildren.forEach(function (c) {
-          var parentProf = profMap[c.profile_id] || {};
-          var parentName = ((parentProf.first_name || '') + (parentProf.last_name ? ' ' + parentProf.last_name : '')).trim() || parentProf.full_name || '';
-          var label = D.esc(c.name) + (parentName ? ' <span style="color:#8a9bb0;font-size:0.85em;">(child of ' + D.esc(parentName) + ')</span>' : '');
-          html += '<label class="mp-group-member-check mp-child-check-label"><input type="checkbox" name="child_ids" class="mp-child-check" value="' + D.esc(c.id) + '" data-parent-id="' + D.esc(c.profile_id) + '"' + (editChildIds.indexOf(c.id) !== -1 ? ' checked' : '') + '> ' + label + '</label>';
-        });
-        html += '</div>';
-      }
+      /* Scrollable picker container */
+      html += '<div id="tm-picker-scroll" style="border:1px solid var(--mp-border,#dde3eb);border-radius:8px;max-height:min(380px,55vh);overflow-y:auto;background:#fff;">';
 
-      /* ── Section 3: Non-member volunteers ────────────────────── */
-      html += '<div style="font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#7a8ea8;margin:10px 0 4px;">Non-member volunteers</div>';
+      /* ── Members by letter ────────────────────────────────────── */
+      html += '<div id="tm-picker-type-members" style="padding:0 2px;">';
+      html += '<div class="mp-picker-type-hdr" style="position:sticky;top:0;z-index:2;background:#f0f3f7;padding:5px 10px;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#5c718e;border-bottom:1px solid #e8ecf0;">Members</div>';
+      if (!approved.length) {
+        html += '<p style="padding:10px 12px;color:#aaa;font-size:0.88rem;margin:0;">No approved members yet.</p>';
+      } else {
+        sortedLetters.forEach(function(letter) {
+          html += '<div class="mp-alpha-section" id="tm-alpha-sect-' + letter + '">';
+          html += '<div style="padding:4px 10px 2px;font-size:0.72rem;font-weight:800;color:#8a9bb0;letter-spacing:.08em;border-bottom:1px solid #f0f3f7;">' + letter + '</div>';
+          alphaGroups[letter].forEach(function(p) {
+            var pn = ((p.first_name || '') + (p.last_name ? ' ' + p.last_name : '')).trim() || p.full_name || p.email;
+            var spouseId = p.spouse_id || '';
+            var myChildIds = (childrenByParent[p.id] || []).map(function(c){ return c.id; });
+            var spouseChildIds = spouseId ? (childrenByParent[spouseId] || []).map(function(c){ return c.id; }) : [];
+            var allFamilyChildIds = myChildIds.concat(spouseChildIds.filter(function(id){ return myChildIds.indexOf(id) === -1; }));
+            var hasFamilyExtras = spouseId || allFamilyChildIds.length;
+            var isChecked = editMemIds.indexOf(p.id) !== -1;
+            html += '<div class="mp-picker-row" data-name="' + D.esc(pn.toLowerCase()) + '" '
+              + 'style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-bottom:1px solid #f7f9fc;">';
+            html += '<label style="display:flex;align-items:center;gap:8px;flex:1;cursor:pointer;font-size:0.9rem;min-width:0;">'
+              + '<input type="checkbox" name="member_ids" class="mp-member-check" value="' + D.esc(p.id) + '"' + (isChecked ? ' checked' : '') + ' style="flex-shrink:0;width:16px;height:16px;">'
+              + '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + D.esc(pn) + '</span>'
+              + '</label>';
+            if (hasFamilyExtras) {
+              html += '<button type="button" data-spouse="' + D.esc(spouseId) + '" data-children="' + D.esc(allFamilyChildIds.join(',')) + '" data-self="' + D.esc(p.id) + '" '
+                + 'onclick="mpTeamPickFamily(this)" '
+                + 'style="flex-shrink:0;margin-left:6px;padding:2px 8px;font-size:0.72rem;font-weight:600;border:1px solid #c5d0de;border-radius:4px;background:#f7f9fc;color:#5c718e;cursor:pointer;white-space:nowrap;">+ Family</button>';
+            }
+            html += '</div>';
+          });
+          html += '</div>'; /* mp-alpha-section */
+        });
+      }
+      html += '</div>'; /* tm-picker-type-members */
+
+      /* ── Children ────────────────────────────────────────────── */
+      html += '<div id="tm-picker-type-children">';
+      html += '<div class="mp-picker-type-hdr" style="position:sticky;top:0;z-index:2;background:#f0f3f7;padding:5px 10px;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#5c718e;border-bottom:1px solid #e8ecf0;border-top:2px solid #e4e9f0;">Children</div>';
+      if (!allChildren.length) {
+        html += '<p style="padding:10px 12px;color:#aaa;font-size:0.88rem;margin:0;">No children on file yet.</p>';
+      } else {
+        allChildren.forEach(function(c) {
+          var parentProf = profMap[c.profile_id] || {};
+          var parentName = ((parentProf.first_name||'') + (parentProf.last_name ? ' '+parentProf.last_name : '')).trim() || parentProf.full_name || '';
+          var isChecked = editChildIds.indexOf(c.id) !== -1;
+          html += '<div class="mp-picker-row mp-child-picker-row" data-name="' + D.esc(c.name.toLowerCase()) + (parentName ? ' ' + D.esc(parentName.toLowerCase()) : '') + '" '
+            + 'style="display:flex;align-items:center;padding:6px 10px;border-bottom:1px solid #f7f9fc;">';
+          html += '<label style="display:flex;align-items:center;gap:8px;flex:1;cursor:pointer;font-size:0.9rem;">'
+            + '<input type="checkbox" name="child_ids" class="mp-child-check" value="' + D.esc(c.id) + '" data-parent-id="' + D.esc(c.profile_id) + '"' + (isChecked ? ' checked' : '') + ' style="flex-shrink:0;width:16px;height:16px;">'
+            + '<span>' + D.esc(c.name) + (parentName ? ' <span style="color:#9aabb8;font-size:0.82em;">· child of ' + D.esc(parentName) + '</span>' : '') + '</span>'
+            + '</label>';
+          html += '</div>';
+        });
+      }
+      html += '</div>'; /* tm-picker-type-children */
+
+      html += '</div>'; /* tm-picker-scroll */
+
+      /* ── Non-member volunteers (outside scroll for easy input) ── */
+      html += '<div style="margin-top:10px;">';
+      html += '<div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#5c718e;margin-bottom:6px;">Non-member volunteers</div>';
       html += '<div id="tm-nonmember-list">';
       editNonmembers.forEach(function(nm) {
-        html += '<div class="mp-nonmember-row" style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">'
-          + '<input type="text" data-nm="name" placeholder="Full name" value="' + D.esc(nm.nonmember_name || '') + '" style="flex:1;padding:6px 9px;border:1px solid var(--mp-border,#dde3eb);border-radius:6px;font-size:0.88rem;">'
-          + '<input type="email" data-nm="email" placeholder="Email address" value="' + D.esc(nm.nonmember_email || '') + '" style="flex:1.5;padding:6px 9px;border:1px solid var(--mp-border,#dde3eb);border-radius:6px;font-size:0.88rem;">'
-          + '<button type="button" onclick="mpTeamRemoveNonmember(this)" style="background:none;border:none;color:#c0392b;font-size:1.1rem;cursor:pointer;padding:0 4px;" title="Remove">✕</button>'
+        html += '<div class="mp-nonmember-row" style="display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap;">'
+          + '<input type="text" data-nm="name" placeholder="Full name" value="' + D.esc(nm.nonmember_name || '') + '" '
+          + 'style="flex:1;min-width:120px;padding:7px 9px;border:1px solid var(--mp-border,#dde3eb);border-radius:6px;font-size:0.88rem;">'
+          + '<input type="email" data-nm="email" placeholder="Email address" value="' + D.esc(nm.nonmember_email || '') + '" '
+          + 'style="flex:2;min-width:160px;padding:7px 9px;border:1px solid var(--mp-border,#dde3eb);border-radius:6px;font-size:0.88rem;">'
+          + '<button type="button" onclick="mpTeamRemoveNonmember(this)" style="background:none;border:none;color:#c0392b;font-size:1.2rem;cursor:pointer;padding:0 4px;flex-shrink:0;" title="Remove">✕</button>'
           + '</div>';
       });
       html += '</div>';
-      html += '<button type="button" onclick="mpTeamAddNonmember()" class="mp-btn mp-btn--outline mp-btn--small" style="margin-top:4px;">+ Add non-member volunteer</button>';
-      html += '</div>';
+      html += '<button type="button" onclick="mpTeamAddNonmember()" '
+        + 'style="width:100%;padding:7px;border:1px dashed #c5d0de;border-radius:6px;background:none;color:#5c718e;font-size:0.85rem;cursor:pointer;margin-top:2px;">'
+        + '+ Add non-member volunteer</button>';
+      html += '</div>'; /* non-member section */
+
+      html += '</div>'; /* mp-form-group */
       html += '<div style="display:flex;gap:10px;margin-top:16px;"><button type="submit" class="mp-btn mp-btn--primary" style="flex:1;">' + (editTeam ? 'Save Changes' : 'Create Team') + '</button>';
       if (editTeam) html += '<a href="#" class="mp-btn mp-btn--secondary" onclick="window.mpDashboard.navigate(\'teams\');return false;">Cancel</a>';
       html += '</div></form></div></details>';
@@ -1119,10 +1183,44 @@
 
   window.mpTeamMemberSearch = function (q) {
     q = (q || '').toLowerCase().trim();
-    var rows = document.querySelectorAll('#tm-member-list .mp-picker-row');
-    rows.forEach(function(row) {
-      row.style.display = (!q || (row.dataset.name || '').indexOf(q) !== -1) ? '' : 'none';
+    var alphaBar = document.getElementById('tm-alpha-bar');
+    /* hide alpha bar while searching so it doesn't mislead */
+    if (alphaBar) alphaBar.style.display = q ? 'none' : '';
+
+    /* filter member rows and show/hide letter sections */
+    var alphaSects = document.querySelectorAll('#tm-picker-type-members .mp-alpha-section');
+    alphaSects.forEach(function(sect) {
+      var rows = sect.querySelectorAll('.mp-picker-row');
+      var anyVisible = false;
+      rows.forEach(function(row) {
+        var match = !q || (row.dataset.name || '').indexOf(q) !== -1;
+        row.style.display = match ? '' : 'none';
+        if (match) anyVisible = true;
+      });
+      sect.style.display = anyVisible ? '' : 'none';
     });
+
+    /* filter child rows */
+    var childRows = document.querySelectorAll('#tm-picker-type-children .mp-picker-row');
+    var anyChild = false;
+    childRows.forEach(function(row) {
+      var match = !q || (row.dataset.name || '').indexOf(q) !== -1;
+      row.style.display = match ? '' : 'none';
+      if (match) anyChild = true;
+    });
+    /* hide children type header if nothing matches */
+    var childHdr = document.querySelector('#tm-picker-type-children .mp-picker-type-hdr');
+    if (childHdr) childHdr.style.display = (q && !anyChild) ? 'none' : '';
+  };
+
+  window.mpTeamAlphaJump = function (letter) {
+    var scroll = document.getElementById('tm-picker-scroll');
+    var sect   = document.getElementById('tm-alpha-sect-' + letter);
+    if (!scroll || !sect) return;
+    /* scroll the container so the section is at the top, accounting for the sticky type header */
+    var memberHdr = scroll.querySelector('#tm-picker-type-members .mp-picker-type-hdr');
+    var hdrH = memberHdr ? memberHdr.offsetHeight : 0;
+    scroll.scrollTop = sect.offsetTop - hdrH;
   };
 
 })();
