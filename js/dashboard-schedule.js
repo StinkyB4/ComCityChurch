@@ -842,6 +842,7 @@
     var detail = document.getElementById('mp-cal-detail');
     if (!detail) return;
 
+    var todayStr = new Date().toISOString().split('T')[0];
     var dayEvents = cd.calEvents.filter(function (ev) { return ev.event_date === dateStr; });
     var dayRoster = cd.rosters.find(function (r) { return r.date === dateStr; });
     /* don't count as "serving" on a cancelled Sunday */
@@ -865,7 +866,7 @@
       html += '<div class="mp-cal-detail-event" style="border-left:3px solid #fca5a5;">';
       html += '<div class="mp-cal-detail-event-title" style="color:#dc2626;">No Gathering</div>';
       html += '<div class="mp-cal-detail-event-meta">This Sunday gathering has been cancelled.</div>';
-      if (cd.canManage) html += '<div style="margin-top:6px;"><button class="mp-btn mp-btn--secondary mp-btn--small" onclick="window.mpDashboard.navigate(\'master\')">Restore in Master Schedule</button></div>';
+      if (cd.canManage) html += '<div style="margin-top:6px;"><button class="mp-btn mp-btn--primary mp-btn--small" onclick="mpCalRestoreGathering(\'' + D.esc(dateStr) + '\')">Restore Gathering</button></div>';
       html += '</div>';
     } else {
       /* personal serving banner */
@@ -912,7 +913,13 @@
           html += '</div>';
         }
         if (!isServing) html += buildCalExportHtml(D, 'Sunday Gathering', dateStr, '10:30 AM', null);
-        if (cd.canManage) html += '<div style="margin-top:7px;"><button class="mp-btn mp-btn--secondary mp-btn--small" onclick="window.mpDashboard.navigate(\'master\')">Edit in Master Schedule</button></div>';
+        if (cd.canManage) {
+          var isPast = dateStr < todayStr;
+          html += '<div style="margin-top:7px;display:flex;gap:6px;flex-wrap:wrap;">';
+          html += '<button class="mp-btn mp-btn--primary mp-btn--small" onclick="mpCalEditGathering(\'' + D.esc(dateStr) + '\')">Edit Roster</button>';
+          if (!isPast) html += '<button class="mp-btn mp-btn--outline mp-btn--small" style="border-color:#fca5a5;color:#dc2626;" onclick="mpCalCancelGathering(\'' + D.esc(dateStr) + '\')">Cancel Gathering</button>';
+          html += '</div>';
+        }
         html += '</div>';
       } else if (dayRoster) {
         /* non-Sunday roster (special events etc.) */
@@ -1628,6 +1635,175 @@
     if (!confirm('Remove ' + name + '?')) return;
     await window.mpDashboard.getSb().from('guests').delete().eq('id', id);
     renderScheduleTab();
+  };
+
+  /* ── Sunday Gathering inline editor ─────────────────────────── */
+
+  function buildGatheringSlotRowHtml(slot, aOpts, D) {
+    var isInline = slot.assignee_type === 'guest_inline';
+    var sv = '';
+    if (!isInline) {
+      if      (slot.assignee_type === 'member'  && slot.assignee_id) sv = 'member:'  + slot.assignee_id;
+      else if (slot.assignee_type === 'couple'  && slot.assignee_id) sv = 'couple:'  + slot.assignee_id + ':' + (slot.assignee_id_b || '');
+      else if (slot.assignee_type === 'guest'   && slot.guest_id)    sv = 'guest:'   + slot.guest_id;
+      else if (slot.assignee_type === 'child'   && slot.assignee_id) sv = 'child:'   + slot.assignee_id;
+    }
+    var extOpts = aOpts.replace(
+      '— Unassigned —</option>',
+      '— Unassigned —</option><option value="guest_inline"' + (isInline ? ' selected' : '') + '>✚ Non-member (manual entry)</option>'
+    );
+    if (!isInline && sv) extOpts = extOpts.replace('value="' + sv + '"', 'value="' + sv + '" selected');
+    return '<div class="mp-g-slot-wrap">'
+      + '<div class="mp-sched-slot-row">'
+      + '<input type="hidden" class="mp-g-slot-id" value="' + D.esc(slot.id || '') + '">'
+      + '<input type="text" class="mp-g-slot-role mp-sched-role-input" value="' + D.esc(slot.role || '') + '" placeholder="Role name" data-team="' + D.esc(slot.team_id || '') + '">'
+      + '<select class="mp-g-slot-sel mp-sched-select" onchange="mpCalGatheringSlotTypeChange(this)">' + extOpts + '</select>'
+      + '<button type="button" class="mp-btn mp-btn--danger mp-btn--small" onclick="this.closest(\'.mp-g-slot-wrap\').remove()" title="Remove">&#10005;</button>'
+      + '</div>'
+      + '<div class="mp-slot-inline-guest"' + (isInline ? '' : ' style="display:none;"') + '>'
+      + '<input type="text"  class="mp-g-guest-name  mp-slot-guest-input" value="' + D.esc(slot.guest_name  || '') + '" placeholder="Full name (required)">'
+      + '<input type="email" class="mp-g-guest-email mp-slot-guest-input" value="' + D.esc(slot.guest_email || '') + '" placeholder="Email (optional)">'
+      + '</div>'
+      + '</div>';
+  }
+
+  window.mpCalEditGathering = function (dateStr) {
+    var cd = window._mpCalData; if (!cd || !cd.canManage) return;
+    var D = cd.D;
+    var roster = cd.rosters.find(function (r) { return r.date === dateStr; });
+    var slots = roster ? JSON.parse(JSON.stringify(roster.slots || [])) : [];
+    var aOpts = cd.assigneeOpts || '';
+    var d = new Date(dateStr + 'T12:00:00');
+    var label = d.toLocaleDateString('en-CA', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+
+    var slotsHtml = '';
+    slots.forEach(function (slot) { slotsHtml += buildGatheringSlotRowHtml(slot, aOpts, D); });
+    if (!slotsHtml) {
+      slotsHtml = '<p style="font-size:0.85rem;color:#9ca3af;font-style:italic;margin:0 0 4px;">No slots yet. Add roles below.</p>';
+    }
+
+    var html = '<div class="mp-event-modal-overlay" id="mp-gathering-modal" onclick="if(event.target===this)mpCalCloseGatheringModal()">'
+      + '<div class="mp-event-modal" style="width:min(520px,94vw);">'
+      + '<div class="mp-event-modal-title">Sunday Gathering &mdash; Edit Roster</div>'
+      + '<div style="font-size:0.82rem;color:#9ca3af;margin:-12px 0 16px;">' + D.esc(label) + '</div>'
+      + '<div id="mp-gathering-slots">' + slotsHtml + '</div>'
+      + '<button type="button" class="mp-btn mp-btn--secondary mp-btn--small" style="margin-top:6px;" onclick="mpCalGatheringAddSlot()">+ Add Slot</button>'
+      + '<div class="mp-event-modal-footer">'
+      + '<button type="button" class="mp-btn mp-btn--primary" style="flex:1;" onclick="mpCalSaveGathering(\'' + D.esc(dateStr) + '\')">Save</button>'
+      + '<button type="button" class="mp-btn mp-btn--secondary" onclick="mpCalCloseGatheringModal()">Cancel</button>'
+      + '</div></div></div>';
+
+    var existing = document.getElementById('mp-gathering-modal');
+    if (existing) existing.remove();
+    var el = document.createElement('div'); el.innerHTML = html;
+    document.body.appendChild(el.firstChild);
+  };
+
+  window.mpCalCloseGatheringModal = function () {
+    var el = document.getElementById('mp-gathering-modal'); if (el) el.remove();
+  };
+
+  window.mpCalGatheringSlotTypeChange = function (sel) {
+    var wrap = sel.closest('.mp-g-slot-wrap'); if (!wrap) return;
+    var g = wrap.querySelector('.mp-slot-inline-guest');
+    if (g) g.style.display = sel.value === 'guest_inline' ? '' : 'none';
+  };
+
+  window.mpCalGatheringAddSlot = function () {
+    var wrap = document.getElementById('mp-gathering-slots'); if (!wrap) return;
+    var cd = window._mpCalData; if (!cd) return;
+    var emptySlot = { id: 'slot_' + Math.random().toString(36).slice(2), role: '', team_id: '', assignee_type: '', assignee_id: '', assignee_id_b: '', guest_id: '', guest_name: '', guest_email: '' };
+    var tmp = document.createElement('div');
+    tmp.innerHTML = buildGatheringSlotRowHtml(emptySlot, cd.assigneeOpts || '', cd.D);
+    while (tmp.firstChild) wrap.appendChild(tmp.firstChild);
+    var last = wrap.lastElementChild;
+    if (last) { var inp = last.querySelector('.mp-g-slot-role'); if (inp) inp.focus(); }
+  };
+
+  window.mpCalSaveGathering = async function (dateStr) {
+    var cd = window._mpCalData; if (!cd) return;
+    var newSlots = [];
+    document.querySelectorAll('#mp-gathering-slots .mp-g-slot-wrap').forEach(function (wrap) {
+      var roleEl  = wrap.querySelector('.mp-g-slot-role');
+      var role    = roleEl ? roleEl.value.trim() : '';
+      if (!role) return;
+      var teamId  = roleEl ? (roleEl.dataset.team || '') : '';
+      var idEl    = wrap.querySelector('.mp-g-slot-id');
+      var slotId  = (idEl && idEl.value) ? idEl.value : ('slot_' + Math.random().toString(36).slice(2));
+      var selEl   = wrap.querySelector('.mp-g-slot-sel');
+      var combined = selEl ? selEl.value : '';
+      var slot;
+      if (combined === 'guest_inline') {
+        var gn = (wrap.querySelector('.mp-g-guest-name')  || {}).value || '';
+        var ge = (wrap.querySelector('.mp-g-guest-email') || {}).value || '';
+        slot = { id: slotId, role: role, assignee_type: 'guest_inline', assignee_id: '', assignee_id_b: '', guest_id: '', guest_name: gn.trim(), guest_email: ge.trim() };
+      } else {
+        var pts = combined.split(':');
+        slot = { id: slotId, role: role, assignee_type: pts[0] || '', assignee_id: pts[1] || '', assignee_id_b: pts[2] || '', guest_id: pts[0] === 'guest' ? pts[1] : '' };
+      }
+      if (teamId) slot.team_id = teamId;
+      newSlots.push(slot);
+    });
+
+    var roster = cd.rosters.find(function (r) { return r.date === dateStr; });
+    var payload = { date: dateStr, title: 'Sunday Gathering', type: 'sunday', slots: newSlots };
+    if (roster && roster.cancelled !== undefined) payload.cancelled = roster.cancelled;
+
+    var res = await cd.sb.from('schedule_rosters').upsert(payload, { onConflict: 'date' });
+    if (res.error) { alert('Save failed: ' + res.error.message); return; }
+
+    if (roster) { roster.slots = newSlots; }
+    else { cd.rosters.push(Object.assign({ cancelled: false }, payload)); }
+
+    mpCalCloseGatheringModal();
+    mpCalDayClick(dateStr);
+  };
+
+  window.mpCalCancelGathering = async function (dateStr) {
+    var cd = window._mpCalData; if (!cd || !cd.canManage) return;
+    var d = new Date(dateStr + 'T12:00:00');
+    var dl = d.toLocaleDateString('en-CA', { weekday: 'long', month: 'long', day: 'numeric' });
+    if (!confirm('Cancel the Sunday Gathering on ' + dl + '?\nIt will show as "No Gathering" on the calendar.')) return;
+    var roster = cd.rosters.find(function (r) { return r.date === dateStr; });
+    var res = await cd.sb.from('schedule_rosters').upsert(
+      { date: dateStr, title: 'Sunday Gathering', type: 'sunday', cancelled: true, slots: roster ? (roster.slots || []) : [] },
+      { onConflict: 'date' }
+    );
+    if (res.error) { alert('Error: ' + res.error.message); return; }
+    if (roster) { roster.cancelled = true; }
+    else { cd.rosters.push({ date: dateStr, title: 'Sunday Gathering', type: 'sunday', slots: [], cancelled: true }); }
+    /* refresh calendar grid cell and detail panel */
+    var cell = document.querySelector('.mp-cal-day[data-date="' + dateStr + '"]');
+    if (cell) {
+      cell.classList.add('mp-cal-day--cancelled');
+      var chips = cell.querySelectorAll('.mp-cal-chip');
+      chips.forEach(function (c) { c.remove(); });
+      var span = document.createElement('span');
+      span.className = 'mp-cal-chip mp-cal-chip--cancelled';
+      span.textContent = 'No Gathering';
+      cell.appendChild(span);
+    }
+    mpCalDayClick(dateStr);
+  };
+
+  window.mpCalRestoreGathering = async function (dateStr) {
+    var cd = window._mpCalData; if (!cd || !cd.canManage) return;
+    var res = await cd.sb.from('schedule_rosters').update({ cancelled: false }).eq('date', dateStr);
+    if (res.error) { alert('Error: ' + res.error.message); return; }
+    var roster = cd.rosters.find(function (r) { return r.date === dateStr; });
+    if (roster) { roster.cancelled = false; }
+    /* refresh calendar grid cell */
+    var cell = document.querySelector('.mp-cal-day[data-date="' + dateStr + '"]');
+    if (cell) {
+      cell.classList.remove('mp-cal-day--cancelled');
+      var chips = cell.querySelectorAll('.mp-cal-chip');
+      chips.forEach(function (c) { c.remove(); });
+      var gSpan = document.createElement('span');
+      gSpan.className = 'mp-cal-chip mp-cal-chip--gathering';
+      gSpan.textContent = 'Gathering';
+      cell.appendChild(gSpan);
+    }
+    mpCalDayClick(dateStr);
   };
 
 })();
