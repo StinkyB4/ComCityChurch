@@ -188,6 +188,10 @@
       </article>
 
     </div>
+
+    <!-- Dynamic posts from Supabase (published via members portal) -->
+    <div id="dynamic-posts-grid" class="grid-2" style="max-width:1020px; margin:24px auto 0;"></div>
+
   </div>
 </section>
 
@@ -234,5 +238,10 @@
 
 <script src="js/media.js"></script>
 <script src="js/main.js"></script>
+<script>
+  window.SUPABASE_URL      = 'https://lkmphayrithxkmhvfiep.supabase.co';
+  window.SUPABASE_ANON_KEY = 'sb_publishable_GO6ATIZLQftqjoBHTU8EKQ_5RR1397W';
+</script>
+<script src="js/blog-public.js"></script>
 </body>
 </html>

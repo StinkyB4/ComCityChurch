@@ -25,7 +25,7 @@
   var TAB_LABELS = {
     welcome:'Welcome', profile:'My Profile', directory:'Directory',
     mcs:'MCs', teams:'Teams', schedule:'Schedule', master:'Master Schedule', files:'Files',
-    email:'Email', admin:'Admin'
+    email:'Email', admin:'Admin', blog:'Blog'
   };
 
   /* ══════════════════════════════════════════════════════════════
