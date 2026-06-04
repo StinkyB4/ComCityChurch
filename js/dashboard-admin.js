@@ -498,10 +498,14 @@
         updates.address = [updates.addr_street, updates.addr_city, updates.addr_province, updates.addr_postal, updates.addr_country].filter(Boolean).join(', ');
         var { error } = await _sb.from('profiles').update(updates).eq('id', uid);
 
-        /* team reconciliation */
+        /* team reconciliation — only touch member-type rows so child/nonmember
+           rows (which reference this uid as a parent) are not wiped */
         var newTeamIds = fd.getAll('team_ids');
-        await _sb.from('team_members').delete().eq('member_id', uid);
-        if (newTeamIds.length) await _sb.from('team_members').insert(newTeamIds.map(function (tid) { return { team_id: tid, member_id: uid, role: 'member' }; }));
+        var delTm = _sb.from('team_members').delete().eq('member_id', uid);
+        /* if the extended schema is in place, scope the delete to member-type only */
+        try { delTm = delTm.or('member_type.is.null,member_type.eq.member'); } catch(e) { /* column may not exist yet */ }
+        await delTm;
+        if (newTeamIds.length) await _sb.from('team_members').insert(newTeamIds.map(function (tid) { return { team_id: tid, member_id: uid, role: 'member', member_type: 'member' }; }));
 
         /* children — read from DOM, direct INSERT (RLS disabled on children) */
         var newChildren = [];
@@ -510,8 +514,13 @@
           var cn = (nameEl && nameEl.value || '').trim(); if (!cn) return;
           newChildren.push({ profile_id: uid, name: cn, gender: (genEl && genEl.value) || 'boy', birthday: (bdEl && bdEl.value) || null });
         });
-        await D.getSb().from('children').delete().eq('profile_id', uid);
-        if (newChildren.length) await D.getSb().from('children').insert(newChildren);
+        if (!newChildren.length && document.querySelectorAll('#admin-children-list .mp-child-row').length === 0) {
+          /* safety guard: if the children DOM section didn't render at all, skip the delete */
+          console.warn('admin-children-list not found in DOM — skipping children save to avoid data loss');
+        } else {
+          await D.getSb().from('children').delete().eq('profile_id', uid);
+          if (newChildren.length) await D.getSb().from('children').insert(newChildren);
+        }
 
         /* password */
         var npw = fd.get('new_password') || '';

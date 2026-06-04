@@ -1683,13 +1683,27 @@
     var slotsHtml = '';
     slots.forEach(function (slot) { slotsHtml += buildGatheringSlotRowHtml(slot, aOpts, D); });
     if (!slotsHtml) {
-      slotsHtml = '<p style="font-size:0.85rem;color:#9ca3af;font-style:italic;margin:0 0 4px;">No slots yet. Add roles below.</p>';
+      slotsHtml = '<p style="font-size:0.85rem;color:#9ca3af;font-style:italic;margin:0 0 4px;">No slots yet. Add roles below or load a template.</p>';
+    }
+
+    var tplBarHtml = '';
+    if (window._mpSchedTemplates && window._mpSchedTemplates.length) {
+      tplBarHtml = '<div class="mp-tpl-load-bar" style="margin-bottom:10px;">'
+        + '<span class="mp-tpl-load-label">Template:</span>'
+        + '<select id="mp-gathering-tpl-select" class="mp-tpl-load-select"><option value="">— none —</option>';
+      window._mpSchedTemplates.forEach(function (t) {
+        tplBarHtml += '<option value="' + D.esc(t.id) + '"' + (t.is_default ? ' selected' : '') + '>' + D.esc(t.name) + (t.is_default ? ' ✓' : '') + '</option>';
+      });
+      tplBarHtml += '</select>'
+        + '<button type="button" class="mp-btn mp-btn--secondary mp-btn--small" onclick="mpCalLoadGatheringTemplate(document.getElementById(\'mp-gathering-tpl-select\').value)">Apply</button>'
+        + '</div>';
     }
 
     var html = '<div class="mp-event-modal-overlay" id="mp-gathering-modal" onclick="if(event.target===this)mpCalCloseGatheringModal()">'
       + '<div class="mp-event-modal" style="width:min(520px,94vw);">'
       + '<div class="mp-event-modal-title">Sunday Gathering &mdash; Edit Roster</div>'
       + '<div style="font-size:0.82rem;color:#9ca3af;margin:-12px 0 16px;">' + D.esc(label) + '</div>'
+      + tplBarHtml
       + '<div id="mp-gathering-slots">' + slotsHtml + '</div>'
       + '<button type="button" class="mp-btn mp-btn--secondary mp-btn--small" style="margin-top:6px;" onclick="mpCalGatheringAddSlot()">+ Add Slot</button>'
       + '<div class="mp-event-modal-footer">'
@@ -1722,6 +1736,24 @@
     while (tmp.firstChild) wrap.appendChild(tmp.firstChild);
     var last = wrap.lastElementChild;
     if (last) { var inp = last.querySelector('.mp-g-slot-role'); if (inp) inp.focus(); }
+  };
+
+  window.mpCalLoadGatheringTemplate = function (tplId) {
+    var wrap = document.getElementById('mp-gathering-slots'); if (!wrap) return;
+    var cd = window._mpCalData; if (!cd) return;
+    if (!tplId) return;
+    var tpl = (window._mpSchedTemplates || []).find(function (t) { return t.id === tplId; });
+    if (!tpl || !tpl.slots) return;
+    wrap.innerHTML = '';
+    var aOpts = cd.assigneeOpts || '', D = cd.D;
+    tpl.slots.forEach(function (row) {
+      for (var ci = 0; ci < (row.count || 1); ci++) {
+        var slot = { id: 'slot_' + Math.random().toString(36).slice(2), role: row.role, team_id: '', assignee_type: '', assignee_id: '', assignee_id_b: '', guest_id: '', guest_name: '', guest_email: '' };
+        var tmp = document.createElement('div');
+        tmp.innerHTML = buildGatheringSlotRowHtml(slot, aOpts, D);
+        while (tmp.firstChild) wrap.appendChild(tmp.firstChild);
+      }
+    });
   };
 
   window.mpCalSaveGathering = async function (dateStr) {
