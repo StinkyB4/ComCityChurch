@@ -4,6 +4,37 @@
 -- Run once in the Supabase SQL editor.
 -- ─────────────────────────────────────────────────────────────────────────────
 
+-- ── 0. Fix children INSERT permission ────────────────────────────────────────
+-- The existing FOR ALL policy on children uses only a USING clause for INSERT
+-- visibility, but PostgreSQL only evaluates WITH CHECK for INSERT operations.
+-- Add explicit INSERT + DELETE policies so direct table writes work correctly.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'children'
+    AND policyname = 'members_insert_own_children'
+  ) THEN
+    CREATE POLICY "members_insert_own_children"
+      ON public.children FOR INSERT
+      WITH CHECK (profile_id = auth.uid());
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'children'
+    AND policyname = 'members_delete_own_children'
+  ) THEN
+    CREATE POLICY "members_delete_own_children"
+      ON public.children FOR DELETE
+      USING (profile_id = auth.uid());
+  END IF;
+END$$;
+
+-- Ensure the authenticated role has table-level INSERT/DELETE privileges
+-- (RLS gates row access; GRANT gates table access — both are required)
+GRANT INSERT, DELETE ON public.children TO authenticated;
+
 -- ── 1. Extend children with transition state ──────────────────────────────────
 ALTER TABLE children
   ADD COLUMN IF NOT EXISTS transition_state text DEFAULT 'none',
