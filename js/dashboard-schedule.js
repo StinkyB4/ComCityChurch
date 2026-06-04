@@ -448,7 +448,7 @@
           });
           for (var _bi = 0; _bi < _newRosters.length; _bi += 20) {
             var _batch = _newRosters.slice(_bi, _bi + 20);
-            var _uRes = await _sb.from('schedule_rosters').upsert(_batch, { onConflict: 'date' });
+            var _uRes = await _sb.from('schedule_rosters').insert(_batch);
             if (!_uRes.error) {
               _batch.forEach(function (nr) { rosters.push(nr); _existMap[nr.date] = true; });
             }
@@ -1835,7 +1835,9 @@
     var payload = { date: dateStr, title: 'Sunday Gathering', type: 'sunday', slots: newSlots };
     if (roster && roster.cancelled !== undefined) payload.cancelled = roster.cancelled;
 
-    var res = await cd.sb.from('schedule_rosters').upsert(payload, { onConflict: 'date' });
+    var res = roster
+      ? await cd.sb.from('schedule_rosters').update(payload).eq('date', dateStr)
+      : await cd.sb.from('schedule_rosters').insert(payload);
     if (res.error) { alert('Save failed: ' + res.error.message); return; }
 
     if (roster) { roster.slots = newSlots; }
@@ -1851,10 +1853,9 @@
     var dl = d.toLocaleDateString('en-CA', { weekday: 'long', month: 'long', day: 'numeric' });
     if (!confirm('Cancel the Sunday Gathering on ' + dl + '?\nIt will show as "No Gathering" on the calendar.')) return;
     var roster = cd.rosters.find(function (r) { return r.date === dateStr; });
-    var res = await cd.sb.from('schedule_rosters').upsert(
-      { date: dateStr, title: 'Sunday Gathering', type: 'sunday', cancelled: true, slots: roster ? (roster.slots || []) : [] },
-      { onConflict: 'date' }
-    );
+    var res = roster
+      ? await cd.sb.from('schedule_rosters').update({ cancelled: true }).eq('date', dateStr)
+      : await cd.sb.from('schedule_rosters').insert({ date: dateStr, title: 'Sunday Gathering', type: 'sunday', cancelled: true, slots: [] });
     if (res.error) { alert('Error: ' + res.error.message); return; }
     if (roster) { roster.cancelled = true; }
     else { cd.rosters.push({ date: dateStr, title: 'Sunday Gathering', type: 'sunday', slots: [], cancelled: true }); }
