@@ -384,7 +384,7 @@
     /* always fetch children so parent can see their child's slots highlighted */
     fetches.push(_sb.from('children').select('id,name,gender,profile_id').order('name'));
     if (_isAdmin) {
-      fetches.push(_sb.from('teams').select('id,name').order('name'));
+      fetches.push(_sb.from('teams').select('id,name,is_sunday_serving,serving_order').order('name'));
       fetches.push(_sb.from('missional_communities').select('id,name').order('name'));
     }
 
@@ -408,10 +408,24 @@
     var todayStr = new Date().toISOString().split('T')[0];
     var nextSun  = nextSunday();
 
-    /* ── auto-populate missing Sunday rosters with the default template ── */
-    if (_isAdmin && templates.length) {
+    /* ── auto-populate missing Sunday rosters ── */
+    if (_isAdmin) {
+      /* build slot definitions: prefer default template; fall back to Sunday-serving teams */
+      var _slotDefs = [];
       var _defTpl = templates.find(function (t) { return t.is_default; }) || templates[0];
       if (_defTpl && (_defTpl.slots || []).length) {
+        (_defTpl.slots || []).forEach(function (row) {
+          for (var _ci = 0; _ci < (row.count || 1); _ci++) {
+            _slotDefs.push({ role: row.role });
+          }
+        });
+      } else {
+        /* fallback: one slot per Sunday-serving team (same as master schedule auto-gen) */
+        var _sunTeams = teams.filter(function (t) { return t.is_sunday_serving; })
+                             .sort(function (a, b) { return (a.serving_order || 0) - (b.serving_order || 0) || (a.name || '').localeCompare(b.name || ''); });
+        _sunTeams.forEach(function (t) { _slotDefs.push({ role: t.name, team_id: t.id }); });
+      }
+      if (_slotDefs.length) {
         /* compute every Sunday from this week through 52 weeks out */
         var _now2 = new Date(), _dow2 = _now2.getDay();
         var _thisSun = new Date(_now2); _thisSun.setDate(_now2.getDate() - _dow2); _thisSun.setHours(0,0,0,0);
@@ -420,21 +434,15 @@
           var _sd = new Date(_thisSun); _sd.setDate(_thisSun.getDate() + _wi * 7);
           _futureSuns.push(_sd.toISOString().split('T')[0]);
         }
-        /* check which ones are missing from already-fetched rosters */
         var _existMap = {};
         rosters.forEach(function (r) { _existMap[r.date] = true; });
         var _missingSuns = _futureSuns.filter(function (d) { return !_existMap[d]; });
         if (_missingSuns.length) {
-          /* flatten template slots respecting count */
-          var _tplRoles = [];
-          (_defTpl.slots || []).forEach(function (row) {
-            for (var _ci = 0; _ci < (row.count || 1); _ci++) { _tplRoles.push(row.role); }
-          });
           var _newRosters = _missingSuns.map(function (date) {
             return {
               date: date, title: 'Sunday Gathering', type: 'sunday', cancelled: false,
-              slots: _tplRoles.map(function (role) {
-                return { id: 'slot_' + Math.random().toString(36).slice(2), role: role, assignee_type: '', assignee_id: '', assignee_id_b: '', guest_id: '' };
+              slots: _slotDefs.map(function (def) {
+                return Object.assign({ id: 'slot_' + Math.random().toString(36).slice(2), assignee_type: '', assignee_id: '', assignee_id_b: '', guest_id: '' }, def);
               })
             };
           });
