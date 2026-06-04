@@ -196,7 +196,7 @@
     });
     for (var i = 0; i < rows.length; i += 20) {
       var batch = rows.slice(i, i + 20);
-      var res = await _sb.from('schedule_rosters').upsert(batch, { onConflict: 'date' });
+      var res = await _sb.from('schedule_rosters').insert(batch);
       if (res.error) { console.warn('Master auto-gen:', res.error.message); }
       else { batch.forEach(function (r) { if (!existing[r.date]) { _rosters.push(r); existing[r.date] = true; } }); }
     }
@@ -386,10 +386,9 @@
     var dl = d.toLocaleDateString('en-CA', { weekday: 'long', month: 'long', day: 'numeric' });
     if (!confirm('Cancel the Sunday Gathering on ' + dl + '?\nIt will show as "No Gathering" on the calendar.')) return;
     var r = rosterFor(date);
-    var res = await _sb.from('schedule_rosters').upsert(
-      { date: date, title: 'Sunday Gathering', type: 'sunday', cancelled: true, slots: r ? (r.slots || []) : [] },
-      { onConflict: 'date' }
-    );
+    var res = r
+      ? await _sb.from('schedule_rosters').update({ cancelled: true }).eq('date', date)
+      : await _sb.from('schedule_rosters').insert({ date: date, title: 'Sunday Gathering', type: 'sunday', cancelled: true, slots: [] });
     if (res.error) { alert('Error: ' + res.error.message); return; }
     if (r) r.cancelled = true;
     else _rosters.push({ date: date, title: 'Sunday Gathering', type: 'sunday', slots: [], cancelled: true });
@@ -520,7 +519,9 @@
     var payload = { date: date, title: 'Sunday Gathering', type: 'sunday', slots: merged };
     if (r && r.cancelled !== undefined) payload.cancelled = r.cancelled;
 
-    var res = await _sb.from('schedule_rosters').upsert(payload, { onConflict: 'date' });
+    var res = r
+      ? await _sb.from('schedule_rosters').update(payload).eq('date', date)
+      : await _sb.from('schedule_rosters').insert(payload);
     if (res.error) { alert('Save failed: ' + res.error.message); return; }
 
     if (r) { r.slots = merged; }
