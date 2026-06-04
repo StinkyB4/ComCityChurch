@@ -119,9 +119,9 @@
     if (document.getElementById('mp-master-css')) return;
     var s = document.createElement('style'); s.id = 'mp-master-css';
     s.textContent = [
-      '.mp-master-wrap{display:flex;flex-direction:column;height:calc(100vh - 72px);max-height:calc(100vh - 72px);}',
+      '.mp-master-wrap{display:flex;flex-direction:column;}',
       '.mp-master-bar{display:flex;align-items:center;gap:10px;padding:0 0 10px;flex-shrink:0;flex-wrap:wrap;}',
-      '.mp-master-outer{flex:1;overflow:auto;border:1px solid #dde3eb;border-radius:8px;min-height:0;}',
+      '.mp-master-outer{overflow-x:auto;overflow-y:visible;border:1px solid #dde3eb;border-radius:8px;}',
       /* zoom */
       '.mp-ms-zoom{display:flex;align-items:center;gap:5px;margin-left:auto;}',
       '.mp-ms-zbtn{background:#fff;border:1px solid #dde3eb;border-radius:4px;width:26px;height:26px;cursor:pointer;font-size:1.05rem;color:#555;display:flex;align-items:center;justify-content:center;}',
@@ -207,7 +207,7 @@
   async function renderMasterTab() {
     var D = window.mpDashboard;
     _sb = D.getSb(); _uid = D.getProfile().id;
-    _canEdit = D.isAdmin();
+    _canEdit = D.isAdmin() || D.isLeader();
     D.showLoading(); injectCSS();
 
     _sundays = computeSundays(4, 52);
