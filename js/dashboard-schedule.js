@@ -671,18 +671,6 @@
       html += '<button class="mp-btn mp-btn--outline mp-btn--small" style="width:auto;" onclick="mpSchedSendReminders()">&#9993; Send Reminders Now</button>';
       html += '</div>';
 
-      /* ── template management panel ── */
-      html += '<details class="mp-admin-panel" id="mp-tpl-mgmt"><summary class="mp-admin-toggle">Roster Templates <span class="mp-admin-badge">Admin</span></summary><div class="mp-admin-body">';
-      if (templates.length) {
-        html += '<div class="mp-tpl-list">';
-        templates.forEach(function (t) { html += buildTemplateCardHtml(D, t); });
-        html += '</div>';
-      } else {
-        html += '<p class="mp-empty" style="margin:0 0 14px;">No templates yet. Create one to quickly pre-fill volunteer slots when building rosters.</p>';
-      }
-      html += '<button class="mp-btn mp-btn--primary mp-btn--small" onclick="mpTplNew()">+ New Template</button>';
-      html += '</div></details>';
-
       if (!rosters.length) {
         html += '<p class="mp-empty" style="text-align:center;padding:24px 0;">No rosters yet. Click <strong>+ New Roster</strong> to create one.</p>';
       } else {
@@ -770,6 +758,18 @@
         html += '<p class="mp-sched-scroll-hint">&#8592; Scroll to see more events &#8594;</p>';
       }
 
+      /* ── template management panel ── */
+      html += '<details class="mp-admin-panel" id="mp-tpl-mgmt" style="margin-top:16px;"><summary class="mp-admin-toggle">Roster Templates <span class="mp-admin-badge">Admin</span></summary><div class="mp-admin-body">';
+      if (templates.length) {
+        html += '<div class="mp-tpl-list">';
+        templates.forEach(function (t) { html += buildTemplateCardHtml(D, t); });
+        html += '</div>';
+      } else {
+        html += '<p class="mp-empty" style="margin:0 0 14px;">No templates yet. Create one to quickly pre-fill volunteer slots when building rosters.</p>';
+      }
+      html += '<button class="mp-btn mp-btn--primary mp-btn--small" onclick="mpTplNew()">+ New Template</button>';
+      html += '</div></details>';
+
       /* guest volunteers panel */
       html += '<details class="mp-admin-panel" style="margin-top:12px;"><summary class="mp-admin-toggle">Non-Member Volunteers <span class="mp-admin-badge">Admin</span></summary><div class="mp-admin-body">';
       html += '<form id="guest-form"><div class="mp-form-row"><div class="mp-form-group"><label>Name <span class="mp-required">*</span></label><input type="text" name="guest_name" required placeholder="Full name"></div><div class="mp-form-group"><label>Email</label><input type="email" name="guest_email" placeholder="For serving reminders"></div></div>';
@@ -814,6 +814,25 @@
           mirror.addEventListener('scroll', function () { if (!syncing) { syncing = true; wrap.scrollLeft = mirror.scrollLeft; syncing = false; } });
           wrap.addEventListener('scroll', function () { if (!syncing) { syncing = true; mirror.scrollLeft = wrap.scrollLeft; syncing = false; } });
         }
+
+        /* drag-to-scroll on the card strip */
+        var isDragging = false, dragStartX = 0, dragScrollLeft = 0;
+        wrap.style.cursor = 'grab';
+        wrap.addEventListener('mousedown', function (e) {
+          if (e.button !== 0) return;
+          isDragging = true; dragStartX = e.pageX - wrap.offsetLeft; dragScrollLeft = wrap.scrollLeft;
+          wrap.style.cursor = 'grabbing'; wrap.style.userSelect = 'none';
+        });
+        document.addEventListener('mouseup', function () {
+          if (!isDragging) return;
+          isDragging = false; wrap.style.cursor = 'grab'; wrap.style.userSelect = '';
+        });
+        document.addEventListener('mousemove', function (e) {
+          if (!isDragging) return;
+          e.preventDefault();
+          var x = e.pageX - wrap.offsetLeft;
+          wrap.scrollLeft = dragScrollLeft - (x - dragStartX);
+        });
       });
 
       var gform = document.getElementById('guest-form');
@@ -953,7 +972,7 @@
             var tname = (team.name || '').toLowerCase();
             var match = rsSlots.find(function (s) {
               return (s.team_id && s.team_id === team.id) ||
-                     (!s.team_id && (s.role || '').toLowerCase() === tname);
+                     (s.role || '').toLowerCase() === tname;
             });
             return match || { role: team.name, team_id: team.id, assignee_type: '', assignee_id: '', assignee_id_b: '' };
           });
