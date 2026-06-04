@@ -824,11 +824,14 @@
         ? _sb.from('children').select('*').eq('profile_id',effectiveSpouseId).order('id')
         : Promise.resolve({data:[]})
     ]);
-    /* merge own + spouse's children, deduplicated by name */
+    /* merge own + spouse's children, deduplicated by name.
+       With mirroring both profiles have identical rows, but we still deduplicate
+       in case a save hasn't propagated yet or one side was edited independently. */
     var _ownChildren    = childRes.data||[];
     var _spouseChildren = spouseChildRes.data||[];
     var _seenNames={};
     var children=[];
+    /* prefer own children first so the canonical list comes from the current user */
     _ownChildren.concat(_spouseChildren).forEach(function(c){
       var key=(c.name||'').toLowerCase().trim();
       if(key&&!_seenNames[key]){ _seenNames[key]=true; children.push(c); }
@@ -1174,13 +1177,26 @@
       /* save profile */
       var { error }=await _sb.from('profiles').update(updates).eq('id',_user.id);
 
-      /* save children — direct INSERT (RLS disabled on children table) */
+      /* save children — mirror to both spouses so either parent always sees
+         the full list regardless of which profile originally stored the child */
       var newChildren=parseChildrenFromDOM('children-list');
+      var childRows=newChildren.map(function(c){return {name:c.name,gender:c.gender,birthday:c.birthday||null};});
+
+      /* current user */
       await _sb.from('children').delete().eq('profile_id',_user.id);
-      if(newChildren.length){
+      if(childRows.length){
         var { error:childErr }=await _sb.from('children').insert(
-          newChildren.map(function(c){return {profile_id:_user.id,name:c.name,gender:c.gender,birthday:c.birthday||null};}));
+          childRows.map(function(r){return Object.assign({profile_id:_user.id},r);}));
         if(childErr) error=error||childErr;
+      }
+
+      /* spouse mirror — delete their copy and re-write so both are in sync */
+      if(effectiveSpouseId){
+        await _sb.from('children').delete().eq('profile_id',effectiveSpouseId);
+        if(childRows.length){
+          await _sb.from('children').insert(
+            childRows.map(function(r){return Object.assign({profile_id:effectiveSpouseId},r);}));
+        }
       }
 
       /* password */

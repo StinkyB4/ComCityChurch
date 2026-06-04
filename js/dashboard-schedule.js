@@ -1835,7 +1835,12 @@
     var payload = { date: dateStr, title: 'Sunday Gathering', type: 'sunday', slots: newSlots };
     if (roster && roster.cancelled !== undefined) payload.cancelled = roster.cancelled;
 
-    var res = await cd.sb.from('schedule_rosters').upsert(payload, { onConflict: 'date' });
+    var res;
+    if (roster) {
+      res = await cd.sb.from('schedule_rosters').update(payload).eq('date', dateStr);
+    } else {
+      res = await cd.sb.from('schedule_rosters').insert(payload);
+    }
     if (res.error) { alert('Save failed: ' + res.error.message); return; }
 
     if (roster) { roster.slots = newSlots; }
