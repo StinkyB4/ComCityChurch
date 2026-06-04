@@ -408,6 +408,48 @@
     var todayStr = new Date().toISOString().split('T')[0];
     var nextSun  = nextSunday();
 
+    /* ── auto-populate missing Sunday rosters with the default template ── */
+    if (_isAdmin && templates.length) {
+      var _defTpl = templates.find(function (t) { return t.is_default; }) || templates[0];
+      if (_defTpl && (_defTpl.slots || []).length) {
+        /* compute every Sunday from this week through 52 weeks out */
+        var _now2 = new Date(), _dow2 = _now2.getDay();
+        var _thisSun = new Date(_now2); _thisSun.setDate(_now2.getDate() - _dow2); _thisSun.setHours(0,0,0,0);
+        var _futureSuns = [];
+        for (var _wi = 0; _wi <= 52; _wi++) {
+          var _sd = new Date(_thisSun); _sd.setDate(_thisSun.getDate() + _wi * 7);
+          _futureSuns.push(_sd.toISOString().split('T')[0]);
+        }
+        /* check which ones are missing from already-fetched rosters */
+        var _existMap = {};
+        rosters.forEach(function (r) { _existMap[r.date] = true; });
+        var _missingSuns = _futureSuns.filter(function (d) { return !_existMap[d]; });
+        if (_missingSuns.length) {
+          /* flatten template slots respecting count */
+          var _tplRoles = [];
+          (_defTpl.slots || []).forEach(function (row) {
+            for (var _ci = 0; _ci < (row.count || 1); _ci++) { _tplRoles.push(row.role); }
+          });
+          var _newRosters = _missingSuns.map(function (date) {
+            return {
+              date: date, title: 'Sunday Gathering', type: 'sunday', cancelled: false,
+              slots: _tplRoles.map(function (role) {
+                return { id: 'slot_' + Math.random().toString(36).slice(2), role: role, assignee_type: '', assignee_id: '', assignee_id_b: '', guest_id: '' };
+              })
+            };
+          });
+          for (var _bi = 0; _bi < _newRosters.length; _bi += 20) {
+            var _batch = _newRosters.slice(_bi, _bi + 20);
+            var _uRes = await _sb.from('schedule_rosters').upsert(_batch, { onConflict: 'date' });
+            if (!_uRes.error) {
+              _batch.forEach(function (nr) { rosters.push(nr); _existMap[nr.date] = true; });
+            }
+          }
+          rosters.sort(function (a, b) { return a.date.localeCompare(b.date); });
+        }
+      }
+    }
+
     /* store for calendar click handler; keep raw events for editing */
     var _assigneeOpts = buildAssigneeOptions(profMap, guestMap, childMap);
     window._mpCalData = { calEvents: calEvents, baseCalEvents: _rawCalEvents, rosters: rosters, uid: uid, D: D, canManage: _isAdmin, teams: teams, mcs: mcs, sb: _sb, profMap: profMap, guestMap: guestMap, childMap: childMap, assigneeOpts: _assigneeOpts };
