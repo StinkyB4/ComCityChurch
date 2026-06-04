@@ -790,10 +790,10 @@
       var isSun = editTeam && editTeam.is_sunday_serving;
       html += '<div class="mp-form-group" style="background:#f7f9fc;border:1px solid #dde3eb;border-radius:6px;padding:12px 14px;">';
       html += '<label class="mp-checkbox-label" style="display:flex;align-items:center;gap:8px;font-size:0.88rem;cursor:pointer;">';
-      html += '<input type="checkbox" name="is_sunday_serving" id="tm-sun-cb" value="1"' + (isSun ? ' checked' : '') + ' onchange="document.getElementById(\'tm-sun-opts\').style.display=this.checked?\'\':\' none\'"> ';
+      html += '<input type="checkbox" name="is_sunday_serving" id="tm-sun-cb" value="1"' + (isSun ? ' checked' : '') + ' onchange="document.getElementById(\'tm-sun-opts\').style.display=this.checked?\'\':\' none\';if(!this.checked)mpTeamToggleChildren(false);"> ';
       html += '<strong>Sunday serving team</strong> — appears as a role in the Master Schedule</label>';
       html += '<div id="tm-sun-opts" style="' + (isSun ? '' : 'display:none;') + 'margin-top:10px;padding-left:20px;display:' + (isSun ? 'block' : 'none') + ';">';
-      html += '<label class="mp-checkbox-label" style="font-size:0.85rem;display:flex;align-items:center;gap:7px;"><input type="checkbox" name="allow_children" value="1"' + (editTeam && editTeam.allow_children ? ' checked' : '') + '> Allow children to be assigned to this role</label><br>';
+      html += '<label class="mp-checkbox-label" style="font-size:0.85rem;display:flex;align-items:center;gap:7px;"><input type="checkbox" name="allow_children" value="1"' + (editTeam && editTeam.allow_children ? ' checked' : '') + ' onchange="mpTeamToggleChildren(this.checked)"> Allow children to be assigned to this role</label><br>';
       html += '<label class="mp-checkbox-label" style="font-size:0.85rem;display:flex;align-items:center;gap:7px;margin-top:4px;"><input type="checkbox" name="allow_nonmembers" value="1"' + (editTeam && editTeam.allow_nonmembers ? ' checked' : '') + '> Allow non-member volunteers to be assigned</label>';
       html += '<div class="mp-form-group" style="max-width:160px;margin-top:10px;margin-bottom:0;"><label style="font-size:0.82rem;">Display order (0 = first)</label>';
       html += '<input type="number" name="serving_order" min="0" max="99" value="' + (editTeam ? (editTeam.serving_order || 0) : 0) + '" style="width:100%;"></div>';
@@ -881,8 +881,9 @@
       }
       html += '</div>'; /* tm-picker-type-members */
 
-      /* ── Children ────────────────────────────────────────────── */
-      html += '<div id="tm-picker-type-children">';
+      /* ── Children (only visible when allow_children is checked) ── */
+      var showChildrenPicker = isSun && !!(editTeam && editTeam.allow_children);
+      html += '<div id="tm-picker-type-children"' + (showChildrenPicker ? '' : ' style="display:none;"') + '>';
       html += '<div class="mp-picker-type-hdr" style="position:sticky;top:0;z-index:2;background:#f0f3f7;padding:5px 10px;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#5c718e;border-bottom:1px solid #e8ecf0;border-top:2px solid #e4e9f0;">Children</div>';
       if (!allChildren.length) {
         html += '<p style="padding:10px 12px;color:#aaa;font-size:0.88rem;margin:0;">No children on file yet.</p>';
@@ -1163,6 +1164,15 @@
     if (spouseCb) spouseCb.checked = target;
     childCbs.forEach(function(c){ c.checked = target; });
     btn.textContent = target ? '✓ Family' : '+ Whole family';
+  };
+
+  window.mpTeamToggleChildren = function (show) {
+    var sect = document.getElementById('tm-picker-type-children');
+    if (sect) sect.style.display = show ? '' : 'none';
+    /* uncheck all child checkboxes when hiding so they don't get saved silently */
+    if (!show) {
+      document.querySelectorAll('.mp-child-check').forEach(function(cb){ cb.checked = false; });
+    }
   };
 
   window.mpTeamAddNonmember = function () {
