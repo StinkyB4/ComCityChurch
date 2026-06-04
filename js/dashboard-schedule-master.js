@@ -207,7 +207,7 @@
   async function renderMasterTab() {
     var D = window.mpDashboard;
     _sb = D.getSb(); _uid = D.getProfile().id;
-    _canEdit = D.isAdmin() || D.isLeader();
+    _canEdit = D.isAdmin();
     D.showLoading(); injectCSS();
 
     _sundays = computeSundays(4, 52);

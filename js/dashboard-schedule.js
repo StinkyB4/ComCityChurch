@@ -383,6 +383,8 @@
     ];
     /* always fetch children so parent can see their child's slots highlighted */
     fetches.push(_sb.from('children').select('id,name,gender,profile_id').order('name'));
+    /* always fetch sunday-serving teams so the calendar detail mirrors the master schedule */
+    fetches.push(_sb.from('teams').select('id,name,is_sunday_serving,serving_order').eq('is_sunday_serving', true).order('serving_order').order('name'));
     if (_isAdmin) {
       fetches.push(_sb.from('teams').select('id,name,is_sunday_serving,serving_order').order('name'));
       fetches.push(_sb.from('missional_communities').select('id,name').order('name'));
@@ -396,9 +398,10 @@
     var _rawCalEvents = results[4].data || [];
     var childrenData = results[5].data || [];
     var calEvents = expandRecurringEvents(_rawCalEvents, monthStart, nextMonthStart);
-    /* children fetch is index 5; teams/MCs shift to 6/7 */
-    var teams = _isAdmin ? (results[6].data || []) : [];
-    var mcs   = _isAdmin ? (results[7].data || []) : [];
+    /* index 5 = children; index 6 = sunday-serving teams (always); 7/8 = all teams / MCs (admin only) */
+    var sundayTeams = results[6].data || [];
+    var teams = _isAdmin ? (results[7].data || []) : sundayTeams;
+    var mcs   = _isAdmin ? (results[8].data || []) : [];
 
     var profMap = {}, guestMap = {}, childMap = {};
     approved.forEach(function (p) { profMap[p.id] = p; });
@@ -460,7 +463,7 @@
 
     /* store for calendar click handler; keep raw events for editing */
     var _assigneeOpts = buildAssigneeOptions(profMap, guestMap, childMap);
-    window._mpCalData = { calEvents: calEvents, baseCalEvents: _rawCalEvents, rosters: rosters, uid: uid, D: D, canManage: _isAdmin, teams: teams, mcs: mcs, sb: _sb, profMap: profMap, guestMap: guestMap, childMap: childMap, assigneeOpts: _assigneeOpts };
+    window._mpCalData = { calEvents: calEvents, baseCalEvents: _rawCalEvents, rosters: rosters, uid: uid, D: D, canManage: _isAdmin, teams: teams, sundayTeams: sundayTeams, mcs: mcs, sb: _sb, profMap: profMap, guestMap: guestMap, childMap: childMap, assigneeOpts: _assigneeOpts };
 
     var html = '<h2 class="mp-tab-title">Schedule</h2>';
 
@@ -940,10 +943,36 @@
         html += '<div class="mp-cal-detail-event-title">Sunday Gathering &mdash; 10:30 AM – 12:00 PM</div>';
         html += '<div class="mp-cal-detail-event-meta">All Sundays at Commissioned City Church</div>';
         var rsSlots = dayRoster ? (dayRoster.slots || []).filter(function (s) { return s.role; }) : [];
-        if (rsSlots.length) {
+        /* Build the display list ordered by sunday-serving teams, so the calendar always
+           mirrors every row that appears on the master schedule.  Any roster slot that
+           doesn't correspond to a known team is appended at the end. */
+        var _sunTeams = cd.sundayTeams || [];
+        var displaySlots;
+        if (_sunTeams.length) {
+          displaySlots = _sunTeams.map(function (team) {
+            var tname = (team.name || '').toLowerCase();
+            var match = rsSlots.find(function (s) {
+              return (s.team_id && s.team_id === team.id) ||
+                     (!s.team_id && (s.role || '').toLowerCase() === tname);
+            });
+            return match || { role: team.name, team_id: team.id, assignee_type: '', assignee_id: '', assignee_id_b: '' };
+          });
+          /* also append roster slots not covered by any known team */
+          rsSlots.forEach(function (s) {
+            var slotTeam = (s.role || '').toLowerCase();
+            var covered  = _sunTeams.some(function (t) {
+              return (s.team_id && s.team_id === t.id) ||
+                     (!s.team_id && slotTeam === (t.name || '').toLowerCase());
+            });
+            if (!covered) displaySlots.push(s);
+          });
+        } else {
+          displaySlots = rsSlots;
+        }
+        if (displaySlots.length) {
           html += '<div style="margin-top:7px;border-top:1px solid #eef2f8;padding-top:6px;">';
           html += '<div style="font-size:0.74rem;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Serving</div>';
-          rsSlots.forEach(function (s) {
+          displaySlots.forEach(function (s) {
             var name = '', isChild = s.assignee_type === 'child';
             if (s.assignee_type === 'guest_inline') name = D.esc(s.guest_name || '');
             else if (isChild && cd.childMap && cd.childMap[s.assignee_id]) name = D.esc(cd.childMap[s.assignee_id].name);
