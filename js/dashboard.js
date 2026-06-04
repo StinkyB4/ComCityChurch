@@ -409,7 +409,7 @@
     var todayStr    = new Date().toISOString().split('T')[0];
     var sevenDayStr = new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0];
     /* also fetch user's team memberships for message filtering */
-    var [msgsRes, treeRes, pendRes, rosterRes, evtAssignRes, myTeamsRes, myChildrenRes] = await Promise.all([
+    var [msgsRes, treeRes, pendRes, rosterRes, evtAssignRes, myTeamsRes, myChildrenRes, notifsRes] = await Promise.all([
       _sb.from('admin_messages').select('*').order('published_at',{ascending:false}).limit(40),
       _sb.from('file_tree').select('tree').limit(1).maybeSingle(),
       _isAdmin ? _sb.from('profiles').select('*').eq('status','pending').order('created_at') : Promise.resolve({data:[]}),
@@ -419,9 +419,22 @@
       /* fetch children for both parents in the family so both get notified */
       _profile.spouse_id
         ? _sb.from('children').select('id,name,profile_id').in('profile_id', [_user.id, _profile.spouse_id]).order('name')
-        : _sb.from('children').select('id,name,profile_id').eq('profile_id', _user.id).order('name')
+        : _sb.from('children').select('id,name,profile_id').eq('profile_id', _user.id).order('name'),
+      /* personal notifications (age-transition policy, etc.) */
+      _sb.from('member_notifications')
+        .select('id,type,title,body,child_id,created_at,read_at,dismissed_at')
+        .eq('profile_id',_user.id)
+        .is('dismissed_at',null)
+        .order('created_at',{ascending:false})
+        .limit(10)
     ]);
     var myTeamIds = (myTeamsRes.data||[]).map(function(r){ return r.team_id; });
+    var activeNotifs = notifsRes.data || [];
+    /* mark newly fetched notifications as read (fire-and-forget) */
+    var unreadIds = activeNotifs.filter(function(n){ return !n.read_at; }).map(function(n){ return n.id; });
+    if(unreadIds.length){
+      _sb.from('member_notifications').update({read_at:new Date().toISOString()}).in('id',unreadIds);
+    }
     /* filter messages: show 'all', plus mc/team messages that target this user */
     var allMsgs = msgsRes.data || [];
     var msgs = allMsgs.filter(function(m){
@@ -518,6 +531,38 @@
       html+='<button class="mp-btn mp-btn--primary" onclick="mpDismissProfileReminder(true)">Set Up Now</button>';
       html+='<button class="mp-btn mp-btn--secondary" onclick="mpDismissProfileReminder(false)">Not Right Now</button>';
       html+='</div></div></div>';
+    }
+
+    /* ── personal notifications (age-transition policy, etc.) ── */
+    if(activeNotifs.length){
+      if(!document.getElementById('mp-member-notif-css')){
+        var nc=document.createElement('style'); nc.id='mp-member-notif-css';
+        nc.textContent=[
+          '.mp-member-notifs{margin-bottom:20px;}',
+          '.mp-member-notif{background:#fff8f0;border:1px solid #D5393B;border-radius:8px;overflow:hidden;margin-bottom:12px;}',
+          '.mp-member-notif-hd{background:#D5393B;color:#fff;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px;}',
+          '.mp-member-notif-hd-title{font-weight:700;font-size:0.9rem;flex:1;}',
+          '.mp-member-notif-dismiss{background:none;border:none;color:rgba(255,255,255,0.85);font-size:0.8rem;cursor:pointer;padding:3px 8px;border-radius:4px;line-height:1.2;flex-shrink:0;}',
+          '.mp-member-notif-dismiss:hover{background:rgba(255,255,255,0.2);}',
+          '.mp-member-notif-body{padding:12px 14px;font-size:0.87rem;color:#30343B;line-height:1.6;}',
+          '.mp-member-notif-date{font-size:0.77rem;color:#999;padding:0 14px 10px;}'
+        ].join('');
+        document.head.appendChild(nc);
+      }
+      html+='<div class="mp-member-notifs">';
+      activeNotifs.forEach(function(n){
+        var d=new Date(n.created_at);
+        var dl=isNaN(d.getTime())?'':d.toLocaleDateString('en-CA',{month:'short',day:'numeric',year:'numeric'});
+        html+='<div class="mp-member-notif" id="mpnotif-'+esc(n.id)+'">';
+        html+='<div class="mp-member-notif-hd">';
+        html+='<span class="mp-member-notif-hd-title">'+esc(n.title)+'</span>';
+        html+='<button class="mp-member-notif-dismiss" onclick="mpDismissNotif(\''+esc(n.id)+'\')">Dismiss &times;</button>';
+        html+='</div>';
+        html+='<div class="mp-member-notif-body">'+sanitizeBody(n.body)+'</div>';
+        if(dl) html+='<div class="mp-member-notif-date">'+esc(dl)+'</div>';
+        html+='</div>';
+      });
+      html+='</div>';
     }
 
     /* flash messages */
@@ -785,6 +830,19 @@
     if(!_isAdmin||!confirm('Delete this message?')) return;
     await _sb.from('admin_messages').delete().eq('id',id);
     renderWelcomeTab();
+  };
+
+  window.mpDismissNotif = async function(notifId){
+    await _sb.from('member_notifications')
+      .update({dismissed_at:new Date().toISOString()})
+      .eq('id',notifId)
+      .eq('profile_id',_user.id);
+    var el=document.getElementById('mpnotif-'+notifId);
+    if(el){
+      el.style.transition='opacity 0.3s';
+      el.style.opacity='0';
+      setTimeout(function(){ el.remove(); },300);
+    }
   };
 
   window.mpMsgLink = function(){
