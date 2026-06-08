@@ -121,7 +121,12 @@
     s.textContent = [
       '.mp-master-wrap{display:flex;flex-direction:column;}',
       '.mp-master-bar{display:flex;align-items:center;gap:10px;padding:0 0 10px;flex-shrink:0;flex-wrap:wrap;}',
-      '.mp-master-outer{overflow-x:auto;overflow-y:visible;border:1px solid #dde3eb;border-radius:8px;}',
+      '.mp-master-resizable{position:relative;display:inline-block;max-width:100%;}',
+      '.mp-master-outer{overflow:auto;border:1px solid #dde3eb;border-radius:8px;max-width:100%;}',
+      '.mp-ms-resize-handle{position:absolute;right:-2px;bottom:-2px;width:18px;height:18px;cursor:nwse-resize;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #dde3eb;border-radius:0 0 6px 0;z-index:4;touch-action:none;user-select:none;}',
+      '.mp-ms-resize-handle:hover{background:#f0f4f8;}',
+      '.mp-master-resizable.mp-ms-resizing{user-select:none;}',
+      '.mp-master-resizable.mp-ms-resizing .mp-master-outer{will-change:width,height;}',
       /* zoom */
       '.mp-ms-zoom{display:flex;align-items:center;gap:5px;margin-left:auto;}',
       '.mp-ms-zbtn{background:#fff;border:1px solid #dde3eb;border-radius:4px;width:26px;height:26px;cursor:pointer;font-size:1.05rem;color:#555;display:flex;align-items:center;justify-content:center;}',
@@ -288,7 +293,8 @@
     html += '<button class="mp-ms-zbtn" onclick="mpMasterZoom(10)">+</button>';
     html += '</div></div>';
 
-    /* scroll container */
+    /* resizable scroll container */
+    html += '<div class="mp-master-resizable" id="ms-resizable">';
     html += '<div class="mp-master-outer" id="ms-outer">';
     html += '<table class="mp-master-tbl" id="ms-tbl" style="font-size:' + fs + ';">';
 
@@ -354,7 +360,11 @@
       });
       html += '</tr>';
     });
-    html += '</tbody></table></div></div>';
+    html += '</tbody></table></div>';
+    html += '<div class="mp-ms-resize-handle" id="ms-resize-handle" onmousedown="mpMasterResizeStart(event)" ontouchstart="mpMasterResizeStart(event)" title="Drag to resize">'
+      + '<svg width="13" height="13" viewBox="0 0 13 13" aria-hidden="true"><path d="M11 1 1 11M11 6 6 11M11 11h0" stroke="#9ca3af" stroke-width="1.4" stroke-linecap="round"/></svg>'
+      + '</div>';
+    html += '</div></div>';
 
     window.mpDashboard.setContent(html);
 
@@ -378,6 +388,41 @@
     document.querySelectorAll('.mp-ms-hd,.mp-ms-cell').forEach(function (el) {
       el.style.minWidth = cw + 'px'; el.style.width = cw + 'px';
     });
+  };
+
+  /* ── drag-to-resize ────────────────────────────────────────────── */
+  window.mpMasterResizeStart = function (e) {
+    var resizable = document.getElementById('ms-resizable');
+    var outer     = document.getElementById('ms-outer');
+    if (!resizable || !outer) return;
+    e.preventDefault();
+    var pt = e.touches ? e.touches[0] : e;
+    var startX = pt.clientX, startY = pt.clientY;
+    var startW = outer.offsetWidth, startH = outer.offsetHeight;
+    var rect   = resizable.getBoundingClientRect();
+    var maxW   = Math.max(startW, window.innerWidth  - rect.left - 12);
+    var maxH   = Math.max(startH, window.innerHeight - rect.top  - 12);
+
+    resizable.classList.add('mp-ms-resizing');
+
+    function onMove(ev) {
+      var p = ev.touches ? ev.touches[0] : ev;
+      var w = Math.min(maxW, Math.max(360, startW + (p.clientX - startX)));
+      var h = Math.min(maxH, Math.max(220, startH + (p.clientY - startY)));
+      outer.style.width  = w + 'px';
+      outer.style.height = h + 'px';
+    }
+    function onUp() {
+      resizable.classList.remove('mp-ms-resizing');
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onUp);
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend', onUp);
   };
 
   /* ── cancel / restore ──────────────────────────────────────────── */
