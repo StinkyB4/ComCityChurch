@@ -1819,13 +1819,34 @@ details[open] .mp-group-accordion-chevron { transform: rotate(90deg); }
    SCHEDULE TAB
    ══════════════════════════════════════════════════════════════════════════ */
 .mp-sched-admin-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
-.mp-sched-strip-container { margin: 0 -32px; }
+.mp-sched-strip-container { margin: 0 -32px; position: relative; }
 .mp-sched-scroll-mirror   { overflow-x: scroll; overflow-y: hidden; height: 12px; }
 .mp-sched-mirror-inner    { height: 1px; }
-.mp-sched-strip-wrap      { overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; padding: 8px 32px 16px; cursor: grab; }
+.mp-sched-strip-wrap      { overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scroll-behavior: smooth; padding: 8px 32px 16px; cursor: grab; }
 .mp-sched-strip-wrap:active { cursor: grabbing; }
 .mp-sched-strip           { display: flex; gap: 16px; width: max-content; }
 .mp-sched-scroll-hint     { text-align: center; font-size: 0.78rem; color: var(--mp-text-3); margin: 4px 0 20px; }
+
+/* Edge fades + nav arrows — signal that the strip scrolls horizontally */
+.mp-sched-fade {
+  position: absolute; top: 0; bottom: 28px; width: 64px; z-index: 2;
+  pointer-events: none; opacity: 0; transition: opacity 0.25s ease;
+}
+.mp-sched-fade--left  { left: 32px;  background: linear-gradient(to right, var(--mp-bg) 0%, rgba(244,245,247,0) 100%); }
+.mp-sched-fade--right { right: 32px; background: linear-gradient(to left,  var(--mp-bg) 0%, rgba(244,245,247,0) 100%); }
+.mp-sched-fade.is-visible { opacity: 1; }
+.mp-sched-nav-btn {
+  position: absolute; top: 50%; transform: translateY(-50%) scale(0.85); z-index: 3;
+  width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid var(--mp-border);
+  background: #fff; box-shadow: var(--mp-shadow); color: var(--mp-accent);
+  display: flex; align-items: center; justify-content: center; font-size: 1.3rem; line-height: 1;
+  cursor: pointer; opacity: 0; pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease, background 0.15s ease;
+}
+.mp-sched-nav-btn.is-visible { opacity: 1; pointer-events: auto; transform: translateY(-50%) scale(1); }
+.mp-sched-nav-btn:hover   { background: var(--mp-accent); color: #fff; }
+.mp-sched-nav-btn--prev   { left: 6px; }
+.mp-sched-nav-btn--next   { right: 6px; }
 
 /* Individual schedule card */
 .mp-sched-card {
@@ -2047,6 +2068,9 @@ details[open] .mp-group-accordion-chevron { transform: rotate(90deg); }
   }
   .mp-sched-strip-container { margin: 0 -16px; }
   .mp-sched-strip-wrap      { padding: 8px 16px 16px; }
+  .mp-sched-fade--left      { left: 16px; width: 40px; }
+  .mp-sched-fade--right     { right: 16px; width: 40px; }
+  .mp-sched-nav-btn         { display: none; }
   .mp-admin-cards { grid-template-columns: 1fr; }
   .mp-profile-dl  { grid-template-columns: 100px 1fr; }
 }

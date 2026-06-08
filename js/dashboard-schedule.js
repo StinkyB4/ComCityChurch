@@ -763,7 +763,12 @@
           }
           html += '</div>';
         });
-        html += '</div></div></div>';
+        html += '</div></div>';
+        html += '<div class="mp-sched-fade mp-sched-fade--left" id="sched-fade-left" aria-hidden="true"></div>';
+        html += '<div class="mp-sched-fade mp-sched-fade--right" id="sched-fade-right" aria-hidden="true"></div>';
+        html += '<button type="button" class="mp-sched-nav-btn mp-sched-nav-btn--prev" id="sched-nav-prev" aria-label="Scroll to earlier events"><span aria-hidden="true">&#8249;</span></button>';
+        html += '<button type="button" class="mp-sched-nav-btn mp-sched-nav-btn--next" id="sched-nav-next" aria-label="Scroll to later events"><span aria-hidden="true">&#8250;</span></button>';
+        html += '</div>';
         html += '<p class="mp-sched-scroll-hint">&#8592; Scroll to see more events &#8594;</p>';
       }
 
@@ -804,13 +809,40 @@
         if (upcoming) {
           var wr = wrap.getBoundingClientRect(), cr = upcoming.getBoundingClientRect();
           var to = Math.max(0, (cr.left - wr.left + wrap.scrollLeft) - (wrap.offsetWidth / 2) + (cr.width / 2));
-          wrap.scrollLeft = to; if (mirror) mirror.scrollLeft = to;
+          /* jump to the upcoming card instantly on load — scrollTo({behavior:'auto'}) bypasses the
+             CSS scroll-behavior:smooth so the strip doesn't visibly animate into place on render */
+          wrap.scrollTo({ left: to, behavior: 'auto' });
+          if (mirror) mirror.scrollTo({ left: to, behavior: 'auto' });
         }
         if (mirror) {
           var syncing = false;
           mirror.addEventListener('scroll', function () { if (!syncing) { syncing = true; wrap.scrollLeft = mirror.scrollLeft; syncing = false; } });
           wrap.addEventListener('scroll', function () { if (!syncing) { syncing = true; mirror.scrollLeft = wrap.scrollLeft; syncing = false; } });
         }
+
+        /* edge fades + nav arrows — make the horizontal scrollability obvious */
+        var fadeL = document.getElementById('sched-fade-left'), fadeR = document.getElementById('sched-fade-right');
+        var navPrev = document.getElementById('sched-nav-prev'), navNext = document.getElementById('sched-nav-next');
+        var updateScrollCues = function () {
+          var max = strip.scrollWidth - wrap.clientWidth;
+          var canScroll = max > 4;
+          var atStart = wrap.scrollLeft <= 4;
+          var atEnd = wrap.scrollLeft >= max - 4;
+          if (fadeL)   fadeL.classList.toggle('is-visible', canScroll && !atStart);
+          if (fadeR)   fadeR.classList.toggle('is-visible', canScroll && !atEnd);
+          if (navPrev) navPrev.classList.toggle('is-visible', canScroll && !atStart);
+          if (navNext) navNext.classList.toggle('is-visible', canScroll && !atEnd);
+        };
+        var scrollByCard = function (dir) {
+          var card = strip.querySelector('.mp-sched-card');
+          var amount = card ? (card.offsetWidth + 16) * 1 : wrap.clientWidth * 0.8;
+          wrap.scrollBy({ left: dir * amount, behavior: 'smooth' });
+        };
+        if (navPrev) navPrev.addEventListener('click', function () { scrollByCard(-1); });
+        if (navNext) navNext.addEventListener('click', function () { scrollByCard(1); });
+        wrap.addEventListener('scroll', updateScrollCues);
+        window.addEventListener('resize', updateScrollCues);
+        updateScrollCues();
       });
 
       var gform = document.getElementById('guest-form');
