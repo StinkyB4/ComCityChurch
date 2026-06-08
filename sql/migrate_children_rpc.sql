@@ -90,7 +90,12 @@ REVOKE INSERT, UPDATE, DELETE ON public.children FROM authenticated;
 -- Canonical-owner resolution: if either spouse already has rows, the save
 -- continues to use that profile_id, so the list can never fork into two
 -- divergent copies regardless of which spouse is editing.
-CREATE OR REPLACE FUNCTION public.save_children(p_profile_id uuid, p_children jsonb)
+-- The undocumented version of this function (created ad-hoc in the dashboard
+-- at some point) has a different return type, and Postgres refuses to change
+-- a function's return type via CREATE OR REPLACE — it must be dropped first.
+DROP FUNCTION IF EXISTS public.save_children(uuid, jsonb);
+
+CREATE FUNCTION public.save_children(p_profile_id uuid, p_children jsonb)
 RETURNS SETOF public.children
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE
