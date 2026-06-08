@@ -870,30 +870,20 @@
       if(revLink) effectiveSpouseId = revLink.id;
     }
 
-    /* parallel fetches — also pull spouse's children so both parents see the full list */
-    var [childRes, teamRes, spouseRes, mcRes, spouseChildRes] = await Promise.all([
-      _sb.from('children').select('*').eq('profile_id',_user.id).order('id'),
+    /* parallel fetches — children are stored under a single canonical owner
+       (resolved server-side by save_children), so fetching both spouses'
+       profile_ids returns the one shared list with no duplicates to merge */
+    var [childRes, teamRes, spouseRes, mcRes] = await Promise.all([
+      effectiveSpouseId
+        ? _sb.from('children').select('*').in('profile_id',[_user.id,effectiveSpouseId]).order('id')
+        : _sb.from('children').select('*').eq('profile_id',_user.id).order('id'),
       _sb.from('team_members').select('team_id, teams(id,name)').eq('member_id',_user.id),
       effectiveSpouseId
         ? _sb.from('profiles').select('id,first_name,last_name,full_name,email,phone1,phone1_type,avatar_url').eq('id',effectiveSpouseId).maybeSingle()
         : Promise.resolve({data:null}),
-      _sb.from('mc_members').select('missional_communities(id,name)').eq('profile_id',_user.id),
-      effectiveSpouseId
-        ? _sb.from('children').select('*').eq('profile_id',effectiveSpouseId).order('id')
-        : Promise.resolve({data:[]})
+      _sb.from('mc_members').select('missional_communities(id,name)').eq('profile_id',_user.id)
     ]);
-    /* merge own + spouse's children, deduplicated by name.
-       With mirroring both profiles have identical rows, but we still deduplicate
-       in case a save hasn't propagated yet or one side was edited independently. */
-    var _ownChildren    = childRes.data||[];
-    var _spouseChildren = spouseChildRes.data||[];
-    var _seenNames={};
-    var children=[];
-    /* prefer own children first so the canonical list comes from the current user */
-    _ownChildren.concat(_spouseChildren).forEach(function(c){
-      var key=(c.name||'').toLowerCase().trim();
-      if(key&&!_seenNames[key]){ _seenNames[key]=true; children.push(c); }
-    });
+    var children = childRes.data||[];
     var myTeams  = (teamRes.data||[]).map(function(r){return r.teams;}).filter(Boolean);
     var spouse   = spouseRes.data||null;
     var myMCs    = (mcRes.data||[]).map(function(r){return r.missional_communities;}).filter(Boolean);
@@ -1023,7 +1013,7 @@
       var kidsRows=children.concat([{name:'',gender:'boy',birthday:''}]);
       html+='<div class="mp-form-group"><label>Children <span class="mp-optional">(Optional)</span></label><div id="children-list">';
       kidsRows.forEach(function(ch,i){
-        html+='<div class="mp-child-row" data-index="'+i+'">';
+        html+='<div class="mp-child-row" data-index="'+i+'" data-id="'+esc(ch.id||'')+'">';
         html+='<select name="ch['+i+'][gender]" class="mp-child-gender"><option value="boy"'+(ch.gender!=='girl'?' selected':'')+'>Boy</option><option value="girl"'+(ch.gender==='girl'?' selected':'')+'>Girl</option></select>';
         html+='<input type="text" name="ch['+i+'][name]" value="'+esc(ch.name||'')+'" placeholder="Child\'s name" class="mp-child-name">';
         html+='<input type="date" name="ch['+i+'][birthday]" value="'+esc(ch.birthday||'')+'" class="mp-child-birthday">';
@@ -1235,18 +1225,15 @@
       /* save profile */
       var { error }=await _sb.from('profiles').update(updates).eq('id',_user.id);
 
-      /* save children — stored under the current user only.
-         Both parents see the full list because the profile/welcome tabs
-         query children from both spouses' profiles and deduplicate by name. */
+      /* save children — single atomic server-side call. save_children() runs
+         the whole add/update/remove diff inside one transaction, so a failure
+         partway through can never leave the family with their children wiped
+         and nothing saved in their place (which is what the old two-step
+         delete-then-insert risked). It also resolves a single canonical owner
+         for linked spouses, so the list is shared without being duplicated. */
       var newChildren=parseChildrenFromDOM('children-list');
-      var childRows=newChildren.map(function(c){return {name:c.name,gender:c.gender,birthday:c.birthday||null};});
-
-      await _sb.from('children').delete().eq('profile_id',_user.id);
-      if(childRows.length){
-        var { error:childErr }=await _sb.from('children').insert(
-          childRows.map(function(r){return Object.assign({profile_id:_user.id},r);}));
-        if(childErr) error=error||childErr;
-      }
+      var { error:childErr }=await _sb.rpc('save_children',{p_profile_id:_user.id,p_children:newChildren});
+      if(childErr) error=error||childErr;
 
       /* password */
       if(npw) await _sb.auth.updateUser({password:npw});
@@ -1284,6 +1271,7 @@
       var bdEl  =row.querySelector('.mp-child-birthday');
       var n=(nameEl&&nameEl.value||'').trim(); if(!n) return;
       res.push({
+        id:row.dataset.id||null,
         name:n,
         gender:(genEl&&genEl.value)||'boy',
         birthday:(bdEl&&bdEl.value)||null

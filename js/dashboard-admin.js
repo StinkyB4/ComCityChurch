@@ -438,7 +438,7 @@
     html += '<div class="mp-section-divider">Family</div>';
     html += '<div class="mp-form-group"><label>Children</label><div id="admin-children-list">';
     kidsRows.forEach(function (ch, i) {
-      html += '<div class="mp-child-row" data-index="' + i + '">';
+      html += '<div class="mp-child-row" data-index="' + i + '" data-id="' + D.esc(ch.id || '') + '">';
       html += '<select name="ch[' + i + '][gender]" class="mp-child-gender"><option value="boy"' + (ch.gender !== 'girl' ? ' selected' : '') + '>Boy</option><option value="girl"' + (ch.gender === 'girl' ? ' selected' : '') + '>Girl</option></select>';
       html += '<input type="text" name="ch[' + i + '][name]" value="' + D.esc(ch.name || '') + '" placeholder="Child\'s name" class="mp-child-name">';
       html += '<input type="date" name="ch[' + i + '][birthday]" value="' + D.esc(ch.birthday || '') + '" class="mp-child-birthday">';
@@ -507,19 +507,22 @@
         await delTm;
         if (newTeamIds.length) await _sb.from('team_members').insert(newTeamIds.map(function (tid) { return { team_id: tid, member_id: uid, role: 'member', member_type: 'member' }; }));
 
-        /* children — read from DOM, direct INSERT (RLS disabled on children) */
-        var newChildren = [];
-        document.querySelectorAll('#admin-children-list .mp-child-row').forEach(function (row) {
-          var nameEl = row.querySelector('.mp-child-name'), genEl = row.querySelector('.mp-child-gender'), bdEl = row.querySelector('.mp-child-birthday');
-          var cn = (nameEl && nameEl.value || '').trim(); if (!cn) return;
-          newChildren.push({ profile_id: uid, name: cn, gender: (genEl && genEl.value) || 'boy', birthday: (bdEl && bdEl.value) || null });
-        });
-        if (!newChildren.length && document.querySelectorAll('#admin-children-list .mp-child-row').length === 0) {
-          /* safety guard: if the children DOM section didn't render at all, skip the delete */
+        /* children — read from DOM, save via the atomic save_children() RPC.
+           One server-side transaction handles the whole add/update/remove
+           diff, so a partial failure can never wipe a family's children
+           without replacing them (the old direct delete+insert could). */
+        var childList = document.querySelectorAll('#admin-children-list .mp-child-row');
+        if (!childList.length) {
           console.warn('admin-children-list not found in DOM — skipping children save to avoid data loss');
         } else {
-          await D.getSb().from('children').delete().eq('profile_id', uid);
-          if (newChildren.length) await D.getSb().from('children').insert(newChildren);
+          var newChildren = [];
+          childList.forEach(function (row) {
+            var nameEl = row.querySelector('.mp-child-name'), genEl = row.querySelector('.mp-child-gender'), bdEl = row.querySelector('.mp-child-birthday');
+            var cn = (nameEl && nameEl.value || '').trim(); if (!cn) return;
+            newChildren.push({ id: row.dataset.id || null, name: cn, gender: (genEl && genEl.value) || 'boy', birthday: (bdEl && bdEl.value) || null });
+          });
+          var { error: childErr } = await D.getSb().rpc('save_children', { p_profile_id: uid, p_children: newChildren });
+          if (childErr) { window._adminEditResult = { errors: [childErr.message] }; renderAdminTab(); return; }
         }
 
         /* password */
