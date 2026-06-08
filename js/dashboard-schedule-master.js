@@ -403,6 +403,9 @@
     var maxW   = Math.max(startW, window.innerWidth  - rect.left - 12);
     var maxH   = Math.max(startH, window.innerHeight - rect.top  - 12);
 
+    /* let the box grow past the column's normal width while resizing */
+    resizable.style.maxWidth = 'none';
+    outer.style.maxWidth     = 'none';
     resizable.classList.add('mp-ms-resizing');
 
     function onMove(ev) {
