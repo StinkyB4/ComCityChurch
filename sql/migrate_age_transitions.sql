@@ -54,6 +54,8 @@ CREATE TABLE IF NOT EXISTS member_notifications (
   -- 'child_turning_18_7d'   – parent warned 7 days before child turns 18
   -- 'child_turned_18'       – parent notified on child's 18th birthday
   -- 'child_transitioned'    – parent notified that child was moved to non-member status
+  -- 'child_scheduled'       – parent notified that their child is on the serving schedule
+  --                           (inserted by send-reminders/index.ts; see migrate_children_rpc.sql)
   title        text NOT NULL,
   body         text NOT NULL,
   child_id     uuid REFERENCES children(id) ON DELETE CASCADE,

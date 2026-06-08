@@ -290,6 +290,35 @@ serve(async (req: Request) => {
     const childOnlyThis = entry.this.length > 0 && allChildSlots(entry.this);
     const childOnlyNext = entry.next.length > 0 && allChildSlots(entry.next);
 
+    /* in-portal "welcome board" card — mirrors the email so both parents see
+       "your child is serving" on their dashboard, not just by email. Reuses
+       the member_notifications inbox built for the age-18 transition policy
+       (sql/migrate_age_transitions.sql + renderWelcomeTab in dashboard.js). */
+    const childSlotsThis = entry.this.filter((s) => (s as Record<string, unknown>)._child_name);
+    const childSlotsNext = entry.next.filter((s) => (s as Record<string, unknown>)._child_name);
+    if (entry.type === 'member' && (childSlotsThis.length || childSlotsNext.length)) {
+      const childNames = [...new Set(
+        [...childSlotsThis, ...childSlotsNext].map((s) => String((s as Record<string, unknown>)._child_name))
+      )];
+      const who = childNames.length > 1 ? `${childNames.join(' & ')} are` : `${childNames[0]} is`;
+      const parts: string[] = [];
+      if (childSlotsThis.length) parts.push(`scheduled for <strong>${thisRoles}</strong> this Sunday (${thisLabel})`);
+      if (childSlotsNext.length) parts.push(`scheduled for <strong>${nextRoles}</strong> next Sunday (${nextLabel})`);
+      const uniqueChildIds = [...new Set(
+        [...childSlotsThis, ...childSlotsNext].map((s) => String((s as Record<string, unknown>).assignee_id))
+      )];
+      const pid = entry.key.startsWith('member:') ? entry.key.slice('member:'.length) : null;
+      if (pid) {
+        await sb.from('member_notifications').insert({
+          profile_id: pid,
+          type: 'child_scheduled',
+          title: `${who} serving this week`,
+          body: `${who} ${parts.join(' and ')}.`,
+          child_id: uniqueChildIds.length === 1 ? uniqueChildIds[0] : null,
+        });
+      }
+    }
+
     if (entry.this.length) {
       html += `<tr><td style="height:16px;"></td></tr>`;
       html += sectionHeader(`This Sunday — ${thisLabel}`);
