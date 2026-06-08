@@ -1235,26 +1235,17 @@
       /* save profile */
       var { error }=await _sb.from('profiles').update(updates).eq('id',_user.id);
 
-      /* save children — mirror to both spouses so either parent always sees
-         the full list regardless of which profile originally stored the child */
+      /* save children — stored under the current user only.
+         Both parents see the full list because the profile/welcome tabs
+         query children from both spouses' profiles and deduplicate by name. */
       var newChildren=parseChildrenFromDOM('children-list');
       var childRows=newChildren.map(function(c){return {name:c.name,gender:c.gender,birthday:c.birthday||null};});
 
-      /* current user */
       await _sb.from('children').delete().eq('profile_id',_user.id);
       if(childRows.length){
         var { error:childErr }=await _sb.from('children').insert(
           childRows.map(function(r){return Object.assign({profile_id:_user.id},r);}));
         if(childErr) error=error||childErr;
-      }
-
-      /* spouse mirror — delete their copy and re-write so both are in sync */
-      if(effectiveSpouseId){
-        await _sb.from('children').delete().eq('profile_id',effectiveSpouseId);
-        if(childRows.length){
-          await _sb.from('children').insert(
-            childRows.map(function(r){return Object.assign({profile_id:effectiveSpouseId},r);}));
-        }
       }
 
       /* password */
