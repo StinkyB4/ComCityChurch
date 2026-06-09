@@ -442,7 +442,7 @@
       html += '<select name="ch[' + i + '][gender]" class="mp-child-gender"><option value="boy"' + (ch.gender !== 'girl' ? ' selected' : '') + '>Boy</option><option value="girl"' + (ch.gender === 'girl' ? ' selected' : '') + '>Girl</option></select>';
       html += '<input type="text" name="ch[' + i + '][name]" value="' + D.esc(ch.name || '') + '" placeholder="Child\'s name" class="mp-child-name">';
       html += '<input type="date" name="ch[' + i + '][birthday]" value="' + D.esc(ch.birthday || '') + '" class="mp-child-birthday">';
-      if (ch.name) html += '<button type="button" class="mp-btn mp-btn--danger mp-btn--small" onclick="mpAdminRemoveChild(this)">Remove</button>';
+      if (ch.name) html += '<button type="button" class="mp-btn mp-btn--danger mp-btn--small" onclick="mpAdminRemoveChild(\'' + D.esc(ch.id || '') + '\',\'' + D.esc(editUid) + '\')">Remove</button>';
       else         html += '<button type="button" class="mp-btn mp-btn--secondary mp-btn--small" onclick="mpAdminSaveChild(this)">+ Add</button>';
       html += '</div>';
     });
@@ -546,12 +546,22 @@
       document.getElementById('admin-stay-edit').value = '1';
       btn.closest('form').dispatchEvent(new Event('submit', { bubbles: true }));
     };
-    window.mpAdminRemoveChild = function (btn) {
-      if (!confirm('Remove this child?')) return;
-      var row = btn.closest('.mp-child-row'), n = row.querySelector('.mp-child-name');
-      if (n) n.value = '';
-      document.getElementById('admin-stay-edit').value = '1';
-      btn.closest('form').dispatchEvent(new Event('submit', { bubbles: true }));
+    window.mpAdminRemoveChild = async function (childId, profileId) {
+      var row = document.querySelector('#admin-children-list .mp-child-row[data-id="' + childId + '"]');
+      var nameEl = row && row.querySelector('.mp-child-name');
+      var childName = (nameEl && nameEl.value.trim()) || 'this child';
+      if (!confirm('Remove ' + childName + ' from this family?')) return;
+      var childList = document.querySelectorAll('#admin-children-list .mp-child-row');
+      var remaining = [];
+      childList.forEach(function (r) {
+        if (r.dataset.id === childId) return;
+        var n = r.querySelector('.mp-child-name'), g = r.querySelector('.mp-child-gender'), b = r.querySelector('.mp-child-birthday');
+        var cn = (n && n.value || '').trim(); if (!cn) return;
+        remaining.push({ id: r.dataset.id || null, name: cn, gender: (g && g.value) || 'boy', birthday: (b && b.value) || null });
+      });
+      var { error } = await window.mpDashboard.getSb().rpc('save_children', { p_profile_id: profileId, p_children: remaining });
+      if (error) { alert('Error removing child: ' + error.message); return; }
+      window.mpAdminEdit(profileId);
     };
   }
 
