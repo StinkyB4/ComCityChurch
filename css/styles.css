@@ -461,7 +461,7 @@ footer {
 }
 .footer-social { display: flex; gap: var(--space-sm); }
 .footer-social a {
-  width: 36px; height: 36px;
+  width: 44px; height: 44px;
   background: rgba(255,255,255,.1);
   border-radius: 50%;
   display: flex;
@@ -594,6 +594,14 @@ footer {
 .fade-in-up.is-visible {
   opacity: 1;
   transform: translateY(0);
+}
+/* Respect reduced-motion: never hide content behind a scroll animation. */
+@media (prefers-reduced-motion: reduce) {
+  .fade-in-up {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
 }
 .delay-1 { transition-delay: 0.15s; }
 .delay-2 { transition-delay: 0.30s; }
@@ -916,16 +924,26 @@ footer {
   z-index: 3;
 }
 .slideshow-dot {
+  width: 24px;            /* 24px tap target (WCAG 2.5.8) with an 8px visible dot */
+  height: 24px;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.slideshow-dot::before {
+  content: '';
   width: 8px;
   height: 8px;
   border-radius: 50%;
   border: 2px solid rgba(255,255,255,.6);
   background: transparent;
-  cursor: pointer;
-  padding: 0;
   transition: background 0.3s ease, border-color 0.3s ease;
 }
-.slideshow-dot.is-active { background: white; border-color: white; }
+.slideshow-dot.is-active::before { background: white; border-color: white; }
 
 /* ── VIDEO BACKGROUND ─────────────────────────────────────────── */
 .media-video {

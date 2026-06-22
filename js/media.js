@@ -32,6 +32,16 @@
  *   Adjust text  → change overlay.opacity (0.1 increments)
  */
 
+// NOTE: All paths are root-absolute (/assets/...) so the registry resolves
+// correctly from any page depth (root, /communities/, /members/, /blog/).
+//
+// PLACEHOLDER IMAGES — these keys currently reuse existing photography because
+// the real photo has not been supplied yet. Swap in the real image when ready:
+//   heroes.team   -> about-hero.jpg     heroes.visit -> contact-hero.jpg
+//   heroes.give   -> communities-hero.jpg
+//   heroes.{moms-and-womens,mens-discipleship,womens-prayer} -> communities-hero.jpg
+//   communities.{moms-and-womens,mens-discipleship,womens-prayer} -> communities-hero.jpg
+//   (MC neighbourhood heroes reuse their matching community card photo.)
 const SITE_MEDIA = {
 
   // ── HERO SECTIONS ──────────────────────────────────────────────────────────
@@ -41,10 +51,10 @@ const SITE_MEDIA = {
     home: {
       type: "slideshow",
       slides: [
-        { src: "assets/media/heroes/home-1.jpg", alt: "Sunday worship gathering" },
-        { src: "assets/media/heroes/home-2.jpg", alt: "Community life together" },
-        { src: "assets/media/heroes/home-3.jpg", alt: "Baptism celebration" },
-        { src: "assets/media/heroes/home-4.jpg", alt: "Baptism celebration" },
+        { src: "/assets/media/heroes/home-1.jpg", alt: "Sunday worship gathering" },
+        { src: "/assets/media/heroes/home-2.jpg", alt: "Community life together" },
+        { src: "/assets/media/heroes/home-3.jpg", alt: "Baptism celebration" },
+        { src: "/assets/media/heroes/home-4.jpg", alt: "Baptism celebration" },
       ],
       interval: 6000,
       transition: 1000,
@@ -57,7 +67,7 @@ const SITE_MEDIA = {
 
     about: {
       type: "image",
-      src: "assets/media/heroes/about-hero.jpg",
+      src: "/assets/media/heroes/about-hero.jpg",
       alt: "Commissioned City Church",
       overlay: {
         type: "gradient",
@@ -69,7 +79,7 @@ const SITE_MEDIA = {
 
     visit: {
       type: "image",
-      src: "assets/media/heroes/visit-hero.jpg",
+      src: "/assets/media/heroes/contact-hero.jpg",
       alt: "Welcome to Commissioned City Church",
       overlay: {
         type: "dark",
@@ -79,7 +89,7 @@ const SITE_MEDIA = {
 
     team: {
       type: "image",
-      src: "assets/media/heroes/team-hero.jpg",
+      src: "/assets/media/heroes/about-hero.jpg",
       alt: "Our leadership team",
       overlay: {
         type: "gradient",
@@ -91,7 +101,7 @@ const SITE_MEDIA = {
 
     believe: {
       type: "image",
-      src: "assets/media/heroes/believe-hero.jpg",
+      src: "/assets/media/heroes/believe-hero.jpg",
       alt: "Open Bible",
       overlay: {
         type: "navy",
@@ -101,7 +111,7 @@ const SITE_MEDIA = {
 
     gospel: {
       type: "image",
-      src: "assets/media/heroes/gospel-hero.jpg",
+      src: "/assets/media/heroes/gospel-hero.jpg",
       alt: "The gospel",
       overlay: {
         type: "gradient",
@@ -113,7 +123,7 @@ const SITE_MEDIA = {
 
     communities: {
       type: "image",
-      src: "assets/media/heroes/communities-hero.jpg",
+      src: "/assets/media/heroes/communities-hero.jpg",
       alt: "Missional community gathering",
       overlay: {
         type: "navy",
@@ -123,8 +133,8 @@ const SITE_MEDIA = {
 
     gatherings: {
       type: "video",
-      src: "assets/media/heroes/gatherings-bg.mp4",
-      poster: "assets/media/heroes/gatherings-poster.jpg",
+      src: "/assets/media/heroes/gatherings-bg.mp4",
+      poster: "/assets/media/heroes/gatherings-poster.jpg",
       muted: true,
       loop: true,
       playbackRate: 0.80,
@@ -136,7 +146,7 @@ const SITE_MEDIA = {
 
     sermons: {
       type: "image",
-      src: "assets/media/heroes/sermons-hero.jpg",
+      src: "/assets/media/heroes/sermons-hero.jpg",
       alt: "Sermon teaching",
       overlay: {
         type: "navy",
@@ -146,7 +156,7 @@ const SITE_MEDIA = {
 
     give: {
       type: "image",
-      src: "assets/media/heroes/give-hero.jpg",
+      src: "/assets/media/heroes/communities-hero.jpg",
       alt: "Generous giving",
       overlay: {
         type: "gradient",
@@ -158,7 +168,7 @@ const SITE_MEDIA = {
 
     contact: {
       type: "image",
-      src: "assets/media/heroes/contact-hero.jpg",
+      src: "/assets/media/heroes/contact-hero.jpg",
       alt: "Welcome — plan your visit",
       overlay: {
         type: "dark",
@@ -168,7 +178,7 @@ const SITE_MEDIA = {
 
     partnerships: {
       type: "image",
-      src: "assets/media/heroes/partnerships-hero.jpg",
+      src: "/assets/media/heroes/partnerships-hero.jpg",
       alt: "Our gospel partnerships",
       overlay: {
         type: "navy",
@@ -181,13 +191,13 @@ const SITE_MEDIA = {
     // use ../assets/ rather than assets/. Do not reference these keys
     // from any root-level page — the path will not resolve correctly.
     // When the site moves to a web server, update all paths below to
-    // absolute paths (e.g. /assets/media/heroes/mc-south-osborne.jpg).
+    // absolute paths (e.g. /assets/media/communities/south-osborne.jpg).
     // Until photos are ready, the CSS gradient on .mc-hero shows through
     // because a missing background-image renders transparently.
 
     "south-osborne": {
       type: "image",
-      src: "../assets/media/heroes/mc-south-osborne.jpg",
+      src: "/assets/media/communities/south-osborne.jpg",
       alt: "South Osborne neighbourhood",
       overlay: {
         type: "dark",
@@ -197,7 +207,7 @@ const SITE_MEDIA = {
 
     "river-heights": {
       type: "image",
-      src: "../assets/media/heroes/mc-river-heights.jpg",
+      src: "/assets/media/communities/river-heights.jpg",
       alt: "River Heights neighbourhood",
       overlay: {
         type: "dark",
@@ -207,7 +217,7 @@ const SITE_MEDIA = {
 
     "st-james": {
       type: "image",
-      src: "../assets/media/heroes/mc-st-james.jpg",
+      src: "/assets/media/communities/st-james.jpg",
       alt: "St. James neighbourhood",
       overlay: {
         type: "dark",
@@ -217,7 +227,7 @@ const SITE_MEDIA = {
 
     "youth": {
       type: "image",
-      src: "../assets/media/heroes/mc-youth.jpg",
+      src: "/assets/media/communities/youth.jpg",
       alt: "Youth community gathering",
       overlay: {
         type: "dark",
@@ -227,7 +237,7 @@ const SITE_MEDIA = {
 
     "moms-and-womens": {
       type: "image",
-      src: "../assets/media/heroes/mc-moms-and-womens.jpg",
+      src: "/assets/media/heroes/communities-hero.jpg",
       alt: "Women gathering together",
       overlay: {
         type: "dark",
@@ -237,7 +247,7 @@ const SITE_MEDIA = {
 
     "mens-discipleship": {
       type: "image",
-      src: "../assets/media/heroes/mc-mens-discipleship.jpg",
+      src: "/assets/media/heroes/communities-hero.jpg",
       alt: "Men studying Scripture together",
       overlay: {
         type: "dark",
@@ -247,7 +257,7 @@ const SITE_MEDIA = {
 
     "womens-prayer": {
       type: "image",
-      src: "../assets/media/heroes/mc-womens-prayer.jpg",
+      src: "/assets/media/heroes/communities-hero.jpg",
       alt: "Women in prayer",
       overlay: {
         type: "dark",
@@ -263,35 +273,35 @@ const SITE_MEDIA = {
 
     blog: {
       type: "image",
-      src: "assets/media/blog/post-missionary-servants.jpg",
+      src: "/assets/media/blog/post-missionary-servants.jpg",
       alt: "Resources — Blog",
       overlay: { type: "dark", opacity: 0.55 }
     },
 
     "blog-missionary-servants": {
       type: "image",
-      src: "../assets/media/blog/post-missionary-servants.jpg",
+      src: "/assets/media/blog/post-missionary-servants.jpg",
       alt: "A Family of Missionary Servants",
       overlay: { type: "dark", opacity: 0.50 }
     },
 
     "blog-matthew-715": {
       type: "image",
-      src: "../assets/media/blog/post-matthew-715.jpg",
+      src: "/assets/media/blog/post-matthew-715.jpg",
       alt: "Matthew 7:15–29 — Hearing and Doing",
       overlay: { type: "dark", opacity: 0.50 }
     },
 
     "blog-gospel-fluency": {
       type: "image",
-      src: "../assets/media/blog/post-gospel-fluency.jpg",
+      src: "/assets/media/blog/post-gospel-fluency.jpg",
       alt: "Gospel Fluency",
       overlay: { type: "dark", opacity: 0.50 }
     },
 
     "blog-sabbath": {
       type: "image",
-      src: "../assets/media/blog/post-sabbath.jpg",
+      src: "/assets/media/blog/post-sabbath.jpg",
       alt: "The Essence of Sabbath in the Body of Christ",
       overlay: { type: "dark", opacity: 0.50 }
     },
@@ -302,22 +312,22 @@ const SITE_MEDIA = {
 
   blocks: {
     welcome: {
-      src: "assets/media/blocks/welcome.jpg",
+      src: "/assets/media/blocks/welcome.jpg",
       alt: "Church community gathered",
       objectPosition: "center center",
     },
     gospelCoffee: {
-      src: "assets/media/blocks/gospel-coffee.jpg",
+      src: "/assets/media/blocks/gospel-coffee.jpg",
       alt: "Coffee and conversation",
       objectPosition: "center top",
     },
     gospelVisit: {
-      src: "assets/media/blocks/gospel-visit.jpg",
+      src: "/assets/media/blocks/gospel-visit.jpg",
       alt: "Come and see",
       objectPosition: "center center",
     },
     beingBeforeDoing: {
-      src: "assets/media/blocks/being-before-doing.jpg",
+      src: "/assets/media/blocks/being-before-doing.jpg",
       alt: "Identity Rooted in Jesus",
       objectPosition: "center center",
     },
@@ -327,7 +337,7 @@ const SITE_MEDIA = {
 
   communities: {
     "south-osborne": {
-      src: "assets/media/communities/south-osborne.jpg",
+      src: "/assets/media/communities/south-osborne.jpg",
       alt: "South Osborne neighbourhood",
       overlay: {
         type: "gradient",
@@ -337,7 +347,7 @@ const SITE_MEDIA = {
       }
     },
     "river-heights": {
-      src: "assets/media/communities/river-heights.jpg",
+      src: "/assets/media/communities/river-heights.jpg",
       alt: "River Heights neighbourhood",
       overlay: {
         type: "gradient",
@@ -347,7 +357,7 @@ const SITE_MEDIA = {
       }
     },
     "st-james": {
-      src: "assets/media/communities/st-james.jpg",
+      src: "/assets/media/communities/st-james.jpg",
       alt: "St. James neighbourhood",
       overlay: {
         type: "gradient",
@@ -357,7 +367,7 @@ const SITE_MEDIA = {
       }
     },
     "youth": {
-      src: "assets/media/communities/youth.jpg",
+      src: "/assets/media/communities/youth.jpg",
       alt: "Youth community",
       overlay: {
         type: "gradient",
@@ -367,7 +377,7 @@ const SITE_MEDIA = {
       }
     },
     "moms-and-womens": {
-      src: "assets/media/communities/moms-and-womens.jpg",
+      src: "/assets/media/heroes/communities-hero.jpg",
       alt: "Women's MC community",
       overlay: {
         type: "gradient",
@@ -377,7 +387,7 @@ const SITE_MEDIA = {
       }
     },
     "mens-discipleship": {
-      src: "assets/media/communities/mens-discipleship.jpg",
+      src: "/assets/media/heroes/communities-hero.jpg",
       alt: "Men's Discipleship Morning",
       overlay: {
         type: "gradient",
@@ -387,7 +397,7 @@ const SITE_MEDIA = {
       }
     },
     "womens-prayer": {
-      src: "assets/media/communities/womens-prayer.jpg",
+      src: "/assets/media/heroes/communities-hero.jpg",
       alt: "Women's Prayer Call",
       overlay: {
         type: "gradient",
@@ -404,19 +414,19 @@ const SITE_MEDIA = {
 
   partners: {
     "ness-baptist": {
-      src: "assets/media/partners/ness-baptist.png",
+      src: "/assets/media/partners/ness-baptist.png",
       alt: "Ness Avenue Baptist Church",
     },
     "bgc-canada": {
-      src: "assets/media/partners/bgc-canada.png",
+      src: "/assets/media/partners/bgc-canada.png",
       alt: "Baptist General Conference of Canada",
     },
     "soma": {
-      src: "assets/media/partners/soma.jpg",
+      src: "/assets/media/partners/soma.jpg",
       alt: "SOMA Family of Churches",
     },
     "9marks": {
-      src: "assets/media/partners/9marks.jpg",
+      src: "/assets/media/partners/9marks.jpg",
       alt: "9Marks",
     },
   },
@@ -425,22 +435,22 @@ const SITE_MEDIA = {
 
   team: {
     timothy: {
-      src: "assets/media/team/timothy-reeve.jpg",
+      src: "/assets/media/team/timothy-reeve.jpg",
       alt: "Timothy Reeve — Elder",
       objectPosition: "center top",
     },
     brennan: {
-      src: "assets/media/team/brennan-cattani.jpg",
+      src: "/assets/media/team/brennan-cattani.jpg",
       alt: "Brennan Cattani — Staff Elder",
       objectPosition: "center top",
     },
     caleb: {
-      src: "assets/media/team/caleb-mogilevsky.jpg",
+      src: "/assets/media/team/caleb-mogilevsky.jpg",
       alt: "Caleb Mogilevsky — Deacon of Youth",
       objectPosition: "center top",
     },
     ethan: {
-      src: "assets/media/team/ethan-jones.jpg",
+      src: "/assets/media/team/ethan-jones.jpg",
       alt: "Ethan Jones — Church Plant Resident",
       objectPosition: "center top",
     },
@@ -457,7 +467,7 @@ const SITE_MEDIA = {
       reference: "Romans 3:21–31",
       speaker: "Timothy Reeve",
       date: "January 2025",
-      thumb: "assets/media/sermons/sermon-grace-alone.jpg",
+      thumb: "/assets/media/sermons/sermon-grace-alone.jpg",
       spotifyUrl: "https://open.spotify.com/show/2XGMvfMPl2GVUDEkHG5GTZ",
     },
     {
@@ -467,7 +477,7 @@ const SITE_MEDIA = {
       reference: "Matthew 28:18–20",
       speaker: "Brennan Cattani",
       date: "February 2025",
-      thumb: "assets/media/sermons/sermon-sent.jpg",
+      thumb: "/assets/media/sermons/sermon-sent.jpg",
       spotifyUrl: "https://open.spotify.com/show/2XGMvfMPl2GVUDEkHG5GTZ",
     },
     {
@@ -477,7 +487,7 @@ const SITE_MEDIA = {
       reference: "Acts 2:42–47",
       speaker: "Timothy Reeve",
       date: "March 2025",
-      thumb: "assets/media/sermons/sermon-gathered.jpg",
+      thumb: "/assets/media/sermons/sermon-gathered.jpg",
       spotifyUrl: "https://open.spotify.com/show/2XGMvfMPl2GVUDEkHG5GTZ",
     },
     {
@@ -487,7 +497,7 @@ const SITE_MEDIA = {
       reference: "Colossians 1:15–20",
       speaker: "Brennan Cattani",
       date: "April 2025",
-      thumb: "assets/media/sermons/sermon-rooted.jpg",
+      thumb: "/assets/media/sermons/sermon-rooted.jpg",
       spotifyUrl: "https://open.spotify.com/show/2XGMvfMPl2GVUDEkHG5GTZ",
     },
   ],

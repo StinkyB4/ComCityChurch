@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="/assets/logo.png">
   <title>Plan Your Visit — Commissioned City Church</title>
   <meta name="description" content="Plan your first visit to Commissioned City Church in Winnipeg. Get service times, directions, and everything you need for Sunday.">
   <meta property="og:title" content="Plan Your Visit — Commissioned City Church">
@@ -183,10 +184,18 @@
 
     /* ── CONNECT CARDS ──────────────────────────────────────────── */
     .connect-grid {
-      display: grid; grid-template-columns: repeat(3,1fr);
+      display: grid;
+      /* auto-fit + minmax(min(100%,…)) never overflows the viewport and
+         collapses 3→2→1 columns as width shrinks (fixes tablet blow-out). */
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
       gap: var(--space-md); margin-top: var(--space-lg);
     }
-    @media (max-width: 680px) { .connect-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 680px) {
+      .connect-grid { grid-template-columns: 1fr; }
+      /* 48px card padding is too wide for small screens (squeezes the CTA
+         button past the edge → horizontal overflow); ease it on mobile. */
+      .connect-card { padding: var(--space-md); }
+    }
     .connect-card {
       background: white; border-radius: 16px;
       box-shadow: 0 4px 20px rgba(0,0,0,.08);
@@ -196,7 +205,9 @@
     .cc-icon { font-size: 32px; margin-bottom: var(--space-sm); line-height: 1; }
     .connect-card h3 { font-size: 18px; color: var(--navy); margin: 0 0 6px; }
     .connect-card p { font-size: 14px; color: var(--muted-blue); margin: 0 0 var(--space-md); line-height: 1.6; flex: 1; }
-    .connect-card .btn { align-self: flex-start; font-size: 13px; }
+    /* Allow the CTA label to wrap on very narrow cards instead of forcing a
+       225px min-width (which overflowed the grid on small phones). */
+    .connect-card .btn { align-self: flex-start; font-size: 13px; white-space: normal; }
 
     /* ── GIVING STRIP ───────────────────────────────────────────── */
     .giving-strip {

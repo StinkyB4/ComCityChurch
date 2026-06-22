@@ -1,0 +1,13 @@
+{
+  "name": "comcitychurch-ux-tests",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Puppeteer-based UX/UI self-test harness for the Commissioned City Church website (desktop + mobile).",
+  "scripts": {
+    "test": "node run-tests.mjs"
+  },
+  "dependencies": {
+    "puppeteer": "^24.0.0"
+  }
+}

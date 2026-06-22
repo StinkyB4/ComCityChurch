@@ -1,0 +1,1801 @@
+{
+  "iteration": "2",
+  "base": "http://127.0.0.1:51487",
+  "generatedAt": "2026-06-22T19:42:41.488Z",
+  "pages": [
+    {
+      "name": "home",
+      "path": "/index.html",
+      "viewports": {
+        "desktop": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "Commissioned City Church — For the Good of the City, For the Glory of Christ",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "button.slideshow-dot.is-active",
+                "w": 8,
+                "h": 8,
+                "text": ""
+              },
+              {
+                "sel": "button.slideshow-dot",
+                "w": 8,
+                "h": 8,
+                "text": ""
+              },
+              {
+                "sel": "button.slideshow-dot",
+                "w": 8,
+                "h": 8,
+                "text": ""
+              },
+              {
+                "sel": "button.slideshow-dot",
+                "w": 8,
+                "h": 8,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerHidden": true,
+            "linksVisible": true,
+            "dropdownCount": 3
+          },
+          "screenshot": "home__desktop.png"
+        },
+        "mobile": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "Commissioned City Church — For the Good of the City, For the Glory of Christ",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "button.slideshow-dot.is-active",
+                "w": 8,
+                "h": 8,
+                "text": ""
+              },
+              {
+                "sel": "button.slideshow-dot",
+                "w": 8,
+                "h": 8,
+                "text": ""
+              },
+              {
+                "sel": "button.slideshow-dot",
+                "w": 8,
+                "h": 8,
+                "text": ""
+              },
+              {
+                "sel": "button.slideshow-dot",
+                "w": 8,
+                "h": 8,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerVisible": true,
+            "linksHidden": true,
+            "opens": true,
+            "bodyLocked": true,
+            "closes": true,
+            "error": null
+          },
+          "screenshot": "home__mobile.png"
+        }
+      }
+    },
+    {
+      "name": "about",
+      "path": "/about.html",
+      "viewports": {
+        "desktop": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "About — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerHidden": true,
+            "linksVisible": true,
+            "dropdownCount": 3
+          },
+          "screenshot": "about__desktop.png"
+        },
+        "mobile": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "About — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerVisible": true,
+            "linksHidden": true,
+            "opens": true,
+            "bodyLocked": true,
+            "closes": true,
+            "error": null
+          },
+          "screenshot": "about__mobile.png"
+        }
+      }
+    },
+    {
+      "name": "team",
+      "path": "/team.html",
+      "viewports": {
+        "desktop": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "Meet the Team — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerHidden": true,
+            "linksVisible": true,
+            "dropdownCount": 3
+          },
+          "screenshot": "team__desktop.png"
+        },
+        "mobile": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "Meet the Team — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerVisible": true,
+            "linksHidden": true,
+            "opens": true,
+            "bodyLocked": true,
+            "closes": true,
+            "error": null
+          },
+          "screenshot": "team__mobile.png"
+        }
+      }
+    },
+    {
+      "name": "believe",
+      "path": "/believe.html",
+      "viewports": {
+        "desktop": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "What We Believe — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerHidden": true,
+            "linksVisible": true,
+            "dropdownCount": 3
+          },
+          "screenshot": "believe__desktop.png"
+        },
+        "mobile": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "What We Believe — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerVisible": true,
+            "linksHidden": true,
+            "opens": true,
+            "bodyLocked": true,
+            "closes": true,
+            "error": null
+          },
+          "screenshot": "believe__mobile.png"
+        }
+      }
+    },
+    {
+      "name": "gospel",
+      "path": "/gospel.html",
+      "viewports": {
+        "desktop": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "The Gospel — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerHidden": true,
+            "linksVisible": true,
+            "dropdownCount": 3
+          },
+          "screenshot": "gospel__desktop.png"
+        },
+        "mobile": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "The Gospel — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerVisible": true,
+            "linksHidden": true,
+            "opens": true,
+            "bodyLocked": true,
+            "closes": true,
+            "error": null
+          },
+          "screenshot": "gospel__mobile.png"
+        }
+      }
+    },
+    {
+      "name": "partnerships",
+      "path": "/partnerships.html",
+      "viewports": {
+        "desktop": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "Our Partnerships — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerHidden": true,
+            "linksVisible": true,
+            "dropdownCount": 3
+          },
+          "screenshot": "partnerships__desktop.png"
+        },
+        "mobile": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "Our Partnerships — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerVisible": true,
+            "linksHidden": true,
+            "opens": true,
+            "bodyLocked": true,
+            "closes": true,
+            "error": null
+          },
+          "screenshot": "partnerships__mobile.png"
+        }
+      }
+    },
+    {
+      "name": "communities",
+      "path": "/communities.html",
+      "viewports": {
+        "desktop": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "Missional Communities — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerHidden": true,
+            "linksVisible": true,
+            "dropdownCount": 3
+          },
+          "screenshot": "communities__desktop.png"
+        },
+        "mobile": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "Missional Communities — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerVisible": true,
+            "linksHidden": true,
+            "opens": true,
+            "bodyLocked": true,
+            "closes": true,
+            "error": null
+          },
+          "screenshot": "communities__mobile.png"
+        }
+      }
+    },
+    {
+      "name": "community-south-osborne",
+      "path": "/communities/south-osborne.html",
+      "viewports": {
+        "desktop": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "South Osborne MC — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerHidden": true,
+            "linksVisible": true,
+            "dropdownCount": 3
+          },
+          "screenshot": "community-south-osborne__desktop.png"
+        },
+        "mobile": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "South Osborne MC — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerVisible": true,
+            "linksHidden": true,
+            "opens": true,
+            "bodyLocked": true,
+            "closes": true,
+            "error": null
+          },
+          "screenshot": "community-south-osborne__mobile.png"
+        }
+      }
+    },
+    {
+      "name": "community-river-heights",
+      "path": "/communities/river-heights.html",
+      "viewports": {
+        "desktop": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "River Heights MC — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerHidden": true,
+            "linksVisible": true,
+            "dropdownCount": 3
+          },
+          "screenshot": "community-river-heights__desktop.png"
+        },
+        "mobile": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "River Heights MC — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerVisible": true,
+            "linksHidden": true,
+            "opens": true,
+            "bodyLocked": true,
+            "closes": true,
+            "error": null
+          },
+          "screenshot": "community-river-heights__mobile.png"
+        }
+      }
+    },
+    {
+      "name": "community-st-james",
+      "path": "/communities/st-james.html",
+      "viewports": {
+        "desktop": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "St. James MC — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerHidden": true,
+            "linksVisible": true,
+            "dropdownCount": 3
+          },
+          "screenshot": "community-st-james__desktop.png"
+        },
+        "mobile": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "St. James MC — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerVisible": true,
+            "linksHidden": true,
+            "opens": true,
+            "bodyLocked": true,
+            "closes": true,
+            "error": null
+          },
+          "screenshot": "community-st-james__mobile.png"
+        }
+      }
+    },
+    {
+      "name": "community-youth",
+      "path": "/communities/youth.html",
+      "viewports": {
+        "desktop": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "Youth MC — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerHidden": true,
+            "linksVisible": true,
+            "dropdownCount": 3
+          },
+          "screenshot": "community-youth__desktop.png"
+        },
+        "mobile": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "Youth MC — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerVisible": true,
+            "linksHidden": true,
+            "opens": true,
+            "bodyLocked": true,
+            "closes": true,
+            "error": null
+          },
+          "screenshot": "community-youth__mobile.png"
+        }
+      }
+    },
+    {
+      "name": "gatherings",
+      "path": "/gatherings.html",
+      "viewports": {
+        "desktop": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "Sunday Gatherings — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerHidden": true,
+            "linksVisible": true,
+            "dropdownCount": 3
+          },
+          "screenshot": "gatherings__desktop.png"
+        },
+        "mobile": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "Sunday Gatherings — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerVisible": true,
+            "linksHidden": true,
+            "opens": true,
+            "bodyLocked": true,
+            "closes": true,
+            "error": null
+          },
+          "screenshot": "gatherings__mobile.png"
+        }
+      }
+    },
+    {
+      "name": "visit",
+      "path": "/visit.html",
+      "viewports": {
+        "desktop": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "Plan Your Visit — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerHidden": true,
+            "linksVisible": true,
+            "dropdownCount": 3
+          },
+          "screenshot": "visit__desktop.png"
+        },
+        "mobile": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "Plan Your Visit — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerVisible": true,
+            "linksHidden": true,
+            "opens": true,
+            "bodyLocked": true,
+            "closes": true,
+            "error": null
+          },
+          "screenshot": "visit__mobile.png"
+        }
+      }
+    },
+    {
+      "name": "sermons",
+      "path": "/sermons.html",
+      "viewports": {
+        "desktop": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [
+            "Failed to load resource: the server responded with a status of 404 (Not Found)"
+          ],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "Sermons — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerHidden": true,
+            "linksVisible": true,
+            "dropdownCount": 3
+          },
+          "screenshot": "sermons__desktop.png"
+        },
+        "mobile": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [
+            "Failed to load resource: the server responded with a status of 404 (Not Found)"
+          ],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "Sermons — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerVisible": true,
+            "linksHidden": true,
+            "opens": true,
+            "bodyLocked": true,
+            "closes": true,
+            "error": null
+          },
+          "screenshot": "sermons__mobile.png"
+        }
+      }
+    },
+    {
+      "name": "blog",
+      "path": "/blog.html",
+      "viewports": {
+        "desktop": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "Blog — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerHidden": true,
+            "linksVisible": true,
+            "dropdownCount": 3
+          },
+          "screenshot": "blog__desktop.png"
+        },
+        "mobile": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "Blog — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerVisible": true,
+            "linksHidden": true,
+            "opens": true,
+            "bodyLocked": true,
+            "closes": true,
+            "error": null
+          },
+          "screenshot": "blog__mobile.png"
+        }
+      }
+    },
+    {
+      "name": "give",
+      "path": "/give.html",
+      "viewports": {
+        "desktop": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "Give — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerHidden": true,
+            "linksVisible": true,
+            "dropdownCount": 3
+          },
+          "screenshot": "give__desktop.png"
+        },
+        "mobile": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "Give — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 2
+          },
+          "navTest": {
+            "hamburgerVisible": true,
+            "linksHidden": true,
+            "opens": true,
+            "bodyLocked": true,
+            "closes": true,
+            "error": null
+          },
+          "screenshot": "give__mobile.png"
+        }
+      }
+    },
+    {
+      "name": "contact",
+      "path": "/contact.html",
+      "viewports": {
+        "desktop": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "Connect — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 4
+          },
+          "navTest": {
+            "hamburgerHidden": true,
+            "linksVisible": true,
+            "dropdownCount": 3
+          },
+          "screenshot": "contact__desktop.png"
+        },
+        "mobile": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "Connect — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 4
+          },
+          "navTest": {
+            "hamburgerVisible": true,
+            "linksHidden": true,
+            "opens": true,
+            "bodyLocked": true,
+            "closes": true,
+            "error": null
+          },
+          "screenshot": "contact__mobile.png"
+        }
+      }
+    },
+    {
+      "name": "members-login",
+      "path": "/members/",
+      "viewports": {
+        "desktop": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "Log In — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "button.mp-toggle-pw",
+                "w": 18,
+                "h": 18,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 3
+          },
+          "navTest": {
+            "hamburgerHidden": true,
+            "linksVisible": true,
+            "dropdownCount": 3
+          },
+          "screenshot": "members-login__desktop.png"
+        },
+        "mobile": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "Log In — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "button.mp-toggle-pw",
+                "w": 18,
+                "h": 18,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              },
+              {
+                "sel": "a",
+                "w": 36,
+                "h": 36,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 3
+          },
+          "navTest": {
+            "hamburgerVisible": true,
+            "linksHidden": true,
+            "opens": true,
+            "bodyLocked": true,
+            "closes": true,
+            "error": null
+          },
+          "screenshot": "members-login__mobile.png"
+        }
+      }
+    },
+    {
+      "name": "members-register",
+      "path": "/members/register.html",
+      "viewports": {
+        "desktop": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "Create Account — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "button.mp-toggle-pw",
+                "w": 18,
+                "h": 18,
+                "text": ""
+              },
+              {
+                "sel": "button.mp-toggle-pw",
+                "w": 18,
+                "h": 18,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 0
+          },
+          "navTest": {
+            "hamburgerHidden": true,
+            "linksVisible": true,
+            "dropdownCount": 0
+          },
+          "screenshot": "members-register__desktop.png"
+        },
+        "mobile": {
+          "navOk": true,
+          "navMsg": "",
+          "consoleErrors": [],
+          "consoleWarnings": [],
+          "pageErrors": [],
+          "failedReq": [],
+          "failedReqExternal": 0,
+          "httpErrors": [],
+          "audit": {
+            "overflow": 0,
+            "overflowElements": [],
+            "brokenImages": [],
+            "missingAlt": 0,
+            "title": "Create Account — Commissioned City Church",
+            "h1Count": 1,
+            "lang": "en",
+            "hasViewportMeta": true,
+            "smallTapTargets": [
+              {
+                "sel": "button.mp-toggle-pw",
+                "w": 18,
+                "h": 18,
+                "text": ""
+              },
+              {
+                "sel": "button.mp-toggle-pw",
+                "w": 18,
+                "h": 18,
+                "text": ""
+              }
+            ],
+            "emptyLinks": 0
+          },
+          "navTest": {
+            "hamburgerVisible": true,
+            "linksHidden": true,
+            "opens": true,
+            "bodyLocked": true,
+            "closes": true,
+            "error": null
+          },
+          "screenshot": "members-register__mobile.png"
+        }
+      }
+    }
+  ],
+  "brokenInternalLinks": []
+}
