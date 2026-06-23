@@ -1502,6 +1502,7 @@ body.mp-body {
 .mp-status-badge         { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 0.72rem; font-weight: 700; }
 .mp-status-badge--pending{ background: #fef5e7; color: #7a6e0f; }
 .mp-status-badge--hidden { background: #eee; color: #666; }
+.mp-status-badge--admin  { background: #efe4de; color: #7a4a35; }
 
 /* ══════════════════════════════════════════════════════════════════════════
    ALERTS

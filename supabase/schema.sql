@@ -80,10 +80,13 @@ CREATE POLICY "admins_update_all_profiles"
   USING (public.is_admin())
   WITH CHECK (public.is_admin());
 
--- RLS: Admins delete profiles
-CREATE POLICY "admins_delete_profiles"
+-- RLS: Admins delete profiles, but NOT admin accounts (their own or anyone
+-- else's). To remove an admin, first demote them to 'member'/'team', or delete
+-- the auth.users row via the service role (which bypasses RLS). See
+-- schema-v5-migration.sql.
+CREATE POLICY "admins_delete_non_admin_profiles"
   ON profiles FOR DELETE
-  USING (public.is_admin());
+  USING (public.is_admin() AND role <> 'admin');
 
 -- RLS: Authenticated users can insert their own initial profile (signup)
 CREATE POLICY "members_insert_own_profile"

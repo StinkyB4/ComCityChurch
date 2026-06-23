@@ -453,15 +453,16 @@ BEGIN
   END IF;
 END$$;
 
--- Admins can delete profiles (for reject workflow)
+-- Admins can delete profiles (for reject workflow), but NOT admin accounts.
+-- See schema-v5-migration.sql for the rationale and escape hatch.
 DO $$
 BEGIN
   IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE tablename = 'profiles' AND policyname = 'admins_delete_profiles'
+    SELECT 1 FROM pg_policies WHERE tablename = 'profiles' AND policyname = 'admins_delete_non_admin_profiles'
   ) THEN
-    CREATE POLICY "admins_delete_profiles"
+    CREATE POLICY "admins_delete_non_admin_profiles"
       ON profiles FOR DELETE
-      USING (public.is_admin());
+      USING (public.is_admin() AND role <> 'admin');
   END IF;
 END$$;
 
