@@ -1,0 +1,33 @@
+[
+  {
+    "team_id": "t-kids",
+    "member_id": "u-sarah",
+    "role": "member",
+    "member_type": "member",
+    "id": "gen-80v8y0iu"
+  },
+  {
+    "team_id": "t-kids",
+    "member_id": "u-grace",
+    "role": "member",
+    "member_type": "member",
+    "id": "gen-oj7wkald"
+  },
+  {
+    "team_id": "t-kids",
+    "member_id": "u-brennan",
+    "child_id": "c-noah",
+    "role": "member",
+    "member_type": "child",
+    "id": "gen-1n86lv3e"
+  },
+  {
+    "team_id": "t-kids",
+    "member_id": null,
+    "role": "member",
+    "member_type": "nonmember",
+    "nonmember_name": "Pat Visitor",
+    "nonmember_email": "pat@example.com",
+    "id": "gen-oa3yh207"
+  }
+]
