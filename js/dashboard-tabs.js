@@ -1115,10 +1115,26 @@
             insertRows.push({ team_id: teamId, member_id: null, role: 'member', member_type: 'nonmember', nonmember_name: nm.name, nonmember_email: nm.email });
           });
           var insRes = await _sb2.from('team_members').insert(insertRows);
-          if (insRes.error && insRes.error.message && insRes.error.message.indexOf('column') !== -1) {
-            /* new columns not migrated yet — fall back to members only */
-            if (memberIds.length) await _sb2.from('team_members').insert(memberIds.map(function(pid){ return { team_id: teamId, member_id: pid, role: 'member' }; }));
-            showToast('Saved (run DB migration to enable children & non-member support).');
+          if (insRes.error) {
+            /* The full insert failed — most often because the DB still needs the
+               team_members migration (extended columns, or member_id must be made
+               nullable for children / non-members). Save the regular members so
+               they aren't lost, then tell the user EXACTLY what happened instead
+               of failing silently. */
+            var membersOnly = memberIds.map(function(pid){ return { team_id: teamId, member_id: pid, role: 'member' }; });
+            var fbErr = null;
+            if (membersOnly.length) { var fb = await _sb2.from('team_members').insert(membersOnly); fbErr = fb.error; }
+            if (fbErr) {
+              alert('Could not save team members: ' + fbErr.message);
+            } else if (childRows.length || nonmemberRows.length) {
+              alert('Heads up — regular members were saved, but children and non-member '
+                + 'volunteers could NOT be added to this team.\n\nThis usually means the '
+                + 'database still needs the team_members migration '
+                + '(sql/fix_team_members_add_children_nonmembers.sql).\n\nDetails: '
+                + insRes.error.message);
+            } else {
+              alert('Could not save team members: ' + insRes.error.message);
+            }
           }
         }
         /* close edit and show confirmation */

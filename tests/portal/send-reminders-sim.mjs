@@ -18,7 +18,8 @@ const OUT = join(__dirname, 'results', 'emails');
 const SITE_NAME = 'Commissioned City Church';
 const SITE_URL = 'https://commissionedcity.church';
 const ADMIN_EMAIL = 'admin@commissionedcity.church';
-const BRAND = '#7a4a35'; // NOTE: this is the OLD brown brand, not navy/red — see findings
+const BRAND = '#112E53';  // Commissioned City navy (primary) — mirrors the edge function
+const ACCENT = '#D5393B'; // Commissioned City red (call-to-action)
 
 const seed = buildSeed();
 const DB = seed.db;
@@ -48,8 +49,8 @@ function buildSwapToken(date, role, personName) {
 }
 
 // ── email chrome (mirrors the edge function) ────────────────────────────────
-const emailOpen = (preview = '') => `<!DOCTYPE html><html><head><meta charset="UTF-8">${preview ? `<span style="display:none">${preview}</span>` : ''}</head><body style="margin:0;background:#f0ece8;font-family:Georgia,serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#f0ece8;padding:32px 16px;"><tr><td align="center"><table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;max-width:600px;width:100%;"><tr><td style="background:${BRAND};padding:28px 40px;text-align:center;"><h1 style="margin:0;color:#fff;font-size:24px;font-weight:normal;">${SITE_NAME}</h1></td></tr>`;
-const emailClose = () => `<tr><td style="background:#f9f6f4;padding:20px 40px;border-top:1px solid #e8e0db;text-align:center;"><p style="margin:0;font-size:12px;color:#bbb;">${SITE_NAME} — ${ADMIN_EMAIL}</p></td></tr></table></td></tr></table></body></html>`;
+const emailOpen = (preview = '') => `<!DOCTYPE html><html><head><meta charset="UTF-8">${preview ? `<span style="display:none">${preview}</span>` : ''}</head><body style="margin:0;background:#f4f5f7;font-family:'Helvetica Neue',Arial,sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f5f7;padding:32px 16px;"><tr><td align="center"><table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;max-width:600px;width:100%;"><tr><td style="background:${BRAND};padding:28px 40px;text-align:center;"><h1 style="margin:0;color:#fff;font-size:22px;font-weight:800;letter-spacing:0.02em;text-transform:uppercase;">${SITE_NAME}</h1></td></tr>`;
+const emailClose = () => `<tr><td style="background:#f4f5f7;padding:20px 40px;border-top:1px solid #e6e9ee;text-align:center;"><p style="margin:0;font-size:12px;color:#8a94a3;">${SITE_NAME} — ${ADMIN_EMAIL}</p></td></tr></table></td></tr></table></body></html>`;
 const sectionHeader = (label) => `<tr><td style="background:${BRAND};padding:10px 40px;"><p style="margin:0;color:#fff;font-size:11px;font-weight:bold;text-transform:uppercase;letter-spacing:0.12em;">${label}</p></td></tr>`;
 
 function run() {
@@ -127,7 +128,7 @@ function run() {
     }
 
     let swapButtons = '';
-    for (const s of entry.this) { if (!s.role) continue; const u = buildSwapToken(thisDate, s.role, entry.firstName); swapButtons += `<tr><td style="padding:4px 40px;"><a href="${u}" style="display:inline-block;background:${BRAND};color:#fff;text-decoration:none;font-size:13px;font-weight:bold;padding:9px 20px;border-radius:6px;">View ${s.role} Team Contact List</a></td></tr>`; }
+    for (const s of entry.this) { if (!s.role) continue; const u = buildSwapToken(thisDate, s.role, entry.firstName); swapButtons += `<tr><td style="padding:4px 40px;"><a href="${u}" style="display:inline-block;background:${ACCENT};color:#fff;text-decoration:none;font-size:13px;font-weight:bold;padding:9px 20px;border-radius:6px;">View ${s.role} Team Contact List</a></td></tr>`; }
 
     let html = emailOpen(`You're serving this Sunday at ${SITE_NAME}!`);
     html += `<tr><td style="height:28px;"></td></tr><tr><td style="padding:0 40px 4px;font-size:17px;color:#333;">Hey <strong>${entry.firstName}</strong>!</td></tr>`;

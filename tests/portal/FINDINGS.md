@@ -37,19 +37,18 @@ never applied to prod.
 nullable + ensures columns + integrity check). *Confirm against your live DB —
 this is diagnosed from the committed schema, not a prod query.*
 
-### 2. Silent failures in team-save error handling  (MEDIUM)
-- `js/dashboard-tabs.js:1118` only handles insert errors whose message contains
-  the word "column". Any other error (RLS, NOT NULL, FK) is **swallowed with no
-  alert/toast** — the UI looks like it saved.
-- `js/dashboard-admin.js:526` inserts team rows with **no error check at all**.
-**Fix:** surface the real error to the user; in the fallback, also re-insert
-child/non-member rows (or rely on the schema fix so no fallback is needed).
+### 2. Silent failures in team-save error handling  (MEDIUM) — ✅ FIXED
+- `js/dashboard-tabs.js` now reacts to ANY insert error (not just "column"):
+  it saves regular members, then alerts the user that children/non-members
+  couldn't be added and points to the migration — no more silent success.
+- `js/dashboard-admin.js` team insert now checks its error, retries without the
+  extended column if missing, and surfaces any remaining failure.
 
-### 3. Reminder emails use the OLD brand  (LOW / cosmetic)
-`supabase/functions/send-reminders/index.ts` renders emails in brown
-`#7a4a35` + Georgia serif (old "Osborne Village" look), not the new navy
-`#112E53` / red `#D5393B` Commissioned City brand. See
-`results/screenshots/email-*.png`.
+### 3. Reminder emails used the OLD brand  (LOW) — ✅ FIXED
+`supabase/functions/send-reminders/index.ts` now renders in the Commissioned
+City brand: navy `#112E53` header/section bars, red `#D5393B` CTA buttons,
+sans-serif, neutral `#f4f5f7` background (was brown `#7a4a35` + Georgia serif).
+See `results/screenshots/email-*.png`.
 
 ### 4. Email wording for child slots  (LOW / polish)
 A parent who also serves gets one merged line: "You're on Worship Lead **&

@@ -30,7 +30,8 @@ const SITE_URL       = Deno.env.get('SITE_URL')       || 'https://commissionedci
 const SITE_NAME      = Deno.env.get('SITE_NAME')      || 'Commissioned City Church';
 const SUPABASE_URL   = Deno.env.get('SUPABASE_URL')   || '';
 const SERVICE_KEY    = Deno.env.get('SERVICE_ROLE_KEY') || '';
-const BRAND = '#7a4a35';
+const BRAND  = '#112E53'; // Commissioned City navy (primary)
+const ACCENT = '#D5393B'; // Commissioned City red (call-to-action)
 
 const CORS = {
   'Access-Control-Allow-Origin':  '*',
@@ -57,16 +58,16 @@ function formatDate(dateStr: string): string {
 function emailOpen(preview = '') {
   return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
 ${preview ? `<span style="display:none;max-height:0;overflow:hidden;">${preview}</span>` : ''}
-</head><body style="margin:0;padding:0;background:#f0ece8;font-family:Georgia,serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0ece8;padding:32px 16px;"><tr><td align="center">
+</head><body style="margin:0;padding:0;background:#f4f5f7;font-family:'Helvetica Neue',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f5f7;padding:32px 16px;"><tr><td align="center">
 <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;max-width:600px;width:100%;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
 <tr><td style="background:${BRAND};padding:28px 40px;text-align:center;">
-<h1 style="margin:0;color:#fff;font-size:24px;font-weight:normal;">${SITE_NAME}</h1></td></tr>`;
+<h1 style="margin:0;color:#fff;font-size:22px;font-weight:800;letter-spacing:0.02em;text-transform:uppercase;">${SITE_NAME}</h1></td></tr>`;
 }
 
 function emailClose() {
-  return `<tr><td style="background:#f9f6f4;padding:20px 40px;border-top:1px solid #e8e0db;text-align:center;">
-<p style="margin:0;font-size:12px;color:#bbb;">${SITE_NAME} — <a href="mailto:${ADMIN_EMAIL}" style="color:#bbb;">${ADMIN_EMAIL}</a></p>
+  return `<tr><td style="background:#f4f5f7;padding:20px 40px;border-top:1px solid #e6e9ee;text-align:center;">
+<p style="margin:0;font-size:12px;color:#8a94a3;">${SITE_NAME} — <a href="mailto:${ADMIN_EMAIL}" style="color:#8a94a3;">${ADMIN_EMAIL}</a></p>
 </td></tr></table></td></tr></table></body></html>`;
 }
 
@@ -278,7 +279,7 @@ serve(async (req: Request) => {
       const role = String((slot as Record<string, unknown>).role || '');
       if (!role) continue;
       const swapUrl = await buildSwapToken(sb, thisDate, role, entry.firstName);
-      swapButtons += `<tr><td style="padding:4px 40px;"><a href="${swapUrl}" style="display:inline-block;background:${BRAND};color:#fff;text-decoration:none;font-size:13px;font-weight:bold;padding:9px 20px;border-radius:6px;">View ${role} Team Contact List</a></td></tr>`;
+      swapButtons += `<tr><td style="padding:4px 40px;"><a href="${swapUrl}" style="display:inline-block;background:${ACCENT};color:#fff;text-decoration:none;font-size:13px;font-weight:bold;padding:9px 20px;border-radius:6px;">View ${role} Team Contact List</a></td></tr>`;
     }
 
     let html = emailOpen(`You're serving this Sunday at ${SITE_NAME}!`);
