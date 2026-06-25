@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Serving Contact List â€” Commissioned City Church</title>
+  <title>Serving Contact List — Commissioned City Church</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400&family=Montserrat:wght@600;700;800&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
@@ -11,13 +11,13 @@
   <link rel="stylesheet" href="/css/members.css">
   <link rel="icon" type="image/png" href="/assets/logo.png">
 </head>
-<body style="background:#f0ece8;min-height:100vh;">
+<body style="background:#f4f5f7;min-height:100vh;">
 
 <main style="padding:32px 16px;display:flex;justify-content:center;">
   <div style="background:#fff;border-radius:12px;overflow:hidden;max-width:600px;width:100%;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
 
     <!-- Header bar -->
-    <div style="background:var(--mp-accent,#7a4a35);padding:28px 40px;text-align:center;">
+    <div style="background:var(--mp-accent,#112E53);padding:28px 40px;text-align:center;">
       <h1 style="margin:0;color:#fff;font-size:24px;font-weight:normal;letter-spacing:0.02em;font-family:Montserrat,sans-serif;">
         Commissioned City Church
       </h1>
@@ -26,12 +26,12 @@
     <!-- Content -->
     <div id="swap-content" style="padding:32px 40px;">
       <div id="swap-loading" style="text-align:center;color:#888;padding:40px 0;">
-        Loading contact listâ€¦
+        Loading contact list…
       </div>
     </div>
 
     <!-- Footer -->
-    <div style="background:#f9f6f4;padding:20px 40px;border-top:1px solid #e8e0db;text-align:center;">
+    <div style="background:#f4f5f7;padding:20px 40px;border-top:1px solid #e6e9ee;text-align:center;">
       <p style="margin:0 0 4px;font-size:12px;color:#aaa;font-family:sans-serif;">Commissioned City Church</p>
       <p style="margin:0;font-size:12px;color:#bbb;font-family:sans-serif;">
         <a href="mailto:info@commissionedcity.church" style="color:#bbb;text-decoration:none;">info@commissionedcity.church</a>
@@ -54,10 +54,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     content.innerHTML =
       '<div style="text-align:center;padding:32px 0;">' +
       '<p style="font-size:2em;margin-bottom:16px;">&#9888;</p>' +
-      '<h2 style="color:#7a4a35;font-family:Montserrat,sans-serif;font-size:20px;margin-bottom:12px;">Link Expired</h2>' +
+      '<h2 style="color:#112E53;font-family:Montserrat,sans-serif;font-size:20px;margin-bottom:12px;">Link Expired</h2>' +
       '<p style="color:#666;font-size:15px;line-height:1.6;">' + msg + '</p>' +
       '<p style="margin-top:20px;font-size:13px;color:#aaa;">Questions? Contact us at ' +
-      '<a href="mailto:info@commissionedcity.church" style="color:#7a4a35;">info@commissionedcity.church</a></p>' +
+      '<a href="mailto:info@commissionedcity.church" style="color:#112E53;">info@commissionedcity.church</a></p>' +
       '</div>';
   }
 
@@ -143,6 +143,24 @@ document.addEventListener('DOMContentLoaded', async function() {
     (guests || []).forEach(function(g) { guestMap[g.id] = g; });
   }
 
+  // Teams — resolve the recipient's relevant team(s) for the "find a sub" links.
+  // Sunday-serving roles share their team's name, so match role -> team by name,
+  // falling back to the team_id stored on the matching roster slot.
+  var { data: allTeams } = await sb.from('teams').select('id, name');
+  var relevantTeams = (allTeams || []).filter(function(t) {
+    return (t.name || '').toLowerCase() === (tokenRow.role || '').toLowerCase();
+  });
+  if (!relevantTeams.length) {
+    var teamNameById = {}; (allTeams || []).forEach(function(t) { teamNameById[t.id] = t.name; });
+    var seenTeam = {};
+    slots.forEach(function(s) {
+      if ((s.role || '') === tokenRow.role && s.team_id && teamNameById[s.team_id] && !seenTeam[s.team_id]) {
+        seenTeam[s.team_id] = 1;
+        relevantTeams.push({ id: s.team_id, name: teamNameById[s.team_id] });
+      }
+    });
+  }
+
   function getAssigneeName(slot) {
     var t = slot.assignee_type || '';
     if (t === 'member' && slot.assignee_id) {
@@ -173,7 +191,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       var p = profileMap[slot.assignee_id];
       if (!p) return '';
       var parts = [];
-      if (p.email) parts.push('<a href="mailto:'+esc(p.email)+'" style="color:#7a4a35;">'+esc(p.email)+'</a>');
+      if (p.email) parts.push('<a href="mailto:'+esc(p.email)+'" style="color:#112E53;">'+esc(p.email)+'</a>');
       if (p.phone1) parts.push(esc((p.phone1_type || 'Cell') + ': ' + p.phone1));
       return parts.join('<br>');
     }
@@ -184,15 +202,15 @@ document.addEventListener('DOMContentLoaded', async function() {
         var p = profileMap[pid];
         if (!p) return;
         var name = p.first_name || (p.full_name || '').split(' ')[0] || p.email;
-        var contact = p.email ? '<a href="mailto:'+esc(p.email)+'" style="color:#7a4a35;">'+esc(p.email)+'</a>' : '';
-        if (p.phone1) contact += (contact ? ' Â· ' : '') + esc((p.phone1_type||'Cell')+': '+p.phone1);
+        var contact = p.email ? '<a href="mailto:'+esc(p.email)+'" style="color:#112E53;">'+esc(p.email)+'</a>' : '';
+        if (p.phone1) contact += (contact ? ' &middot; ' : '') + esc((p.phone1_type||'Cell')+': '+p.phone1);
         if (contact) lines.push('<strong>'+esc(name)+':</strong> ' + contact);
       });
       return lines.join('<br>');
     }
     if (t === 'guest' && slot.guest_id) {
       var g = guestMap[slot.guest_id];
-      return (g && g.email) ? '<a href="mailto:'+esc(g.email)+'" style="color:#7a4a35;">'+esc(g.email)+'</a>' : '';
+      return (g && g.email) ? '<a href="mailto:'+esc(g.email)+'" style="color:#112E53;">'+esc(g.email)+'</a>' : '';
     }
     return '';
   }
@@ -204,34 +222,53 @@ document.addEventListener('DOMContentLoaded', async function() {
   // Build HTML
   var html = '';
   html += '<div class="mp-swap-header" style="text-align:center;margin-bottom:24px;">';
-  html += '<h2 style="font-family:Montserrat,sans-serif;color:#333;font-size:20px;margin:0 0 6px;">Serving Contact List</h2>';
-  html += '<p style="margin:0 0 4px;font-family:sans-serif;font-size:15px;color:#333;"><strong>' + esc(eventTitle) + '</strong> &mdash; ' + esc(dateLabel) + '</p>';
-  html += '<p style="margin:0;font-family:sans-serif;font-size:14px;color:#666;line-height:1.6;">Hi <strong>' + esc(tokenRow.person_name) + '</strong>! You\'re listed as <strong>' + esc(tokenRow.role) + '</strong>. Here\'s everyone serving that day &mdash; reach out directly to arrange a swap.</p>';
+  html += '<h2 style="font-family:Montserrat,sans-serif;color:#112E53;font-size:20px;margin:0 0 6px;">Serving Contact List</h2>';
+  html += '<p style="margin:0 0 10px;font-family:sans-serif;font-size:15px;color:#333;"><strong>' + esc(eventTitle) + '</strong> &mdash; ' + esc(dateLabel) + '</p>';
+  html += '<p style="margin:0 0 8px;font-family:sans-serif;font-size:14px;color:#444;line-height:1.6;">Hi <strong>' + esc(tokenRow.person_name) + '</strong>! You\'re listed as <strong>' + esc(tokenRow.role) + '</strong>. Here\'s everyone else serving with you that day.</p>';
+  html += '<p style="margin:0;font-family:sans-serif;font-size:14px;color:#444;line-height:1.6;">If you\'re unable to serve as scheduled, please reach out to others on your team to arrange a swap.</p>';
   html += '</div>';
 
-  var assignedSlots = slots.filter(function(s) { return getAssigneeName(s); });
+  // "Everyone else" — drop the recipient's own slot from the list
+  var recipFirst = (tokenRow.person_name || '').trim().toLowerCase();
+  var assignedSlots = slots.filter(function(s) {
+    var nm = getAssigneeName(s);
+    if (!nm) return false;
+    var firstNm = (nm.split(' ')[0] || '').toLowerCase();
+    if ((s.role || '') === tokenRow.role && recipFirst && firstNm === recipFirst) return false;
+    return true;
+  });
 
   if (!assignedSlots.length) {
-    html += '<p style="text-align:center;color:#888;font-family:sans-serif;">No roster assignments found for this date.</p>';
+    html += '<p style="text-align:center;color:#888;font-family:sans-serif;line-height:1.6;">No one else is on the roster for this date yet.</p>';
   } else {
     html += '<table style="width:100%;border-collapse:collapse;font-family:sans-serif;font-size:14px;">';
     html += '<thead><tr>';
-    html += '<th style="text-align:left;padding:10px 12px;background:#f5f0ec;color:#7a4a35;font-weight:600;border-bottom:2px solid #e8e0db;">Role</th>';
-    html += '<th style="text-align:left;padding:10px 12px;background:#f5f0ec;color:#7a4a35;font-weight:600;border-bottom:2px solid #e8e0db;">Name</th>';
-    html += '<th style="text-align:left;padding:10px 12px;background:#f5f0ec;color:#7a4a35;font-weight:600;border-bottom:2px solid #e8e0db;">Contact</th>';
+    html += '<th style="text-align:left;padding:10px 12px;background:#eef1f6;color:#112E53;font-weight:600;border-bottom:2px solid #dde3eb;">Role</th>';
+    html += '<th style="text-align:left;padding:10px 12px;background:#eef1f6;color:#112E53;font-weight:600;border-bottom:2px solid #dde3eb;">Name</th>';
+    html += '<th style="text-align:left;padding:10px 12px;background:#eef1f6;color:#112E53;font-weight:600;border-bottom:2px solid #dde3eb;">Contact</th>';
     html += '</tr></thead><tbody>';
     assignedSlots.forEach(function(slot, i) {
-      var bg = i % 2 === 0 ? '#fff' : '#faf7f5';
+      var bg = i % 2 === 0 ? '#fff' : '#f7f9fc';
       html += '<tr style="background:' + bg + ';">';
-      html += '<td style="padding:10px 12px;border-bottom:1px solid #f0ebe8;color:#555;vertical-align:top;">' + esc(slot.role || '') + '</td>';
-      html += '<td style="padding:10px 12px;border-bottom:1px solid #f0ebe8;font-weight:600;color:#333;vertical-align:top;">' + esc(getAssigneeName(slot)) + '</td>';
-      html += '<td style="padding:10px 12px;border-bottom:1px solid #f0ebe8;color:#555;vertical-align:top;">' + getAssigneeContact(slot) + '</td>';
+      html += '<td style="padding:10px 12px;border-bottom:1px solid #eef1f6;color:#555;vertical-align:top;">' + esc(slot.role || '') + '</td>';
+      html += '<td style="padding:10px 12px;border-bottom:1px solid #eef1f6;font-weight:600;color:#333;vertical-align:top;">' + esc(getAssigneeName(slot)) + '</td>';
+      html += '<td style="padding:10px 12px;border-bottom:1px solid #eef1f6;color:#555;vertical-align:top;">' + getAssigneeContact(slot) + '</td>';
       html += '</tr>';
     });
     html += '</tbody></table>';
   }
 
-  html += '<p style="margin-top:24px;font-size:12px;color:#aaa;text-align:center;font-family:sans-serif;">This link expires after 7 days. Questions? Email <a href="mailto:info@commissionedcity.church" style="color:#aaa;">info@commissionedcity.church</a>.</p>';
+  // Links to the recipient's relevant team(s) so they can find a substitute
+  if (relevantTeams.length) {
+    html += '<div style="margin-top:22px;text-align:center;">';
+    html += '<p style="margin:0 0 10px;font-family:sans-serif;font-size:13px;color:#5C718E;line-height:1.6;">View your team to find someone who can cover for you:</p>';
+    relevantTeams.forEach(function(t) {
+      html += '<a href="/members/dashboard.html?tab=teams#team-' + esc(t.id) + '" style="display:inline-block;margin:4px;background:#112E53;color:#fff;text-decoration:none;font-family:Montserrat,sans-serif;font-size:13px;font-weight:600;padding:10px 20px;border-radius:6px;">' + esc(t.name) + ' Team &rarr;</a>';
+    });
+    html += '</div>';
+  }
+
+  html += '<p style="margin-top:24px;font-size:12px;color:#aaa;text-align:center;font-family:sans-serif;">This link expires after 7 days. Questions? Email <a href="mailto:info@commissionedcity.church" style="color:#8a94a3;">info@commissionedcity.church</a>.</p>';
 
   content.innerHTML = html;
 });
