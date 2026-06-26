@@ -657,6 +657,7 @@
       var mt = tm.member_type || 'member';
       if (mt === 'nonmember') return tm.nonmember_name || 'Non-member';
       if (mt === 'child') { var ch = childMap[tm.child_id]; return ch ? ch.name : 'Child'; }
+      if (mt === 'family') { var fp = profMap[tm.member_id] || {}; var fln = fp.last_name || ''; return (fln ? fln + ' ' : '') + 'Family'; }
       var p = profMap[tm.member_id] || {};
       return ((p.first_name || '') + (p.last_name ? ' ' + p.last_name : '')).trim() || p.full_name || p.email || 'Unknown';
     }
@@ -664,6 +665,7 @@
       var mt = tm.member_type || 'member';
       if (mt === 'nonmember') return tm.nonmember_email || '';
       if (mt === 'child') { var ch = childMap[tm.child_id]; if (ch) { var par = profMap[ch.profile_id]; return par ? par.email : ''; } return ''; }
+      if (mt === 'family') return (profMap[tm.member_id] || {}).email || '';
       return (profMap[tm.member_id] || {}).email || '';
     }
 
@@ -719,6 +721,7 @@
           if (tm.role === 'leader') fHtml += ' <span class="mp-group-dir-role">Leader</span>';
           if (mt === 'nonmember') fHtml += ' <span class="mp-group-dir-role" style="background:#f0a500;color:#fff;">Non-member</span>';
           if (mt === 'child') fHtml += ' <span class="mp-group-dir-role" style="background:#4a8c6f;color:#fff;">Child</span>';
+          if (mt === 'family') fHtml += ' <span class="mp-group-dir-role" style="background:#112E53;color:#fff;">Family</span>';
           fHtml += '</span>';
           if (displayEmail) {
             fHtml += '<span class="mp-group-dir-contact"><a href="mailto:' + D.esc(displayEmail) + '">' + D.esc(displayEmail) + '</a>';
@@ -803,6 +806,7 @@
       var editMemIds      = editTmRows.filter(function(tm){ return (tm.member_type||'member')==='member'; }).map(function(tm){ return tm.member_id; });
       var editChildIds    = editTmRows.filter(function(tm){ return tm.member_type==='child'; }).map(function(tm){ return tm.child_id; });
       var editNonmembers  = editTmRows.filter(function(tm){ return tm.member_type==='nonmember'; });
+      var editFamilyIds   = editTmRows.filter(function(tm){ return tm.member_type==='family'; }).map(function(tm){ return tm.member_id; });
 
       /* store picker data for the family-select helper */
       var _pickerProf = {}, _pickerChildren = {};
@@ -903,6 +907,33 @@
       }
       html += '</div>'; /* tm-picker-type-children */
 
+      /* ── Families (a couple + their children, assigned as one unit) ── */
+      var familyList = [];
+      var seenFam = {};
+      Object.keys(childrenByParent).forEach(function(pid){
+        var par = profMap[pid]; if (!par) return;
+        var spId = (par.spouse_id && profMap[par.spouse_id]) ? par.spouse_id : '';
+        var key = [pid].concat(spId ? [spId] : []).sort().join('_');
+        if (seenFam[key]) return; seenFam[key] = true;
+        var ln = par.last_name || (spId && profMap[spId] ? profMap[spId].last_name : '') || '';
+        familyList.push({ anchor: pid, label: (ln ? ln + ' ' : '') + 'Family' });
+      });
+      familyList.sort(function(a,b){ return a.label.localeCompare(b.label); });
+      var showFamilies = isSun && familyList.length;
+      html += '<div id="tm-picker-type-families"' + (showFamilies ? '' : ' style="display:none;"') + '>';
+      html += '<div class="mp-picker-type-hdr" style="position:sticky;top:0;z-index:2;background:#f0f3f7;padding:5px 10px;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#5c718e;border-bottom:1px solid #e8ecf0;border-top:2px solid #e4e9f0;">Families</div>';
+      familyList.forEach(function(f){
+        var isChecked = editFamilyIds.indexOf(f.anchor) !== -1;
+        html += '<div class="mp-picker-row" data-name="' + D.esc(f.label.toLowerCase()) + '" style="display:flex;align-items:center;padding:6px 10px;border-bottom:1px solid #f7f9fc;">';
+        html += '<label style="display:flex;align-items:center;gap:8px;flex:1;cursor:pointer;font-size:0.9rem;">'
+          + '<input type="checkbox" name="family_ids" class="mp-family-check" value="' + D.esc(f.anchor) + '"' + (isChecked ? ' checked' : '') + ' style="flex-shrink:0;width:16px;height:16px;">'
+          + '<span>' + D.esc(f.label) + ' <span style="color:#9aabb8;font-size:0.82em;">· both parents + children</span></span>'
+          + '</label>';
+        html += '</div>';
+      });
+      html += '<input type="hidden" id="tm-orig-families" value="' + D.esc(editFamilyIds.join(',')) + '">';
+      html += '</div>'; /* tm-picker-type-families */
+
       html += '</div>'; /* tm-picker-scroll */
 
       /* ── Non-member volunteers (outside scroll for easy input) ── */
@@ -968,6 +999,7 @@
             html += '<span class="mp-group-dir-name">' + D.esc(displayName);
             if (mt === 'nonmember') html += ' <span class="mp-group-dir-role" style="background:#f0a500;color:#fff;font-size:0.72rem;padding:1px 6px;border-radius:10px;">Non-member</span>';
             if (mt === 'child')     html += ' <span class="mp-group-dir-role" style="background:#4a8c6f;color:#fff;font-size:0.72rem;padding:1px 6px;border-radius:10px;">Child</span>';
+            if (mt === 'family')    html += ' <span class="mp-group-dir-role" style="background:#112E53;color:#fff;font-size:0.72rem;padding:1px 6px;border-radius:10px;">Family</span>';
             html += '</span>';
             if (displayEmail) {
               html += '<span class="mp-group-dir-contact"><a href="mailto:' + D.esc(displayEmail) + '">' + D.esc(displayEmail) + '</a>';
@@ -1046,6 +1078,11 @@
         var fd = new FormData(form);
         var action = fd.get('action_type'), teamId = fd.get('team_id') || '', name = (fd.get('team_name') || '').trim();
         var memberIds = fd.getAll('member_ids');
+        /* collect family selections (assigned as one unit) + which are newly added */
+        var familyIds = fd.getAll('family_ids');
+        var origFamilies = ((document.getElementById('tm-orig-families') || {}).value || '');
+        origFamilies = origFamilies ? origFamilies.split(',') : [];
+        var newFamilies = familyIds.filter(function(a){ return origFamilies.indexOf(a) === -1; });
         /* collect child rows */
         var childRows = [];
         document.querySelectorAll('.mp-child-check:checked').forEach(function(cb) {
@@ -1103,7 +1140,7 @@
           teamId = newT ? newT.id : null;
           if (!hasSundayCols) alert('Team created. Run the SQL migration to enable Sunday serving features.');
         }
-        if (teamId && (memberIds.length || childRows.length || nonmemberRows.length)) {
+        if (teamId && (memberIds.length || childRows.length || nonmemberRows.length || familyIds.length)) {
           var insertRows = [];
           memberIds.forEach(function(pid) {
             insertRows.push({ team_id: teamId, member_id: pid, role: 'member', member_type: 'member' });
@@ -1113,6 +1150,9 @@
           });
           nonmemberRows.forEach(function(nm) {
             insertRows.push({ team_id: teamId, member_id: null, role: 'member', member_type: 'nonmember', nonmember_name: nm.name, nonmember_email: nm.email });
+          });
+          familyIds.forEach(function(aid) {
+            insertRows.push({ team_id: teamId, member_id: aid, role: 'member', member_type: 'family' });
           });
           var insRes = await _sb2.from('team_members').insert(insertRows);
           if (insRes.error) {
@@ -1135,6 +1175,29 @@
             } else {
               alert('Could not save team members: ' + insRes.error.message);
             }
+          }
+          /* notify both parents when a family is NEWLY added to this team */
+          if (!insRes.error && newFamilies.length) {
+            newFamilies.forEach(function(aid) {
+              var fpar = profMap[aid]; if (!fpar) return;
+              var fspId = (fpar.spouse_id && profMap[fpar.spouse_id]) ? fpar.spouse_id : '';
+              var fparents = [aid].concat(fspId ? [fspId] : []);
+              var fkidNames = [];
+              fparents.forEach(function(p){ (childrenByParent[p] || []).forEach(function(c){ if (fkidNames.indexOf(c.name) === -1) fkidNames.push(c.name); }); });
+              var fsurname = fpar.last_name || (fspId && profMap[fspId] ? profMap[fspId].last_name : '') || '';
+              var fLabel = (fsurname ? fsurname + ' ' : '') + 'Family';
+              var fNames = fparents.map(function(p){ var pp = profMap[p]; return pp ? (((pp.first_name||'')+(pp.last_name?' '+pp.last_name:'')).trim() || pp.full_name) : ''; }).filter(Boolean).concat(fkidNames);
+              fparents.forEach(function(p){
+                _sb2.from('member_notifications').insert({ profile_id: p, type: 'family_team_added', title: 'Your family was added to a team', body: 'The <strong>' + D.esc(fLabel) + '</strong> has been added to the <strong>' + D.esc(name) + '</strong> team.' }).then(function(){});
+              });
+              var fEmails = fparents.map(function(p){ return profMap[p] && profMap[p].email; }).filter(Boolean);
+              if (fEmails.length) {
+                D.callEdge('send-email', { action: 'special_email',
+                  subject: 'Your family was added to the ' + name + ' team',
+                  body: '<p>Hi!</p><p>The <strong>' + D.esc(fLabel) + '</strong> (' + D.esc(fNames.join(', ')) + ') has been added to the <strong>' + D.esc(name) + '</strong> team. You\'ll get a reminder whenever your family is scheduled to serve.</p>',
+                  recipients: fEmails });
+              }
+            });
           }
         }
         /* close edit and show confirmation */

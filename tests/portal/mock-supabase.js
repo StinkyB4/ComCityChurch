@@ -201,6 +201,7 @@
         if (name === 'save_children') { return Promise.resolve({ data: null, error: null }); }
         return Promise.resolve({ data: [], error: null });
       },
+      functions: { invoke: function (name, opts) { record('edge', name, (opts && opts.body) || {}); return Promise.resolve({ data: { ok: true }, error: null }); } },
       channel: function () { var c = { on: function () { return c; }, subscribe: function () { return c; }, unsubscribe: function () {} }; return c; },
       removeChannel: function () {},
       storage: { from: function () { return {
