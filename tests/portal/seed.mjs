@@ -95,6 +95,7 @@ export function buildSeed(now = new Date()) {
         slot('t-av', 'Sound + Slides', 'couple', { assignee_id: 'u-mike', assignee_id_b: 'u-jen' }),
         slot('t-kids', 'Kids Helper', 'child', { assignee_id: 'c-noah', child_name: 'Noah Cattani' }),
         slot('t-welcome', 'Coffee', 'guest', { guest_id: 'g-jordan' }),
+        slot('t-setup', 'Setup', 'family', { assignee_id: 'u-brennan', assignee_id_b: 'u-sarah', family_name: 'Cattani' }),
       ],
     },
     {

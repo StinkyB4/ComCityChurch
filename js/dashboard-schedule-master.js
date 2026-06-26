@@ -59,6 +59,11 @@
     var t = slot.assignee_type;
     if (t === 'guest_inline') return slot.guest_name || '';
     if (t === 'child') { var ch = _childMap[slot.assignee_id]; return ch ? ch.name : (slot.child_name || ''); }
+    if (t === 'family') {
+      var pf = _profMap[slot.assignee_id];
+      var ln = (pf && pf.last_name) || slot.family_name || '';
+      return (ln ? ln + ' ' : '') + 'Family';
+    }
     if ((t === 'member' || t === 'couple') && slot.assignee_id) {
       var p = _profMap[slot.assignee_id];
       if (!p) return '';
@@ -99,7 +104,9 @@
       mOpts += '<option value="member:' + p.id + '">' + esc(mn) + '</option>';
     });
     if (mOpts) html += '<optgroup label="Members">'         + mOpts + '</optgroup>';
-    if (cOpts) html += '<optgroup label="Couples / Families">' + cOpts + '</optgroup>';
+    if (cOpts) html += '<optgroup label="Couples">' + cOpts + '</optgroup>';
+    var famOpts = buildFamilyOpts();
+    if (famOpts) html += '<optgroup label="Families">' + famOpts + '</optgroup>';
     if (team.allow_children) {
       var kids = Object.values(_childMap).sort(function (a,b) { return a.name.localeCompare(b.name); }).map(function (c) {
         var par = _profMap[c.profile_id];
@@ -112,6 +119,26 @@
       html += '<option value="guest_inline">✚ Non-member (enter name &amp; email)</option>';
     }
     return html;
+  }
+
+  /* ── family options (a couple with children) — shown for any role ──
+     A "family" is anchored to one parent; the spouse + children are derived.
+     Value: family:<anchorParentId>:<spouseId>  (spouseId may be empty). */
+  function buildFamilyOpts() {
+    var fams = {};
+    Object.keys(_childMap).forEach(function (cid) {
+      var c = _childMap[cid];
+      var par = _profMap[c.profile_id]; if (!par) return;
+      var spouseId = (par.spouse_id && _profMap[par.spouse_id]) ? par.spouse_id : '';
+      var key = [par.id].concat(spouseId ? [spouseId] : []).sort().join('_');
+      if (!fams[key]) {
+        var ln = par.last_name || (spouseId && _profMap[spouseId] ? _profMap[spouseId].last_name : '') || '';
+        fams[key] = { anchor: par.id, spouse: spouseId, label: (ln ? ln + ' ' : '') + 'Family' };
+      }
+    });
+    return Object.keys(fams).sort(function (a, b) { return fams[a].label.localeCompare(fams[b].label); })
+      .map(function (k) { var f = fams[k]; return '<option value="family:' + f.anchor + ':' + f.spouse + '">' + esc(f.label) + '</option>'; })
+      .join('');
   }
 
   /* ── CSS injection ─────────────────────────────────────────────── */
@@ -540,6 +567,7 @@
       if (_editSlots.some(function(s) { return s.assignee_type===pts[0]&&s.assignee_id===pts[1]; })) { sel.value=''; return; }
       slot = { id: 'slot_'+Math.random().toString(36).slice(2), role: _curTeam?_curTeam.name:'', team_id: _curTeam?_curTeam.id:'', assignee_type:pts[0]||'', assignee_id:pts[1]||'', assignee_id_b:pts[2]||'', guest_id:'', guest_name:'', guest_email:'' };
       if (pts[0]==='child'&&pts[1]&&_childMap[pts[1]]) slot.child_name = _childMap[pts[1]].name;
+      if (pts[0]==='family'&&pts[1]&&_profMap[pts[1]]) slot.family_name = _profMap[pts[1]].last_name || '';
     }
     _editSlots.push(slot); sel.value = '';
     var empty = document.getElementById('mp-ms-empty'); if (empty) empty.remove();

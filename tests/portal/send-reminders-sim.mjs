@@ -60,14 +60,17 @@ function run() {
   const thisRoster = rosterFor(thisDate);
   const nextRoster = rosterFor(nextDate);
 
-  const profileIds = new Set(), childIds = new Set(), guestIds = new Set();
+  const profileIds = new Set(), childIds = new Set(), guestIds = new Set(), familyParentIds = new Set();
   const collect = (roster) => (roster?.slots || []).forEach(s => {
     if ((s.assignee_type === 'member' || s.assignee_type === 'couple') && s.assignee_id) profileIds.add(s.assignee_id);
     if (s.assignee_type === 'couple' && s.assignee_id_b) profileIds.add(s.assignee_id_b);
     if (s.assignee_type === 'guest' && s.guest_id) guestIds.add(s.guest_id);
     if (s.assignee_type === 'child' && s.assignee_id) childIds.add(s.assignee_id);
+    if (s.assignee_type === 'family') { if (s.assignee_id) { profileIds.add(s.assignee_id); familyParentIds.add(s.assignee_id); } if (s.assignee_id_b) { profileIds.add(s.assignee_id_b); familyParentIds.add(s.assignee_id_b); } }
   });
   collect(thisRoster); collect(nextRoster);
+  const familyKidsByParent = {};
+  DB.children.filter(c => familyParentIds.has(c.profile_id)).forEach(c => { (familyKidsByParent[c.profile_id] = familyKidsByParent[c.profile_id] || []).push(c.name); });
 
   const childMap = {};
   [...childIds].forEach(id => { const c = childById(id); if (c) { childMap[id] = c; profileIds.add(c.profile_id); } });
@@ -101,6 +104,15 @@ function run() {
       const parentA = profMap[child.profile_id];
       if (parentA?.spouse_id) parentIds.push(parentA.spouse_id);
       parentIds.forEach(pid => { const parent = profMap[pid]; if (!parent || !parent.email || parent.child_notif_optout) return; addAssignee(pid, slotWithChild, which); });
+    } else if (a === 'family') {
+      const parents = [s.assignee_id, s.assignee_id_b].filter(Boolean);
+      const anchor = profMap[parents[0]];
+      const surname = (anchor && anchor.last_name) || s.family_name || '';
+      const label = (surname ? surname + ' ' : '') + 'Family';
+      const parentFirst = parents.map(pid => { const p = profMap[pid]; return p ? (p.first_name || (p.full_name || '').split(' ')[0]) : ''; }).filter(Boolean);
+      const kids = [...new Set(parents.flatMap(pid => familyKidsByParent[pid] || []))];
+      const slotWithFamily = { ...s, _family_label: label, _family_members: [...parentFirst, ...kids] };
+      parents.forEach(pid => addAssignee(pid, slotWithFamily, which));
     }
   });
   addSlot(thisRoster, 'this'); addSlot(nextRoster, 'next');
@@ -110,7 +122,7 @@ function run() {
 
   for (const entry of Object.values(assigneeMap)) {
     if (!entry.this.length && !entry.next.length) continue;
-    const slotLabel = (s) => s._child_name ? `${s.role} (${s._child_name})` : s.role;
+    const slotLabel = (s) => s._family_label ? `${s.role} (${s._family_label})` : (s._child_name ? `${s.role} (${s._child_name})` : s.role);
     const thisRoles = entry.this.map(slotLabel).filter(Boolean).join(' & ');
     const nextRoles = entry.next.map(slotLabel).filter(Boolean).join(' & ');
 
@@ -126,6 +138,20 @@ function run() {
       const pid = entry.key.slice('member:'.length);
       notificationsInserted.push({ profile_id: pid, type: 'child_scheduled', title: `${who} serving this week`, body: `${who} ${parts.join(' and ')}.` });
     }
+
+    // family notification (both parents) + the family members to list in the email
+    const familySlotsThis = entry.this.filter(s => s._family_label);
+    const familySlotsNext = entry.next.filter(s => s._family_label);
+    if (entry.type === 'member' && (familySlotsThis.length || familySlotsNext.length)) {
+      const famLabels = [...new Set([...familySlotsThis, ...familySlotsNext].map(s => s._family_label))];
+      const rolesThis = [...new Set(familySlotsThis.map(s => s.role))].filter(Boolean).join(' & ');
+      const rolesNext = [...new Set(familySlotsNext.map(s => s.role))].filter(Boolean).join(' & ');
+      const fparts = [];
+      if (familySlotsThis.length) fparts.push(`scheduled for ${rolesThis} this Sunday (${thisLabel})`);
+      if (familySlotsNext.length) fparts.push(`scheduled for ${rolesNext} next Sunday (${nextLabel})`);
+      notificationsInserted.push({ profile_id: entry.key.slice('member:'.length), type: 'family_scheduled', title: 'Your family is serving this week', body: `The ${famLabels.join(' & ')} is ${fparts.join(' and ')}.` });
+    }
+    const famMembers = [...new Set([...entry.this, ...entry.next].flatMap(s => s._family_members || []))];
 
     let swapButtons = '';
     for (const s of entry.this) { if (!s.role) continue; const u = buildSwapToken(thisDate, s.role, entry.firstName); swapButtons += `<tr><td style="padding:4px 40px;"><a href="${u}" style="display:inline-block;background:${ACCENT};color:#fff;text-decoration:none;font-size:13px;font-weight:bold;padding:9px 20px;border-radius:6px;">View ${s.role} Team Contact List</a></td></tr>`; }
@@ -145,6 +171,7 @@ function run() {
         ? `<tr><td style="padding:16px 40px 4px;font-size:15px;color:#555;">Your child is scheduled for <strong>${nextRoles}</strong> next week.</td></tr>`
         : `<tr><td style="padding:16px 40px 4px;font-size:15px;color:#555;">And you're on <strong>${nextRoles}</strong> next week.</td></tr>`;
     }
+    if (famMembers.length) html += `<tr><td style="height:8px;"></td></tr><tr><td style="padding:0 40px 4px;font-size:14px;color:#666;">Serving as a family: <strong>${famMembers.join(', ')}</strong></td></tr>`;
     if (entry.this.length && swapButtons) html += `<tr><td style="height:20px;"></td></tr>` + swapButtons;
     html += `<tr><td style="height:24px;"></td></tr>` + emailClose();
 

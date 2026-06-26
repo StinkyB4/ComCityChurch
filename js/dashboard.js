@@ -460,8 +460,9 @@
     (rosterRes.data || []).forEach(function(r){
       var myRoles = (r.slots || []).filter(function(s){
         return (s.assignee_type==='member' && s.assignee_id===_user.id) ||
-               (s.assignee_type==='couple' && (s.assignee_id===_user.id || s.assignee_id_b===_user.id));
-      }).map(function(s){ return s.role||''; }).filter(Boolean);
+               (s.assignee_type==='couple' && (s.assignee_id===_user.id || s.assignee_id_b===_user.id)) ||
+               (s.assignee_type==='family' && (s.assignee_id===_user.id || s.assignee_id_b===_user.id));
+      }).map(function(s){ return (s.role||'') + (s.assignee_type==='family' ? ' (Family)' : ''); }).filter(Boolean);
       if(myRoles.length) upcomingServing.push({date:r.date, title:r.title||'Sunday Service', roles:myRoles});
     });
     var myChildren   = myChildrenRes.data || [];
@@ -472,8 +473,9 @@
     (evtAssignRes.data || []).forEach(function(ev){
       var myRoles = (ev.slots || []).filter(function(s){
         return (s.assignee_type==='member'  && s.assignee_id===_user.id) ||
-               (s.assignee_type==='couple'  && (s.assignee_id===_user.id || s.assignee_id_b===_user.id));
-      }).map(function(s){ return s.role||''; }).filter(Boolean);
+               (s.assignee_type==='couple'  && (s.assignee_id===_user.id || s.assignee_id_b===_user.id)) ||
+               (s.assignee_type==='family'  && (s.assignee_id===_user.id || s.assignee_id_b===_user.id));
+      }).map(function(s){ return (s.role||'') + (s.assignee_type==='family' ? ' (Family)' : ''); }).filter(Boolean);
       /* check if any of the user's children are in this event */
       var myKidSlots = (ev.slots || []).filter(function(s){
         return s.assignee_type==='child' && myChildIdSet[s.assignee_id];
