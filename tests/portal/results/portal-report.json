@@ -1,0 +1,91 @@
+{
+  "generatedAt": "2026-06-23T23:03:22.773Z",
+  "meta": {
+    "SUN1": "2026-06-28",
+    "SUN2": "2026-07-05",
+    "SUN3": "2026-07-12",
+    "todayStr": "2026-06-23"
+  },
+  "findings": [
+    {
+      "scenario": "welcome/Brennan serving card",
+      "pass": true,
+      "detail": "Your Upcoming Serving + Worship Lead"
+    },
+    {
+      "scenario": "welcome/Brennan child notification",
+      "pass": true,
+      "detail": "child card present"
+    },
+    {
+      "scenario": "welcome/Sarah serving card",
+      "pass": true,
+      "detail": "Your Upcoming Serving + Greeter"
+    },
+    {
+      "scenario": "welcome/Sarah child notification",
+      "pass": true,
+      "detail": "child card present"
+    },
+    {
+      "scenario": "welcome/Grace serving card",
+      "pass": true,
+      "detail": "Your Upcoming Serving + Vocals"
+    },
+    {
+      "scenario": "welcome/Mike serving card",
+      "pass": true,
+      "detail": "Your Upcoming Serving + Sound + Slides"
+    },
+    {
+      "scenario": "scheduler/master grid renders",
+      "pass": true,
+      "detail": "teams shown: Worship, Welcome, Kids, A/V"
+    },
+    {
+      "scenario": "teams/tab renders",
+      "pass": true,
+      "detail": "teams listed: Worship, Kids, A/V"
+    },
+    {
+      "scenario": "teams/edit form opens",
+      "pass": true,
+      "detail": "team-form rendered"
+    },
+    {
+      "scenario": "teams/form has member picker",
+      "pass": true,
+      "detail": "6 member checkboxes"
+    },
+    {
+      "scenario": "teams/form has child picker",
+      "pass": true,
+      "detail": "2 child checkboxes; parents=[{\"id\":\"c-ella\",\"parent\":\"u-brennan\"},{\"id\":\"c-noah\",\"parent\":\"u-brennan\"}]"
+    },
+    {
+      "scenario": "teams/form has non-member add",
+      "pass": true,
+      "detail": "add-non-member button present"
+    },
+    {
+      "scenario": "teams/insert builds all 3 types",
+      "pass": true,
+      "detail": "types: member, child, nonmember"
+    },
+    {
+      "scenario": "teams/non-member row has member_id=null (would violate NOT NULL in prod)",
+      "pass": true,
+      "detail": "1 row(s) with member_id=null: nonmember"
+    },
+    {
+      "scenario": "teams/child row carries parent member_id",
+      "pass": true,
+      "detail": "child_id=c-noah member_id=u-brennan"
+    },
+    {
+      "scenario": "emails/rendered",
+      "pass": true,
+      "detail": "6 reminder emails rendered to PNG"
+    }
+  ]
+}

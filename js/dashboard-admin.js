@@ -523,7 +523,18 @@
         /* if the extended schema is in place, scope the delete to member-type only */
         try { delTm = delTm.or('member_type.is.null,member_type.eq.member'); } catch(e) { /* column may not exist yet */ }
         await delTm;
-        if (newTeamIds.length) await _sb.from('team_members').insert(newTeamIds.map(function (tid) { return { team_id: tid, member_id: uid, role: 'member', member_type: 'member' }; }));
+        if (newTeamIds.length) {
+          var tmIns = await _sb.from('team_members').insert(newTeamIds.map(function (tid) { return { team_id: tid, member_id: uid, role: 'member', member_type: 'member' }; }));
+          if (tmIns.error) {
+            /* retry without the extended column if it's missing, then surface any
+               real failure instead of swallowing it */
+            var colMissing = tmIns.error.message && tmIns.error.message.indexOf('column') !== -1;
+            var tmIns2 = colMissing
+              ? await _sb.from('team_members').insert(newTeamIds.map(function (tid) { return { team_id: tid, member_id: uid, role: 'member' }; }))
+              : tmIns;
+            if (tmIns2.error) alert('Profile saved, but team assignments could not be updated: ' + tmIns2.error.message);
+          }
+        }
 
         /* children — read from DOM, save via the atomic save_children() RPC.
            One server-side transaction handles the whole add/update/remove

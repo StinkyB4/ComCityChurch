@@ -30,7 +30,8 @@ const SITE_URL       = Deno.env.get('SITE_URL')       || 'https://commissionedci
 const SITE_NAME      = Deno.env.get('SITE_NAME')      || 'Commissioned City Church';
 const SUPABASE_URL   = Deno.env.get('SUPABASE_URL')   || '';
 const SERVICE_KEY    = Deno.env.get('SERVICE_ROLE_KEY') || '';
-const BRAND = '#7a4a35';
+const BRAND  = '#112E53'; // Commissioned City navy (primary)
+const ACCENT = '#D5393B'; // Commissioned City red (call-to-action)
 
 const CORS = {
   'Access-Control-Allow-Origin':  '*',
@@ -57,16 +58,16 @@ function formatDate(dateStr: string): string {
 function emailOpen(preview = '') {
   return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
 ${preview ? `<span style="display:none;max-height:0;overflow:hidden;">${preview}</span>` : ''}
-</head><body style="margin:0;padding:0;background:#f0ece8;font-family:Georgia,serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0ece8;padding:32px 16px;"><tr><td align="center">
+</head><body style="margin:0;padding:0;background:#f4f5f7;font-family:'Helvetica Neue',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f5f7;padding:32px 16px;"><tr><td align="center">
 <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;max-width:600px;width:100%;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
 <tr><td style="background:${BRAND};padding:28px 40px;text-align:center;">
-<h1 style="margin:0;color:#fff;font-size:24px;font-weight:normal;">${SITE_NAME}</h1></td></tr>`;
+<h1 style="margin:0;color:#fff;font-size:22px;font-weight:800;letter-spacing:0.02em;text-transform:uppercase;">${SITE_NAME}</h1></td></tr>`;
 }
 
 function emailClose() {
-  return `<tr><td style="background:#f9f6f4;padding:20px 40px;border-top:1px solid #e8e0db;text-align:center;">
-<p style="margin:0;font-size:12px;color:#bbb;">${SITE_NAME} — <a href="mailto:${ADMIN_EMAIL}" style="color:#bbb;">${ADMIN_EMAIL}</a></p>
+  return `<tr><td style="background:#f4f5f7;padding:20px 40px;border-top:1px solid #e6e9ee;text-align:center;">
+<p style="margin:0;font-size:12px;color:#8a94a3;">${SITE_NAME} — <a href="mailto:${ADMIN_EMAIL}" style="color:#8a94a3;">${ADMIN_EMAIL}</a></p>
 </td></tr></table></td></tr></table></body></html>`;
 }
 
@@ -164,6 +165,7 @@ serve(async (req: Request) => {
   const profileIds = new Set<string>();
   const guestIds   = new Set<string>();
   const childIds   = new Set<string>();
+  const familyParentIds = new Set<string>();
 
   function collectIds(roster: Record<string, unknown> | null) {
     if (!roster) return;
@@ -174,6 +176,10 @@ serve(async (req: Request) => {
       if (slot.assignee_type === 'couple'  && slot.assignee_id_b) profileIds.add(String(slot.assignee_id_b));
       if (slot.assignee_type === 'guest'   && slot.guest_id)      guestIds.add(String(slot.guest_id));
       if (slot.assignee_type === 'child'   && slot.assignee_id)   childIds.add(String(slot.assignee_id));
+      if (slot.assignee_type === 'family') {
+        if (slot.assignee_id)   { profileIds.add(String(slot.assignee_id));   familyParentIds.add(String(slot.assignee_id)); }
+        if (slot.assignee_id_b) { profileIds.add(String(slot.assignee_id_b)); familyParentIds.add(String(slot.assignee_id_b)); }
+      }
     });
   }
   collectIds(thisRoster as Record<string, unknown>);
@@ -187,12 +193,21 @@ serve(async (req: Request) => {
   const childById: Record<string, ChildRow> = {};
   (childrenData as ChildRow[]).forEach((c) => { childById[c.id] = c; profileIds.add(c.profile_id); });
 
+  /* family children → names per parent, for listing the whole family in the reminder */
+  const familyChildren = familyParentIds.size
+    ? (await sb.from('children').select('name,profile_id').in('profile_id', [...familyParentIds])).data || []
+    : [];
+  const familyKidsByParent: Record<string, string[]> = {};
+  (familyChildren as Array<{ name: string; profile_id: string }>).forEach((c) => {
+    (familyKidsByParent[c.profile_id] = familyKidsByParent[c.profile_id] || []).push(c.name);
+  });
+
   const [{ data: profiles }, { data: guests }] = await Promise.all([
-    profileIds.size ? sb.from('profiles').select('id,first_name,full_name,email,phone1,phone1_type,spouse_id,child_notif_optout').in('id', [...profileIds]) : Promise.resolve({ data: [] }),
+    profileIds.size ? sb.from('profiles').select('id,first_name,last_name,full_name,email,phone1,phone1_type,spouse_id,child_notif_optout').in('id', [...profileIds]) : Promise.resolve({ data: [] }),
     guestIds.size   ? sb.from('guests').select('id,name,email').in('id', [...guestIds])                                                                     : Promise.resolve({ data: [] }),
   ]);
 
-  type ProfRow = { id: string; first_name: string; full_name: string; email: string; phone1: string; phone1_type: string; spouse_id?: string; child_notif_optout?: boolean };
+  type ProfRow = { id: string; first_name: string; last_name?: string; full_name: string; email: string; phone1: string; phone1_type: string; spouse_id?: string; child_notif_optout?: boolean };
   const profMap: Record<string, ProfRow> = {};
   (profiles || []).forEach((p: ProfRow) => { profMap[p.id] = p; });
 
@@ -201,7 +216,7 @@ serve(async (req: Request) => {
     (childrenData as ChildRow[]).map(c => profMap[c.profile_id]?.spouse_id).filter(Boolean) as string[]
   )].filter(id => !profMap[id]);
   if (spouseIds.length) {
-    const { data: spouseData } = await sb.from('profiles').select('id,first_name,full_name,email,phone1,phone1_type,spouse_id,child_notif_optout').in('id', spouseIds);
+    const { data: spouseData } = await sb.from('profiles').select('id,first_name,last_name,full_name,email,phone1,phone1_type,spouse_id,child_notif_optout').in('id', spouseIds);
     (spouseData || []).forEach((p: ProfRow) => { profMap[p.id] = p; });
   }
 
@@ -248,6 +263,16 @@ serve(async (req: Request) => {
           if (!parent || !parent.email || parent.child_notif_optout) return;
           addAssignee(pid, slotWithChild, which);
         });
+      } else if (atype === 'family') {
+        /* assign BOTH parents; the reminder names the family + lists everyone */
+        const parents = [String(slot.assignee_id || ''), String(slot.assignee_id_b || '')].filter(Boolean);
+        const anchor = profMap[parents[0]];
+        const surname = (anchor?.last_name) || String(slot.family_name || '');
+        const label = (surname ? surname + ' ' : '') + 'Family';
+        const parentFirst = parents.map((pid) => { const p = profMap[pid]; return p ? (p.first_name || (p.full_name || '').split(' ')[0]) : ''; }).filter(Boolean);
+        const kids = [...new Set(parents.flatMap((pid) => familyKidsByParent[pid] || []))];
+        const slotWithFamily = { ...slot, _family_label: label, _family_members: [...parentFirst, ...kids] };
+        parents.forEach((pid) => addAssignee(pid, slotWithFamily, which));
       }
     });
   }
@@ -268,6 +293,8 @@ serve(async (req: Request) => {
       const slot = s as Record<string, unknown>;
       const role = String(slot.role || '');
       const childName = slot._child_name ? String(slot._child_name) : null;
+      const familyLabel = slot._family_label ? String(slot._family_label) : null;
+      if (familyLabel) return `${role} (${familyLabel})`;
       return childName ? `${role} (${childName})` : role;
     }
     const thisRoles = entry.this.map(slotLabel).filter(Boolean).join(' & ');
@@ -278,7 +305,7 @@ serve(async (req: Request) => {
       const role = String((slot as Record<string, unknown>).role || '');
       if (!role) continue;
       const swapUrl = await buildSwapToken(sb, thisDate, role, entry.firstName);
-      swapButtons += `<tr><td style="padding:4px 40px;"><a href="${swapUrl}" style="display:inline-block;background:${BRAND};color:#fff;text-decoration:none;font-size:13px;font-weight:bold;padding:9px 20px;border-radius:6px;">View ${role} Team Contact List</a></td></tr>`;
+      swapButtons += `<tr><td style="padding:4px 40px;"><a href="${swapUrl}" style="display:inline-block;background:${ACCENT};color:#fff;text-decoration:none;font-size:13px;font-weight:bold;padding:9px 20px;border-radius:6px;">View ${role} Team Contact List</a></td></tr>`;
     }
 
     let html = emailOpen(`You're serving this Sunday at ${SITE_NAME}!`);
@@ -319,6 +346,30 @@ serve(async (req: Request) => {
       }
     }
 
+    /* in-portal card for family assignments — both parents see it */
+    const familySlotsThis = entry.this.filter((s) => (s as Record<string, unknown>)._family_label);
+    const familySlotsNext = entry.next.filter((s) => (s as Record<string, unknown>)._family_label);
+    if (entry.type === 'member' && (familySlotsThis.length || familySlotsNext.length)) {
+      const famLabels = [...new Set([...familySlotsThis, ...familySlotsNext].map((s) => String((s as Record<string, unknown>)._family_label)))];
+      const rolesThis = [...new Set(familySlotsThis.map((s) => String((s as Record<string, unknown>).role || '')))].filter(Boolean).join(' & ');
+      const rolesNext = [...new Set(familySlotsNext.map((s) => String((s as Record<string, unknown>).role || '')))].filter(Boolean).join(' & ');
+      const fparts: string[] = [];
+      if (familySlotsThis.length) fparts.push(`scheduled for <strong>${rolesThis}</strong> this Sunday (${thisLabel})`);
+      if (familySlotsNext.length) fparts.push(`scheduled for <strong>${rolesNext}</strong> next Sunday (${nextLabel})`);
+      const fpid = entry.key.startsWith('member:') ? entry.key.slice('member:'.length) : null;
+      if (fpid) {
+        await sb.from('member_notifications').insert({
+          profile_id: fpid,
+          type: 'family_scheduled',
+          title: `Your family is serving this week`,
+          body: `The ${famLabels.join(' & ')} is ${fparts.join(' and ')}.`,
+        });
+      }
+    }
+
+    /* list the whole family in the email when this is a family assignment */
+    const famMembers = [...new Set([...entry.this, ...entry.next].flatMap((s) => ((s as Record<string, unknown>)._family_members as string[]) || []))];
+
     if (entry.this.length) {
       html += `<tr><td style="height:16px;"></td></tr>`;
       html += sectionHeader(`This Sunday — ${thisLabel}`);
@@ -337,6 +388,11 @@ serve(async (req: Request) => {
       } else {
         html += `<tr><td style="padding:16px 40px 4px;font-size:15px;color:#555;line-height:1.6;">And you're on <strong>${nextRoles}</strong> next week${nextTitle !== 'Sunday Service' ? ` (${nextTitle})` : ''}.</td></tr>`;
       }
+    }
+
+    if (famMembers.length) {
+      html += `<tr><td style="height:8px;"></td></tr>`;
+      html += `<tr><td style="padding:0 40px 4px;font-size:14px;color:#666;line-height:1.6;">Serving as a family: <strong>${famMembers.join(', ')}</strong></td></tr>`;
     }
 
     if (entry.this.length && swapButtons) {
