@@ -89,7 +89,11 @@ async function buildSwapToken(sb: ReturnType<typeof createClient>, date: string,
   const token = crypto.randomUUID().replace(/-/g, '');
   const expiresAt = new Date(); expiresAt.setDate(expiresAt.getDate() + 7);
   await sb.from('swap_tokens').insert({ token, date, role, person_name: personName, expires_at: expiresAt.toISOString() });
-  return `${SITE_URL}/members/swap.html?token=${token}`;
+  // Carry the token in the URL fragment (#) rather than a ?token= query param.
+  // Email quoted-printable encoding was mangling the '=' (decoding the '='
+  // plus the two hex chars after it as an escape byte), which corrupted the
+  // link and left swap.html unable to read the token. A fragment has no '='.
+  return `${SITE_URL}/members/swap.html#${token}`;
 }
 
 /* ── Schedule check ──────────────────────────────────────────── */
