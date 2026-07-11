@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Serving Instructions — Commissioned City Church</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400&family=Montserrat:wght@600;700;800&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/members.css">
+  <link rel="icon" type="image/png" href="/assets/logo.png">
+</head>
+<body style="background:#f4f5f7;min-height:100vh;">
+
+<main style="padding:32px 16px;display:flex;justify-content:center;">
+  <div style="background:#fff;border-radius:12px;overflow:hidden;max-width:640px;width:100%;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+
+    <!-- Header bar -->
+    <div style="background:var(--mp-accent,#112E53);padding:28px 40px;text-align:center;">
+      <h1 style="margin:0;color:#fff;font-size:24px;font-weight:normal;letter-spacing:0.02em;font-family:Montserrat,sans-serif;">
+        Commissioned City Church
+      </h1>
+    </div>
+
+    <!-- Content -->
+    <div id="doc-content" style="padding:32px 40px;">
+      <div id="doc-loading" style="text-align:center;color:#888;padding:40px 0;">
+        Loading instructions…
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="background:#f4f5f7;padding:20px 40px;border-top:1px solid #e6e9ee;text-align:center;">
+      <p style="margin:0 0 4px;font-size:12px;color:#aaa;font-family:sans-serif;">Commissioned City Church</p>
+      <p style="margin:0;font-size:12px;color:#bbb;font-family:sans-serif;">
+        <a href="mailto:info@commissionedcity.church" style="color:#bbb;text-decoration:none;">info@commissionedcity.church</a>
+      </p>
+    </div>
+
+  </div>
+</main>
+
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  window.SUPABASE_URL      = 'https://lkmphayrithxkmhvfiep.supabase.co';
+  window.SUPABASE_ANON_KEY = 'sb_publishable_GO6ATIZLQftqjoBHTU8EKQ_5RR1397W';
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+  var content = document.getElementById('doc-content');
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function showMessage(title, msg) {
+    content.innerHTML =
+      '<div style="text-align:center;padding:32px 0;">' +
+      '<p style="font-size:2em;margin-bottom:16px;">&#128203;</p>' +
+      '<h2 style="color:#112E53;font-family:Montserrat,sans-serif;font-size:20px;margin-bottom:12px;">' + esc(title) + '</h2>' +
+      '<p style="color:#666;font-size:15px;line-height:1.6;">' + esc(msg) + '</p>' +
+      '<p style="margin-top:20px;font-size:13px;color:#aaa;">Questions? Contact us at ' +
+      '<a href="mailto:info@commissionedcity.church" style="color:#112E53;">info@commissionedcity.church</a></p>' +
+      '</div>';
+  }
+
+  // Render a plain-text instructions document as safe HTML. Lines beginning
+  // with "- ", "* ", "[ ] " or "[x] " become checklist/bullet items; blank
+  // lines separate blocks; everything else is a paragraph line.
+  function renderDoc(text) {
+    var lines = String(text || '').replace(/\r\n/g, '\n').split('\n');
+    var html = '';
+    var listOpen = false;
+    function closeList() { if (listOpen) { html += '</ul>'; listOpen = false; } }
+    lines.forEach(function(raw) {
+      var line = raw.replace(/\s+$/, '');
+      var checkbox = line.match(/^\s*\[( |x|X)\]\s+(.*)$/);
+      var bullet   = line.match(/^\s*[-*]\s+(.*)$/);
+      if (checkbox) {
+        if (!listOpen) { html += '<ul style="list-style:none;margin:0 0 4px;padding:0;">'; listOpen = true; }
+        var checked = checkbox[1].toLowerCase() === 'x';
+        html += '<li style="display:flex;align-items:flex-start;gap:9px;padding:5px 0;font-size:15px;color:#333;line-height:1.55;">'
+          + '<span style="flex-shrink:0;width:18px;height:18px;border:2px solid ' + (checked ? '#112E53' : '#c5d0de') + ';border-radius:4px;'
+          + 'background:' + (checked ? '#112E53' : '#fff') + ';color:#fff;font-size:12px;line-height:15px;text-align:center;margin-top:1px;">'
+          + (checked ? '&#10003;' : '') + '</span>'
+          + '<span>' + esc(checkbox[2]) + '</span></li>';
+      } else if (bullet) {
+        if (!listOpen) { html += '<ul style="list-style:none;margin:0 0 4px;padding:0;">'; listOpen = true; }
+        html += '<li style="display:flex;align-items:flex-start;gap:9px;padding:5px 0;font-size:15px;color:#333;line-height:1.55;">'
+          + '<span style="flex-shrink:0;color:#D5393B;font-weight:700;margin-top:1px;">&bull;</span>'
+          + '<span>' + esc(bullet[1]) + '</span></li>';
+      } else if (line.trim() === '') {
+        closeList();
+        html += '<div style="height:10px;"></div>';
+      } else {
+        closeList();
+        html += '<p style="margin:0 0 6px;font-size:15px;color:#333;line-height:1.6;">' + esc(line) + '</p>';
+      }
+    });
+    closeList();
+    return html;
+  }
+
+  // Team id travels in the URL fragment (#<team_id>) so the '=' of a query
+  // param can't be mangled by email quoted-printable encoding. Fall back to a
+  // ?team= param for robustness.
+  var teamId = (window.location.hash || '').replace(/^#/, '').trim();
+  if (!teamId) {
+    var params = new URLSearchParams(window.location.search);
+    teamId = (params.get('team') || '').trim();
+  }
+  if (!teamId) {
+    showMessage('No team specified', 'This link may be malformed.');
+    return;
+  }
+
+  // Wait for the Supabase CDN
+  await new Promise(function(r) { setTimeout(r, 400); });
+  if (!window.supabase) { showMessage('Could not load page', 'Please try again.'); return; }
+
+  var url = window.SUPABASE_URL, key = window.SUPABASE_ANON_KEY;
+  if (!url || url === '{{ SUPABASE_URL }}') { showMessage('Configuration error', 'Please contact an administrator.'); return; }
+
+  var sb = window.supabase.createClient(url, key);
+
+  var res = await sb.from('teams').select('name, instructions').eq('id', teamId).single();
+  var team = res.data;
+  if (res.error || !team) {
+    showMessage('Instructions not found', 'This team could not be found. The link may be out of date.');
+    return;
+  }
+  if (!team.instructions || !team.instructions.trim()) {
+    showMessage('No instructions yet', 'Your team leader hasn’t added serving instructions for this team yet.');
+    return;
+  }
+
+  var html = '';
+  html += '<div style="text-align:center;margin-bottom:22px;">';
+  html += '<h2 style="font-family:Montserrat,sans-serif;color:#112E53;font-size:20px;margin:0 0 6px;">Serving Instructions</h2>';
+  html += '<p style="margin:0;font-family:sans-serif;font-size:15px;color:#333;"><strong>' + esc(team.name) + '</strong> Team</p>';
+  html += '</div>';
+  html += '<div style="font-family:sans-serif;">' + renderDoc(team.instructions) + '</div>';
+  html += '<p style="margin-top:24px;font-size:12px;color:#aaa;text-align:center;font-family:sans-serif;">'
+       + 'These instructions are kept up to date by your team leader. Questions? Email '
+       + '<a href="mailto:info@commissionedcity.church" style="color:#8a94a3;">info@commissionedcity.church</a>.</p>';
+
+  content.innerHTML = html;
+});
+</script>
+
+</body>
+</html>

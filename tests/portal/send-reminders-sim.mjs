@@ -37,6 +37,16 @@ function sundayAfter(dateStr) { const d = new Date(dateStr + 'T12:00:00'); d.set
 function formatDate(dateStr) { const d = new Date(dateStr + 'T12:00:00'); return d.toLocaleDateString('en-CA', { weekday: 'long', month: 'long', day: 'numeric' }); }
 
 const rosterFor = (date) => DB.schedule_rosters.find(r => r.date === date) || null;
+// Teams whose instructions opt into reminder emails (mirrors the edge function)
+const teamById = {}, teamByName = {};
+(DB.teams || []).forEach(t => { teamById[t.id] = t; teamByName[(t.name || '').toLowerCase()] = t; });
+function instructionsTeamFor(slot) {
+  let team;
+  if (slot.team_id) team = teamById[slot.team_id];
+  if (!team && slot.role) team = teamByName[String(slot.role).toLowerCase()];
+  if (team && team.include_instructions_in_reminder && team.instructions && String(team.instructions).trim()) return team;
+  return null;
+}
 const childById = (id) => DB.children.find(c => c.id === id) || null;
 const profById = (id) => DB.profiles.find(p => p.id === id) || null;
 const guestById = (id) => DB.guests.find(g => g.id === id) || null;
@@ -154,7 +164,18 @@ function run() {
     const famMembers = [...new Set([...entry.this, ...entry.next].flatMap(s => s._family_members || []))];
 
     let swapButtons = '';
-    for (const s of entry.this) { if (!s.role) continue; const u = buildSwapToken(thisDate, s.role, entry.firstName); swapButtons += `<tr><td style="padding:4px 40px;"><a href="${u}" style="display:inline-block;background:${ACCENT};color:#fff;text-decoration:none;font-size:13px;font-weight:bold;padding:9px 20px;border-radius:6px;">View ${s.role} Team Contact List</a></td></tr>`; }
+    const instrSeen = new Set();
+    let instrButtons = '';
+    for (const s of entry.this) {
+      if (!s.role) continue;
+      const u = buildSwapToken(thisDate, s.role, entry.firstName);
+      swapButtons += `<tr><td style="padding:4px 40px;"><a href="${u}" style="display:inline-block;background:${ACCENT};color:#fff;text-decoration:none;font-size:13px;font-weight:bold;padding:9px 20px;border-radius:6px;">View ${s.role} Team Contact List</a></td></tr>`;
+      const it = instructionsTeamFor(s);
+      if (it && !instrSeen.has(it.id)) {
+        instrSeen.add(it.id);
+        instrButtons += `<tr><td style="padding:4px 40px;"><a href="${SITE_URL}/members/instructions.html#${it.id}" style="display:inline-block;background:${BRAND};color:#fff;text-decoration:none;font-size:13px;font-weight:bold;padding:9px 20px;border-radius:6px;">View ${it.name} Instructions</a></td></tr>`;
+      }
+    }
 
     let html = emailOpen(`You're serving this Sunday at ${SITE_NAME}!`);
     html += `<tr><td style="height:28px;"></td></tr><tr><td style="padding:0 40px 4px;font-size:17px;color:#333;">Hey <strong>${entry.firstName}</strong>!</td></tr>`;
@@ -173,6 +194,7 @@ function run() {
     }
     if (famMembers.length) html += `<tr><td style="height:8px;"></td></tr><tr><td style="padding:0 40px 4px;font-size:14px;color:#666;">Serving as a family: <strong>${famMembers.join(', ')}</strong></td></tr>`;
     if (entry.this.length && swapButtons) html += `<tr><td style="height:20px;"></td></tr>` + swapButtons;
+    if (entry.this.length && instrButtons) html += `<tr><td style="height:16px;"></td></tr><tr><td style="padding:0 40px 8px;font-size:14px;color:#666;line-height:1.7;">Serving instructions &amp; checklist for your team:</td></tr>` + instrButtons;
     html += `<tr><td style="height:24px;"></td></tr>` + emailClose();
 
     const subject = entry.this.length
@@ -219,3 +241,27 @@ for (const e of captured) {
 console.log(`\n--- In-portal "child serving" cards inserted (member_notifications) ---`);
 notificationsInserted.forEach(n => console.log(` • ${who(seed.db.profiles.find(p=>p.id===n.profile_id)?.email)} ← "${n.title}"`));
 console.log(`\nEmail HTML written to: ${OUT}`);
+
+// ── assertions: instructions button appears iff the team opted in ───────────
+console.log(`\n--- Instructions-button checks ---`);
+let instrFailures = 0;
+function instrCheck(label, cond, detail) {
+  console.log((cond ? 'PASS  ' : 'FAIL  ') + label + (detail ? '  ' + detail : ''));
+  if (!cond) instrFailures++;
+}
+const byEmail = (addr) => captured.find(e => e.to === addr);
+const brennan = byEmail('brennan@example.com');   // Worship (flag ON) → button expected
+const grace   = byEmail('grace@example.com');     // Worship (flag ON) → button expected
+const mike    = byEmail('mike@example.com');      // A/V (flag OFF) → no button
+const hasInstr = (e) => !!(e && /instructions\.html#t-worship/.test(e.html));
+const anyInstr = (e) => !!(e && /instructions\.html#/.test(e.html));
+instrCheck('Worship member (Brennan) gets Worship instructions button', hasInstr(brennan));
+instrCheck('button uses fragment (#) not ?team=', !!(brennan && !/instructions\.html\?team=/.test(brennan.html)));
+instrCheck('Worship member (Grace) gets the button too', hasInstr(grace));
+instrCheck('A/V member (Mike) gets NO instructions button (flag off)', mike ? !anyInstr(mike) : true);
+if (brennan) {
+  const count = (brennan.html.match(/instructions\.html#/g) || []).length;
+  instrCheck('button is de-duplicated per team (Brennan)', count === 1, 'count=' + count);
+}
+console.log(`\n===== INSTRUCTIONS-BUTTON: ${instrFailures ? instrFailures + ' FAILURE(S)' : 'ALL PASS'} =====`);
+if (instrFailures) process.exit(1);
