@@ -628,7 +628,7 @@
     var uid = _profile.id;
 
     var [teamsRes, memsRes, approvedRes, childrenRes] = await Promise.all([
-      _sb.from('teams').select('*').order('name'),
+      _sb.from('teams').select('*').order('name'),  /* '*' includes instructions + include_instructions_in_reminder when migrated */
       _sb.from('team_members').select('team_id, member_id, role, member_type, child_id, nonmember_name, nonmember_email'),
       _canEdit ? _sb.from('profiles').select('id,first_name,last_name,full_name,email,phone1,phone1_type,spouse_id').eq('status','approved').order('last_name') : Promise.resolve({ data: [] }),
       _sb.from('children').select('id,name,profile_id').order('name')
@@ -667,6 +667,39 @@
       if (mt === 'child') { var ch = childMap[tm.child_id]; if (ch) { var par = profMap[ch.profile_id]; return par ? par.email : ''; } return ''; }
       if (mt === 'family') return (profMap[tm.member_id] || {}).email || '';
       return (profMap[tm.member_id] || {}).email || '';
+    }
+
+    /* Render a plain-text instructions/checklist doc as safe HTML. Lines like
+       "- item" / "* item" / "[ ] item" / "[x] item" become bullet/checklist
+       rows; blank lines separate blocks; everything else is a paragraph.
+       Mirrors the renderer in members/instructions.html. */
+    function renderTeamInstructions(text) {
+      var lines = String(text || '').replace(/\r\n/g, '\n').split('\n');
+      var out = '', listOpen = false;
+      function closeList() { if (listOpen) { out += '</ul>'; listOpen = false; } }
+      lines.forEach(function (raw) {
+        var line = raw.replace(/\s+$/, '');
+        var cb = line.match(/^\s*\[( |x|X)\]\s+(.*)$/);
+        var bu = line.match(/^\s*[-*]\s+(.*)$/);
+        if (cb) {
+          if (!listOpen) { out += '<ul style="list-style:none;margin:0;padding:0;">'; listOpen = true; }
+          var on = cb[1].toLowerCase() === 'x';
+          out += '<li style="display:flex;align-items:flex-start;gap:8px;padding:4px 0;font-size:0.9rem;color:#333;line-height:1.5;">'
+            + '<span style="flex-shrink:0;width:16px;height:16px;border:2px solid ' + (on ? '#112E53' : '#c5d0de') + ';border-radius:4px;background:' + (on ? '#112E53' : '#fff') + ';color:#fff;font-size:11px;line-height:13px;text-align:center;margin-top:1px;">' + (on ? '&#10003;' : '') + '</span>'
+            + '<span>' + D.esc(cb[2]) + '</span></li>';
+        } else if (bu) {
+          if (!listOpen) { out += '<ul style="list-style:none;margin:0;padding:0;">'; listOpen = true; }
+          out += '<li style="display:flex;align-items:flex-start;gap:8px;padding:4px 0;font-size:0.9rem;color:#333;line-height:1.5;">'
+            + '<span style="flex-shrink:0;color:#D5393B;font-weight:700;margin-top:1px;">&bull;</span>'
+            + '<span>' + D.esc(bu[1]) + '</span></li>';
+        } else if (line.trim() === '') {
+          closeList(); out += '<div style="height:8px;"></div>';
+        } else {
+          closeList(); out += '<p style="margin:0 0 5px;font-size:0.9rem;color:#333;line-height:1.55;">' + D.esc(line) + '</p>';
+        }
+      });
+      closeList();
+      return out;
     }
 
     /* ── focused single-team view ─────────────────────────────── */
@@ -731,6 +764,16 @@
           fHtml += '</div></li>';
         });
         fHtml += '</ul>';
+      }
+
+      /* Serving instructions / checklist (visible to everyone on the team) */
+      if (focusedTeam.instructions && focusedTeam.instructions.trim()) {
+        fHtml += '<div style="margin-top:16px;padding-top:16px;border-top:1px solid #e8ecf0;">';
+        fHtml += '<div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#5c718e;">&#128203; Serving Instructions';
+        if (focusedTeam.include_instructions_in_reminder) fHtml += ' <span style="text-transform:none;letter-spacing:0;font-weight:600;font-size:0.72rem;background:#eef1f6;color:#112E53;padding:1px 8px;border-radius:10px;">In reminder emails</span>';
+        fHtml += '</div>';
+        fHtml += '<div style="background:#f7f9fc;border:1px solid #e8ecf0;border-radius:8px;padding:12px 14px;">' + renderTeamInstructions(focusedTeam.instructions) + '</div>';
+        fHtml += '</div>';
       }
 
       if (fCanEdit) {
@@ -801,6 +844,16 @@
       html += '<div class="mp-form-group" style="max-width:160px;margin-top:10px;margin-bottom:0;"><label style="font-size:0.82rem;">Display order (0 = first)</label>';
       html += '<input type="number" name="serving_order" min="0" max="99" value="' + (editTeam ? (editTeam.serving_order || 0) : 0) + '" style="width:100%;"></div>';
       html += '</div></div>';
+      /* Serving instructions / checklist + "include in reminder email" toggle */
+      var instrVal = (editTeam && editTeam.instructions) ? editTeam.instructions : '';
+      var instrInRem = !!(editTeam && editTeam.include_instructions_in_reminder);
+      html += '<div class="mp-form-group">';
+      html += '<label>Serving Instructions / Checklist</label>';
+      html += '<textarea name="instructions" rows="6" placeholder="What this team needs to know or do when serving. Tip: start a line with &quot;- &quot; for a bullet or &quot;[ ] &quot; for a checklist item." '
+        + 'style="width:100%;padding:9px 12px;border:1px solid var(--mp-border,#dde3eb);border-radius:6px;font-size:0.9rem;font-family:inherit;line-height:1.5;resize:vertical;box-sizing:border-box;">' + D.esc(instrVal) + '</textarea>';
+      html += '<label class="mp-checkbox-label" style="display:flex;align-items:center;gap:8px;font-size:0.85rem;cursor:pointer;margin-top:8px;">'
+        + '<input type="checkbox" name="include_instructions_in_reminder" value="1"' + (instrInRem ? ' checked' : '') + '> Include these instructions in the serving reminder email</label>';
+      html += '</div>';
       /* build lookup of what's currently on this team */
       var editTmRows = editTeam ? (teamMap[editTeam.id] || []) : [];
       var editMemIds      = editTmRows.filter(function(tm){ return (tm.member_type||'member')==='member'; }).map(function(tm){ return tm.member_id; });
@@ -1010,6 +1063,15 @@
           });
           html += '</ul>';
         }
+        /* ── Serving instructions / checklist (visible to everyone on the team) ── */
+        if (team.instructions && team.instructions.trim()) {
+          html += '<div style="margin-top:16px;padding-top:16px;border-top:1px solid #e8ecf0;">';
+          html += '<div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#5c718e;">&#128203; Serving Instructions';
+          if (team.include_instructions_in_reminder) html += ' <span style="text-transform:none;letter-spacing:0;font-weight:600;font-size:0.72rem;background:#eef1f6;color:#112E53;padding:1px 8px;border-radius:10px;">In reminder emails</span>';
+          html += '</div>';
+          html += '<div style="background:#f7f9fc;border:1px solid #e8ecf0;border-radius:8px;padding:12px 14px;">' + renderTeamInstructions(team.instructions) + '</div>';
+          html += '</div>';
+        }
         /* ── Post Message panel (visible to leaders of this team + admin) ── */
         if (canEditThisTeam) {
           html += '<div class="mp-post-msg-wrap" style="margin-top:16px;padding-top:16px;border-top:1px solid #e8ecf0;">';
@@ -1110,7 +1172,9 @@
           is_sunday_serving:  fd.get('is_sunday_serving')  === '1',
           allow_children:     fd.get('allow_children')     === '1',
           allow_nonmembers:   fd.get('allow_nonmembers')   === '1',
-          serving_order:      parseInt(fd.get('serving_order') || '0', 10)
+          serving_order:      parseInt(fd.get('serving_order') || '0', 10),
+          instructions:       (fd.get('instructions') || '').trim() || null,
+          include_instructions_in_reminder: fd.get('include_instructions_in_reminder') === '1'
         };
         var _sb2 = D.getSb();
         /* strip new columns if they don't exist yet (graceful fallback) */

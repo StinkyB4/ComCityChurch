@@ -60,10 +60,12 @@ export function buildSeed(now = new Date()) {
 
   // ── teams (Sunday serving) ──────────────────────────────────────────────────
   const teams = [
-    { id: 't-worship', name: 'Worship', is_sunday_serving: true, serving_order: 10, allow_children: false, allow_nonmembers: true, leader_id: 'u-brennan' },
+    { id: 't-worship', name: 'Worship', is_sunday_serving: true, serving_order: 10, allow_children: false, allow_nonmembers: true, leader_id: 'u-brennan',
+      instructions: 'Arrive by 8:15 for soundcheck.\n[ ] Tune before rehearsal\n[ ] Confirm the setlist with the team', include_instructions_in_reminder: true },
     { id: 't-welcome', name: 'Welcome / Greeting', is_sunday_serving: true, serving_order: 20, allow_children: false, allow_nonmembers: true, leader_id: null },
     { id: 't-kids', name: 'Kids Ministry', is_sunday_serving: true, serving_order: 30, allow_children: true, allow_nonmembers: false, leader_id: 'u-sarah' },
-    { id: 't-av', name: 'A/V & Sound', is_sunday_serving: true, serving_order: 40, allow_children: true, allow_nonmembers: true, leader_id: null },
+    { id: 't-av', name: 'A/V & Sound', is_sunday_serving: true, serving_order: 40, allow_children: true, allow_nonmembers: true, leader_id: null,
+      instructions: 'Power on the board 30 min early.', include_instructions_in_reminder: false },
   ];
 
   // ── existing team rosters (members already on teams) ────────────────────────

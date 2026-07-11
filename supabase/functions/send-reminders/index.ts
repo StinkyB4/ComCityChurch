@@ -166,6 +166,28 @@ serve(async (req: Request) => {
     sb.from('schedule_rosters').select('*').eq('date', nextDate).maybeSingle(),
   ]);
 
+  /* Teams that opted their instructions/checklist into reminder emails.
+     Tolerant of a not-yet-migrated DB (columns absent → skip the feature). */
+  type TeamRow = { id: string; name: string; instructions?: string | null; include_instructions_in_reminder?: boolean };
+  let teamsData: TeamRow[] = [];
+  try {
+    const { data: t } = await sb.from('teams').select('id,name,instructions,include_instructions_in_reminder');
+    teamsData = (t as TeamRow[]) || [];
+  } catch (_) { teamsData = []; }
+  const teamById: Record<string, TeamRow> = {};
+  const teamByName: Record<string, TeamRow> = {};
+  teamsData.forEach((t) => { teamById[t.id] = t; teamByName[(t.name || '').toLowerCase()] = t; });
+  /* A slot's team has instructions to show when the flag is on and text exists.
+     Resolve by the slot's team_id, falling back to a role→team-name match
+     (Sunday serving roles share their team's name). */
+  function instructionsTeamFor(slot: Record<string, unknown>): TeamRow | null {
+    let team: TeamRow | undefined;
+    if (slot.team_id) team = teamById[String(slot.team_id)];
+    if (!team && slot.role) team = teamByName[String(slot.role).toLowerCase()];
+    if (team && team.include_instructions_in_reminder && team.instructions && String(team.instructions).trim()) return team;
+    return null;
+  }
+
   const profileIds = new Set<string>();
   const guestIds   = new Set<string>();
   const childIds   = new Set<string>();
@@ -305,11 +327,22 @@ serve(async (req: Request) => {
     const nextRoles = entry.next.map(slotLabel).filter(Boolean).join(' & ');
 
     let swapButtons = '';
+    const instrTeamsSeen = new Set<string>();
+    let instrButtons = '';
     for (const slot of entry.this) {
       const role = String((slot as Record<string, unknown>).role || '');
       if (!role) continue;
       const swapUrl = await buildSwapToken(sb, thisDate, role, entry.firstName);
       swapButtons += `<tr><td style="padding:4px 40px;"><a href="${swapUrl}" style="display:inline-block;background:${ACCENT};color:#fff;text-decoration:none;font-size:13px;font-weight:bold;padding:9px 20px;border-radius:6px;">View ${role} Team Contact List</a></td></tr>`;
+      /* Instructions/checklist button — token-free, so the team id travels in
+         the URL fragment (#) to survive email quoted-printable encoding. The
+         page loads the instructions live, so post-send edits still show. */
+      const instrTeam = instructionsTeamFor(slot as Record<string, unknown>);
+      if (instrTeam && !instrTeamsSeen.has(instrTeam.id)) {
+        instrTeamsSeen.add(instrTeam.id);
+        const instrUrl = `${SITE_URL}/members/instructions.html#${instrTeam.id}`;
+        instrButtons += `<tr><td style="padding:4px 40px;"><a href="${instrUrl}" style="display:inline-block;background:${BRAND};color:#fff;text-decoration:none;font-size:13px;font-weight:bold;padding:9px 20px;border-radius:6px;">View ${instrTeam.name} Instructions</a></td></tr>`;
+      }
     }
 
     let html = emailOpen(`You're serving this Sunday at ${SITE_NAME}!`);
@@ -403,6 +436,12 @@ serve(async (req: Request) => {
       html += `<tr><td style="height:20px;"></td></tr>`;
       html += `<tr><td style="padding:0 40px 8px;font-size:14px;color:#666;line-height:1.7;">If you need to swap with someone, click below for your team's contact info:</td></tr>`;
       html += swapButtons;
+    }
+
+    if (entry.this.length && instrButtons) {
+      html += `<tr><td style="height:16px;"></td></tr>`;
+      html += `<tr><td style="padding:0 40px 8px;font-size:14px;color:#666;line-height:1.7;">Serving instructions &amp; checklist for your team:</td></tr>`;
+      html += instrButtons;
     }
 
     html += `<tr><td style="height:24px;"></td></tr>`;
