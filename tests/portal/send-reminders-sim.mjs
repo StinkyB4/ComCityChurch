@@ -45,7 +45,7 @@ function sendEmail(to, subject, html) { captured.push({ to, subject, html }); }
 function buildSwapToken(date, role, personName) {
   const token = 'tok-' + Math.random().toString(36).slice(2, 10);
   DB.swap_tokens.push({ token, date, role, person_name: personName });
-  return `${SITE_URL}/members/swap.html?token=${token}`;
+  return `${SITE_URL}/members/swap.html#${token}`;
 }
 
 // ── email chrome (mirrors the edge function) ────────────────────────────────

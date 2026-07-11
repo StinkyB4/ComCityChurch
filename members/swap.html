@@ -61,9 +61,16 @@ document.addEventListener('DOMContentLoaded', async function() {
       '</div>';
   }
 
-  // Read token from URL
-  var params = new URLSearchParams(window.location.search);
-  var token  = params.get('token');
+  // Read token from URL. The token travels in the fragment (#<token>) so the
+  // '=' of a query param can't be mangled by email quoted-printable encoding
+  // (a bare '=' followed by hex was being decoded as an escape, eating the
+  // '=' and two token chars and breaking the link). Fall back to the legacy
+  // ?token= param for any older links still within their 7-day window.
+  var token = (window.location.hash || '').replace(/^#/, '').trim();
+  if (!token) {
+    var params = new URLSearchParams(window.location.search);
+    token = params.get('token') || '';
+  }
   if (!token) {
     showError('No token provided. This link may be malformed.');
     return;
