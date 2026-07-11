@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Serving Contact List — Commissioned City Church</title>
+  <title>Full Serving Team — Commissioned City Church</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400&family=Montserrat:wght@600;700;800&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
@@ -150,23 +150,36 @@ document.addEventListener('DOMContentLoaded', async function() {
     (guests || []).forEach(function(g) { guestMap[g.id] = g; });
   }
 
-  // Teams — resolve the recipient's relevant team(s) for the "find a sub" links.
-  // Sunday-serving roles share their team's name, so match role -> team by name,
-  // falling back to the team_id stored on the matching roster slot.
-  var { data: allTeams } = await sb.from('teams').select('id, name');
-  var relevantTeams = (allTeams || []).filter(function(t) {
-    return (t.name || '').toLowerCase() === (tokenRow.role || '').toLowerCase();
-  });
-  if (!relevantTeams.length) {
-    var teamNameById = {}; (allTeams || []).forEach(function(t) { teamNameById[t.id] = t.name; });
-    var seenTeam = {};
-    slots.forEach(function(s) {
-      if ((s.role || '') === tokenRow.role && s.team_id && teamNameById[s.team_id] && !seenTeam[s.team_id]) {
-        seenTeam[s.team_id] = 1;
-        relevantTeams.push({ id: s.team_id, name: teamNameById[s.team_id] });
-      }
+  // Teams (id, name, instructions) — read live so checklist links always reflect
+  // the current document, even edits made after the reminder was sent.
+  var { data: allTeams } = await sb.from('teams').select('id, name, instructions');
+  var teamById = {};   (allTeams || []).forEach(function(t){ teamById[t.id] = t; });
+  var teamByName = {}; (allTeams || []).forEach(function(t){ teamByName[(t.name || '').toLowerCase()] = t; });
+
+  // The recipient's team(s): prefer the team_ids carried by the token; fall back
+  // to matching the token's role(s) to team names / roster slots (legacy tokens).
+  var recipientTeamIds = String(tokenRow.team_ids || '').split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+  if (!recipientTeamIds.length) {
+    var roleWords = String(tokenRow.role || '').toLowerCase().split(' & ').map(function(s){ return s.trim(); }).filter(Boolean);
+    roleWords.forEach(function(rw){ if (teamByName[rw]) recipientTeamIds.push(teamByName[rw].id); });
+    slots.forEach(function(s){
+      if (s.team_id && teamById[s.team_id] && roleWords.indexOf(String(s.role || '').toLowerCase()) !== -1) recipientTeamIds.push(s.team_id);
     });
   }
+  recipientTeamIds = recipientTeamIds.filter(function(id, i, a){ return teamById[id] && a.indexOf(id) === i; });
+
+  // Every team that appears on this day's roster (for "other team" checklists).
+  var dayTeamIds = [];
+  slots.forEach(function(s){
+    var tid = (s.team_id && teamById[s.team_id]) ? s.team_id
+            : (s.role && teamByName[String(s.role).toLowerCase()] ? teamByName[String(s.role).toLowerCase()].id : '');
+    if (tid && dayTeamIds.indexOf(tid) === -1) dayTeamIds.push(tid);
+  });
+
+  function teamHasInstructions(tid){ var t = teamById[tid]; return !!(t && t.instructions && String(t.instructions).trim()); }
+  var myChecklistTeams    = recipientTeamIds.filter(teamHasInstructions).map(function(id){ return teamById[id]; });
+  var otherChecklistTeams = dayTeamIds.filter(function(id){ return recipientTeamIds.indexOf(id) === -1 && teamHasInstructions(id); }).map(function(id){ return teamById[id]; });
+  var swapTeams           = recipientTeamIds.map(function(id){ return teamById[id]; }).filter(Boolean);
 
   function getAssigneeName(slot) {
     var t = slot.assignee_type || '';
@@ -226,27 +239,26 @@ document.addEventListener('DOMContentLoaded', async function() {
     return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
+  function sectionTitle(label) {
+    return '<h3 style="font-family:Montserrat,sans-serif;color:#112E53;font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin:28px 0 12px;padding-bottom:6px;border-bottom:2px solid #eef1f6;">' + esc(label) + '</h3>';
+  }
+  var recipFirst = (tokenRow.person_name || '').trim().toLowerCase();
+
   // Build HTML
   var html = '';
-  html += '<div class="mp-swap-header" style="text-align:center;margin-bottom:24px;">';
-  html += '<h2 style="font-family:Montserrat,sans-serif;color:#112E53;font-size:20px;margin:0 0 6px;">Serving Contact List</h2>';
+
+  // ── Header ────────────────────────────────────────────────────────────────
+  html += '<div style="text-align:center;margin-bottom:8px;">';
+  html += '<h2 style="font-family:Montserrat,sans-serif;color:#112E53;font-size:20px;margin:0 0 6px;">Full Serving Team</h2>';
   html += '<p style="margin:0 0 10px;font-family:sans-serif;font-size:15px;color:#333;"><strong>' + esc(eventTitle) + '</strong> &mdash; ' + esc(dateLabel) + '</p>';
-  html += '<p style="margin:0 0 8px;font-family:sans-serif;font-size:14px;color:#444;line-height:1.6;">Hi <strong>' + esc(tokenRow.person_name) + '</strong>! You\'re listed as <strong>' + esc(tokenRow.role) + '</strong>. Here\'s everyone else serving with you that day.</p>';
-  html += '<p style="margin:0;font-family:sans-serif;font-size:14px;color:#444;line-height:1.6;">If you\'re unable to serve as scheduled, please reach out to others on your team to arrange a swap.</p>';
+  html += '<p style="margin:0;font-family:sans-serif;font-size:14px;color:#444;line-height:1.6;">Hi <strong>' + esc(tokenRow.person_name) + '</strong>! Here\'s everyone serving on ' + esc(dateLabel) + ' — your checklist, the full team, and contact info if you need to arrange a swap.</p>';
   html += '</div>';
 
-  // "Everyone else" — drop the recipient's own slot from the list
-  var recipFirst = (tokenRow.person_name || '').trim().toLowerCase();
-  var assignedSlots = slots.filter(function(s) {
-    var nm = getAssigneeName(s);
-    if (!nm) return false;
-    var firstNm = (nm.split(' ')[0] || '').toLowerCase();
-    if ((s.role || '') === tokenRow.role && recipFirst && firstNm === recipFirst) return false;
-    return true;
-  });
-
+  // ── Section 1: who's serving (full roster, includes the recipient) ─────────
+  html += sectionTitle('Who’s serving');
+  var assignedSlots = slots.filter(function(s){ return getAssigneeName(s); });
   if (!assignedSlots.length) {
-    html += '<p style="text-align:center;color:#888;font-family:sans-serif;line-height:1.6;">No one else is on the roster for this date yet.</p>';
+    html += '<p style="text-align:center;color:#888;font-family:sans-serif;line-height:1.6;">No one is on the roster for this date yet.</p>';
   } else {
     html += '<table style="width:100%;border-collapse:collapse;font-family:sans-serif;font-size:14px;">';
     html += '<thead><tr>';
@@ -255,27 +267,51 @@ document.addEventListener('DOMContentLoaded', async function() {
     html += '<th style="text-align:left;padding:10px 12px;background:#eef1f6;color:#112E53;font-weight:600;border-bottom:2px solid #dde3eb;">Contact</th>';
     html += '</tr></thead><tbody>';
     assignedSlots.forEach(function(slot, i) {
-      var bg = i % 2 === 0 ? '#fff' : '#f7f9fc';
+      var nm = getAssigneeName(slot);
+      var isYou = recipFirst && (nm.split(' ')[0] || '').toLowerCase() === recipFirst;
+      var bg = isYou ? '#fff7e6' : (i % 2 === 0 ? '#fff' : '#f7f9fc');
       html += '<tr style="background:' + bg + ';">';
       html += '<td style="padding:10px 12px;border-bottom:1px solid #eef1f6;color:#555;vertical-align:top;">' + esc(slot.role || '') + '</td>';
-      html += '<td style="padding:10px 12px;border-bottom:1px solid #eef1f6;font-weight:600;color:#333;vertical-align:top;">' + esc(getAssigneeName(slot)) + '</td>';
+      html += '<td style="padding:10px 12px;border-bottom:1px solid #eef1f6;font-weight:600;color:#333;vertical-align:top;">' + esc(nm) + (isYou ? ' <span style="font-weight:600;color:#b8860b;font-size:0.8em;">(you)</span>' : '') + '</td>';
       html += '<td style="padding:10px 12px;border-bottom:1px solid #eef1f6;color:#555;vertical-align:top;">' + getAssigneeContact(slot) + '</td>';
       html += '</tr>';
     });
     html += '</tbody></table>';
   }
 
-  // Links to the recipient's relevant team(s) so they can find a substitute
-  if (relevantTeams.length) {
-    html += '<div style="margin-top:22px;text-align:center;">';
-    html += '<p style="margin:0 0 10px;font-family:sans-serif;font-size:13px;color:#5C718E;line-height:1.6;">View your team to find someone who can cover for you:</p>';
-    relevantTeams.forEach(function(t) {
+  // ── Section 2: serving checklists ──────────────────────────────────────────
+  if (myChecklistTeams.length || otherChecklistTeams.length) {
+    html += sectionTitle('Serving checklists');
+    if (myChecklistTeams.length) {
+      html += '<p style="margin:0 0 10px;font-family:sans-serif;font-size:14px;color:#444;line-height:1.6;">Your checklist for this Sunday:</p>';
+      html += '<div style="text-align:center;">';
+      myChecklistTeams.forEach(function(t){
+        html += '<a href="/members/instructions.html#' + esc(t.id) + '" style="display:inline-block;margin:4px;background:#D5393B;color:#fff;text-decoration:none;font-family:Montserrat,sans-serif;font-size:13px;font-weight:700;padding:11px 22px;border-radius:6px;">' + esc(t.name) + ' Checklist &rarr;</a>';
+      });
+      html += '</div>';
+    }
+    if (otherChecklistTeams.length) {
+      html += '<p style="margin:16px 0 8px;font-family:sans-serif;font-size:13px;color:#5C718E;line-height:1.6;">Other teams serving today:</p>';
+      html += '<div style="text-align:center;">';
+      otherChecklistTeams.forEach(function(t){
+        html += '<a href="/members/instructions.html#' + esc(t.id) + '" style="display:inline-block;margin:3px;background:#eef1f6;color:#112E53;text-decoration:none;font-family:Montserrat,sans-serif;font-size:12px;font-weight:600;padding:8px 16px;border-radius:6px;">' + esc(t.name) + ' Checklist &rarr;</a>';
+      });
+      html += '</div>';
+    }
+  }
+
+  // ── Section 3: need to swap? ────────────────────────────────────────────────
+  if (swapTeams.length) {
+    html += sectionTitle('Need to swap?');
+    html += '<p style="margin:0 0 10px;font-family:sans-serif;font-size:14px;color:#444;line-height:1.6;">If you can’t serve as scheduled, reach out to someone on your team above to arrange a sub. You can also view your team’s full roster:</p>';
+    html += '<div style="text-align:center;">';
+    swapTeams.forEach(function(t) {
       html += '<a href="/members/dashboard.html?tab=teams#team-' + esc(t.id) + '" style="display:inline-block;margin:4px;background:#112E53;color:#fff;text-decoration:none;font-family:Montserrat,sans-serif;font-size:13px;font-weight:600;padding:10px 20px;border-radius:6px;">' + esc(t.name) + ' Team &rarr;</a>';
     });
     html += '</div>';
   }
 
-  html += '<p style="margin-top:24px;font-size:12px;color:#aaa;text-align:center;font-family:sans-serif;">This link expires after 7 days. Questions? Email <a href="mailto:info@commissionedcity.church" style="color:#8a94a3;">info@commissionedcity.church</a>.</p>';
+  html += '<p style="margin-top:28px;font-size:12px;color:#aaa;text-align:center;font-family:sans-serif;">This link expires after 7 days. Questions? Email <a href="mailto:info@commissionedcity.church" style="color:#8a94a3;">info@commissionedcity.church</a>.</p>';
 
   content.innerHTML = html;
 });
