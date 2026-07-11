@@ -85,14 +85,18 @@ async function sendEmail(to: string, subject: string, html: string) {
   });
 }
 
-async function buildSwapToken(sb: ReturnType<typeof createClient>, date: string, role: string, personName: string): Promise<string> {
+async function buildServingToken(sb: ReturnType<typeof createClient>, date: string, personName: string, roleLabel: string, teamIds: string[]): Promise<string> {
   const token = crypto.randomUUID().replace(/-/g, '');
   const expiresAt = new Date(); expiresAt.setDate(expiresAt.getDate() + 7);
-  await sb.from('swap_tokens').insert({ token, date, role, person_name: personName, expires_at: expiresAt.toISOString() });
-  // Carry the token in the URL fragment (#) rather than a ?token= query param.
-  // Email quoted-printable encoding was mangling the '=' (decoding the '='
-  // plus the two hex chars after it as an escape byte), which corrupted the
-  // link and left swap.html unable to read the token. A fragment has no '='.
+  await sb.from('swap_tokens').insert({
+    token, date, role: roleLabel || 'Serving', person_name: personName,
+    team_ids: teamIds.length ? teamIds.join(',') : null,
+    expires_at: expiresAt.toISOString(),
+  });
+  // Carry the token in the URL fragment (#) rather than a ?token= query param —
+  // email quoted-printable encoding mangles a bare '=' followed by hex. A
+  // fragment has no '='. One token per recipient opens the full serving-team
+  // page (roster + swap contacts + their checklists).
   return `${SITE_URL}/members/swap.html#${token}`;
 }
 
@@ -166,27 +170,18 @@ serve(async (req: Request) => {
     sb.from('schedule_rosters').select('*').eq('date', nextDate).maybeSingle(),
   ]);
 
-  /* Teams that opted their instructions/checklist into reminder emails.
-     Tolerant of a not-yet-migrated DB (columns absent → skip the feature). */
-  type TeamRow = { id: string; name: string; instructions?: string | null; include_instructions_in_reminder?: boolean };
+  /* Teams keyed by name, so a roster slot's role can resolve to its team id
+     (Sunday serving roles share their team's name) when the slot itself has no
+     team_id. Used to fill the serving token's team_ids. Tolerant of a
+     not-yet-migrated DB. */
+  type TeamRow = { id: string; name: string };
   let teamsData: TeamRow[] = [];
   try {
-    const { data: t } = await sb.from('teams').select('id,name,instructions,include_instructions_in_reminder');
+    const { data: t } = await sb.from('teams').select('id,name');
     teamsData = (t as TeamRow[]) || [];
   } catch (_) { teamsData = []; }
-  const teamById: Record<string, TeamRow> = {};
   const teamByName: Record<string, TeamRow> = {};
-  teamsData.forEach((t) => { teamById[t.id] = t; teamByName[(t.name || '').toLowerCase()] = t; });
-  /* A slot's team has instructions to show when the flag is on and text exists.
-     Resolve by the slot's team_id, falling back to a role→team-name match
-     (Sunday serving roles share their team's name). */
-  function instructionsTeamFor(slot: Record<string, unknown>): TeamRow | null {
-    let team: TeamRow | undefined;
-    if (slot.team_id) team = teamById[String(slot.team_id)];
-    if (!team && slot.role) team = teamByName[String(slot.role).toLowerCase()];
-    if (team && team.include_instructions_in_reminder && team.instructions && String(team.instructions).trim()) return team;
-    return null;
-  }
+  teamsData.forEach((t) => { teamByName[(t.name || '').toLowerCase()] = t; });
 
   const profileIds = new Set<string>();
   const guestIds   = new Set<string>();
@@ -326,23 +321,18 @@ serve(async (req: Request) => {
     const thisRoles = entry.this.map(slotLabel).filter(Boolean).join(' & ');
     const nextRoles = entry.next.map(slotLabel).filter(Boolean).join(' & ');
 
-    let swapButtons = '';
-    const instrTeamsSeen = new Set<string>();
-    let instrButtons = '';
-    for (const slot of entry.this) {
-      const role = String((slot as Record<string, unknown>).role || '');
-      if (!role) continue;
-      const swapUrl = await buildSwapToken(sb, thisDate, role, entry.firstName);
-      swapButtons += `<tr><td style="padding:4px 40px;"><a href="${swapUrl}" style="display:inline-block;background:${ACCENT};color:#fff;text-decoration:none;font-size:13px;font-weight:bold;padding:9px 20px;border-radius:6px;">View ${role} Team Contact List</a></td></tr>`;
-      /* Instructions/checklist button — token-free, so the team id travels in
-         the URL fragment (#) to survive email quoted-printable encoding. The
-         page loads the instructions live, so post-send edits still show. */
-      const instrTeam = instructionsTeamFor(slot as Record<string, unknown>);
-      if (instrTeam && !instrTeamsSeen.has(instrTeam.id)) {
-        instrTeamsSeen.add(instrTeam.id);
-        const instrUrl = `${SITE_URL}/members/instructions.html#${instrTeam.id}`;
-        instrButtons += `<tr><td style="padding:4px 40px;"><a href="${instrUrl}" style="display:inline-block;background:${BRAND};color:#fff;text-decoration:none;font-size:13px;font-weight:bold;padding:9px 20px;border-radius:6px;">View ${instrTeam.name} Instructions</a></td></tr>`;
+    /* One "Full Serving Team" link per recipient → the day-overview page
+       (full roster + swap contacts + their serving checklists). It carries the
+       recipient's team ids so the page can surface the right checklists. */
+    let servingUrl = '';
+    if (entry.this.length) {
+      const recipTeamIds = new Set<string>();
+      for (const slot of entry.this) {
+        const s = slot as Record<string, unknown>;
+        if (s.team_id) recipTeamIds.add(String(s.team_id));
+        else if (s.role) { const t = teamByName[String(s.role).toLowerCase()]; if (t) recipTeamIds.add(t.id); }
       }
+      servingUrl = await buildServingToken(sb, thisDate, entry.firstName, thisRoles, [...recipTeamIds]);
     }
 
     let html = emailOpen(`You're serving this Sunday at ${SITE_NAME}!`);
@@ -432,16 +422,11 @@ serve(async (req: Request) => {
       html += `<tr><td style="padding:0 40px 4px;font-size:14px;color:#666;line-height:1.6;">Serving as a family: <strong>${famMembers.join(', ')}</strong></td></tr>`;
     }
 
-    if (entry.this.length && swapButtons) {
+    if (entry.this.length && servingUrl) {
+      const thisShort = new Date(thisDate + 'T12:00:00').toLocaleDateString('en-CA', { month: 'long', day: 'numeric' });
       html += `<tr><td style="height:20px;"></td></tr>`;
-      html += `<tr><td style="padding:0 40px 8px;font-size:14px;color:#666;line-height:1.7;">If you need to swap with someone, click below for your team's contact info:</td></tr>`;
-      html += swapButtons;
-    }
-
-    if (entry.this.length && instrButtons) {
-      html += `<tr><td style="height:16px;"></td></tr>`;
-      html += `<tr><td style="padding:0 40px 8px;font-size:14px;color:#666;line-height:1.7;">Serving instructions &amp; checklist for your team:</td></tr>`;
-      html += instrButtons;
+      html += `<tr><td style="padding:0 40px 8px;font-size:14px;color:#666;line-height:1.7;">Click below for your serving checklist, the full team roster, and contact info if you need to swap with someone:</td></tr>`;
+      html += `<tr><td style="padding:4px 40px;"><a href="${servingUrl}" style="display:inline-block;background:${ACCENT};color:#fff;text-decoration:none;font-size:14px;font-weight:bold;padding:11px 24px;border-radius:6px;">Full Serving Team for ${thisShort}</a></td></tr>`;
     }
 
     html += `<tr><td style="height:24px;"></td></tr>`;

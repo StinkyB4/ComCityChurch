@@ -37,24 +37,18 @@ function sundayAfter(dateStr) { const d = new Date(dateStr + 'T12:00:00'); d.set
 function formatDate(dateStr) { const d = new Date(dateStr + 'T12:00:00'); return d.toLocaleDateString('en-CA', { weekday: 'long', month: 'long', day: 'numeric' }); }
 
 const rosterFor = (date) => DB.schedule_rosters.find(r => r.date === date) || null;
-// Teams whose instructions opt into reminder emails (mirrors the edge function)
+// Team name→id lookup, so a slot's role can resolve to its team id when the
+// slot has no team_id (mirrors the edge function).
 const teamById = {}, teamByName = {};
 (DB.teams || []).forEach(t => { teamById[t.id] = t; teamByName[(t.name || '').toLowerCase()] = t; });
-function instructionsTeamFor(slot) {
-  let team;
-  if (slot.team_id) team = teamById[slot.team_id];
-  if (!team && slot.role) team = teamByName[String(slot.role).toLowerCase()];
-  if (team && team.include_instructions_in_reminder && team.instructions && String(team.instructions).trim()) return team;
-  return null;
-}
 const childById = (id) => DB.children.find(c => c.id === id) || null;
 const profById = (id) => DB.profiles.find(p => p.id === id) || null;
 const guestById = (id) => DB.guests.find(g => g.id === id) || null;
 
 function sendEmail(to, subject, html) { captured.push({ to, subject, html }); }
-function buildSwapToken(date, role, personName) {
+function buildServingToken(date, personName, roleLabel, teamIds) {
   const token = 'tok-' + Math.random().toString(36).slice(2, 10);
-  DB.swap_tokens.push({ token, date, role, person_name: personName });
+  DB.swap_tokens.push({ token, date, role: roleLabel || 'Serving', person_name: personName, team_ids: teamIds.length ? teamIds.join(',') : null });
   return `${SITE_URL}/members/swap.html#${token}`;
 }
 
@@ -163,18 +157,15 @@ function run() {
     }
     const famMembers = [...new Set([...entry.this, ...entry.next].flatMap(s => s._family_members || []))];
 
-    let swapButtons = '';
-    const instrSeen = new Set();
-    let instrButtons = '';
-    for (const s of entry.this) {
-      if (!s.role) continue;
-      const u = buildSwapToken(thisDate, s.role, entry.firstName);
-      swapButtons += `<tr><td style="padding:4px 40px;"><a href="${u}" style="display:inline-block;background:${ACCENT};color:#fff;text-decoration:none;font-size:13px;font-weight:bold;padding:9px 20px;border-radius:6px;">View ${s.role} Team Contact List</a></td></tr>`;
-      const it = instructionsTeamFor(s);
-      if (it && !instrSeen.has(it.id)) {
-        instrSeen.add(it.id);
-        instrButtons += `<tr><td style="padding:4px 40px;"><a href="${SITE_URL}/members/instructions.html#${it.id}" style="display:inline-block;background:${BRAND};color:#fff;text-decoration:none;font-size:13px;font-weight:bold;padding:9px 20px;border-radius:6px;">View ${it.name} Instructions</a></td></tr>`;
+    // One "Full Serving Team" link per recipient (mirrors the edge function).
+    let servingUrl = '';
+    if (entry.this.length) {
+      const recipTeamIds = new Set();
+      for (const s of entry.this) {
+        if (s.team_id) recipTeamIds.add(s.team_id);
+        else if (s.role && teamByName[String(s.role).toLowerCase()]) recipTeamIds.add(teamByName[String(s.role).toLowerCase()].id);
       }
+      servingUrl = buildServingToken(thisDate, entry.firstName, thisRoles, [...recipTeamIds]);
     }
 
     let html = emailOpen(`You're serving this Sunday at ${SITE_NAME}!`);
@@ -193,8 +184,11 @@ function run() {
         : `<tr><td style="padding:16px 40px 4px;font-size:15px;color:#555;">And you're on <strong>${nextRoles}</strong> next week.</td></tr>`;
     }
     if (famMembers.length) html += `<tr><td style="height:8px;"></td></tr><tr><td style="padding:0 40px 4px;font-size:14px;color:#666;">Serving as a family: <strong>${famMembers.join(', ')}</strong></td></tr>`;
-    if (entry.this.length && swapButtons) html += `<tr><td style="height:20px;"></td></tr>` + swapButtons;
-    if (entry.this.length && instrButtons) html += `<tr><td style="height:16px;"></td></tr><tr><td style="padding:0 40px 8px;font-size:14px;color:#666;line-height:1.7;">Serving instructions &amp; checklist for your team:</td></tr>` + instrButtons;
+    if (entry.this.length && servingUrl) {
+      const thisShort = new Date(thisDate + 'T12:00:00').toLocaleDateString('en-CA', { month: 'long', day: 'numeric' });
+      html += `<tr><td style="height:20px;"></td></tr><tr><td style="padding:0 40px 8px;font-size:14px;color:#666;line-height:1.7;">Click below for your serving checklist, the full team roster, and contact info if you need to swap with someone:</td></tr>`;
+      html += `<tr><td style="padding:4px 40px;"><a href="${servingUrl}" style="display:inline-block;background:${ACCENT};color:#fff;text-decoration:none;font-size:14px;font-weight:bold;padding:11px 24px;border-radius:6px;">Full Serving Team for ${thisShort}</a></td></tr>`;
+    }
     html += `<tr><td style="height:24px;"></td></tr>` + emailClose();
 
     const subject = entry.this.length
@@ -242,26 +236,24 @@ console.log(`\n--- In-portal "child serving" cards inserted (member_notification
 notificationsInserted.forEach(n => console.log(` • ${who(seed.db.profiles.find(p=>p.id===n.profile_id)?.email)} ← "${n.title}"`));
 console.log(`\nEmail HTML written to: ${OUT}`);
 
-// ── assertions: instructions button appears iff the team opted in ───────────
-console.log(`\n--- Instructions-button checks ---`);
-let instrFailures = 0;
-function instrCheck(label, cond, detail) {
+// ── assertions: single "Full Serving Team" button + token carries team_ids ──
+console.log(`\n--- Serving-button checks ---`);
+let sFail = 0;
+function sCheck(label, cond, detail) {
   console.log((cond ? 'PASS  ' : 'FAIL  ') + label + (detail ? '  ' + detail : ''));
-  if (!cond) instrFailures++;
+  if (!cond) sFail++;
 }
 const byEmail = (addr) => captured.find(e => e.to === addr);
-const brennan = byEmail('brennan@example.com');   // Worship (flag ON) → button expected
-const grace   = byEmail('grace@example.com');     // Worship (flag ON) → button expected
-const mike    = byEmail('mike@example.com');      // A/V (flag OFF) → no button
-const hasInstr = (e) => !!(e && /instructions\.html#t-worship/.test(e.html));
-const anyInstr = (e) => !!(e && /instructions\.html#/.test(e.html));
-instrCheck('Worship member (Brennan) gets Worship instructions button', hasInstr(brennan));
-instrCheck('button uses fragment (#) not ?team=', !!(brennan && !/instructions\.html\?team=/.test(brennan.html)));
-instrCheck('Worship member (Grace) gets the button too', hasInstr(grace));
-instrCheck('A/V member (Mike) gets NO instructions button (flag off)', mike ? !anyInstr(mike) : true);
-if (brennan) {
-  const count = (brennan.html.match(/instructions\.html#/g) || []).length;
-  instrCheck('button is de-duplicated per team (Brennan)', count === 1, 'count=' + count);
-}
-console.log(`\n===== INSTRUCTIONS-BUTTON: ${instrFailures ? instrFailures + ' FAILURE(S)' : 'ALL PASS'} =====`);
-if (instrFailures) process.exit(1);
+const brennan = byEmail('brennan@example.com');  // Worship Lead + Kids (child) + Setup (family)
+const grace   = byEmail('grace@example.com');    // Vocals (Worship)
+const buttonCount = (e) => e ? (e.html.match(/Full Serving Team for/g) || []).length : 0;
+sCheck('Brennan gets exactly one "Full Serving Team" button', buttonCount(brennan) === 1, 'count=' + buttonCount(brennan));
+sCheck('button links to the swap.html fragment', !!(brennan && /swap\.html#[a-z0-9-]+/i.test(brennan.html)));
+sCheck('no per-role "Team Contact List" buttons remain', !!(brennan && !/Team Contact List/.test(brennan.html)));
+sCheck('no instructions.html links in the email (moved to the landing page)', !!(brennan && !/instructions\.html/.test(brennan.html)));
+sCheck('Grace also gets exactly one button', buttonCount(grace) === 1, 'count=' + buttonCount(grace));
+const bTok = DB.swap_tokens.find(t => t.person_name === 'Brennan' && t.date === thisDate);
+sCheck('serving token carries team_ids', !!(bTok && bTok.team_ids), bTok ? 'team_ids=' + bTok.team_ids : 'no token');
+sCheck('token team_ids includes Brennan’s Worship team', !!(bTok && String(bTok.team_ids).split(',').includes('t-worship')), bTok ? bTok.team_ids : '');
+console.log(`\n===== SERVING-BUTTON: ${sFail ? sFail + ' FAILURE(S)' : 'ALL PASS'} =====`);
+if (sFail) process.exit(1);
