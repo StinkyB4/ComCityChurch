@@ -6,12 +6,11 @@
 -- sql/migrate_team_instructions.sql — the column guards below make it
 -- self-contained.
 --
--- NOTE ON TEAM NAMES: the UPDATEs below match your existing teams by name
--- (case-insensitive). If a team in your database is named differently
--- (e.g. "Worship" instead of "Music", or "Welcome / Greeting" instead of
--- "Greeting"), that UPDATE will simply match 0 rows — edit the name in the
--- WHERE clause, or tell me the exact names and I'll adjust. The verification
--- query at the bottom shows exactly which teams ended up with instructions.
+-- TEAM NAMES: confirmed against the live Teams list. Setup, Sound, Slides,
+-- Music, and Clean Up already exist and are matched by name (case-insensitive).
+-- Greeting and Lock Up do not exist, so they are created as new Sunday-serving
+-- teams. The verification query at the bottom shows what ended up with
+-- instructions after running.
 --
 -- These are PLACEHOLDERS and are set to appear in reminder emails
 -- (include_instructions_in_reminder = true). Edit the wording any time from
@@ -76,9 +75,16 @@ UPDATE teams SET
   include_instructions_in_reminder = true
 WHERE lower(name) = lower('Music');
 
--- ── Greeting ────────────────────────────────────────────────────────────────
-UPDATE teams SET
-  instructions = $doc$Arrive by 9:00 AM, ready to welcome people.
+-- ── Greeting (new serving team — no existing "Greeting"/"Welcome" team) ─────
+-- Created as a Sunday-serving team so it appears as a schedule role. If you'd
+-- rather map this to an existing team, replace this INSERT with an UPDATE like
+-- the ones above (WHERE lower(name) = lower('<your team>')).
+INSERT INTO teams (name, is_sunday_serving, serving_order, instructions, include_instructions_in_reminder)
+VALUES (
+  'Greeting',
+  true,
+  60,
+  $doc$Arrive by 9:00 AM, ready to welcome people.
 
 [ ] Prop open the main doors
 [ ] Hand out bulletins
@@ -86,8 +92,13 @@ UPDATE teams SET
 [ ] Staff the welcome / info table
 [ ] Help point people to coffee and kids check-in
 [ ] Keep an eye out for anyone who looks lost or new$doc$,
-  include_instructions_in_reminder = true
-WHERE lower(name) = lower('Greeting');
+  true
+)
+ON CONFLICT (name) DO UPDATE SET
+  is_sunday_serving = true,
+  instructions = EXCLUDED.instructions,
+  include_instructions_in_reminder = true,
+  serving_order = COALESCE(NULLIF(teams.serving_order, 0), EXCLUDED.serving_order);
 
 -- ── Clean Up ────────────────────────────────────────────────────────────────
 UPDATE teams SET
