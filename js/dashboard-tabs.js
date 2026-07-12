@@ -832,6 +832,15 @@
       html += '<input type="hidden" name="action_type" value="' + (editTeam ? 'edit' : 'create') + '">';
       if (editTeam) html += '<input type="hidden" name="team_id" value="' + D.esc(editTeam.id) + '">';
       html += '<div class="mp-form-group"><label>Team Name <span class="mp-required">*</span></label><input type="text" name="team_name" value="' + D.esc(editTeam ? editTeam.name : '') + '" required placeholder="e.g. Worship Team"></div>';
+      /* Team leader — sets teams.leader_id and marks their team_members row as
+         'leader'. The chosen leader is added to the team automatically if not
+         already picked below. */
+      html += '<div class="mp-form-group"><label>Team Leader</label><select name="leader_id"><option value="">-- No leader --</option>';
+      approved.forEach(function (p) {
+        var pn = ((p.first_name || '') + (p.last_name ? ' ' + p.last_name : '')).trim() || p.full_name || p.email;
+        html += '<option value="' + D.esc(p.id) + '"' + (editTeam && editTeam.leader_id === p.id ? ' selected' : '') + '>' + D.esc(pn) + '</option>';
+      });
+      html += '</select><span class="mp-hint" style="display:block;margin-top:4px;">The leader can edit this team and post messages to it.</span></div>';
       /* Sunday Gathering role settings */
       var isSun = editTeam && editTeam.is_sunday_serving;
       html += '<div class="mp-form-group" style="background:#f7f9fc;border:1px solid #dde3eb;border-radius:6px;padding:12px 14px;">';
@@ -1050,6 +1059,7 @@
             var initials = prof ? D.getInitials(prof) : displayName.charAt(0).toUpperCase();
             html += '<li class="mp-group-dir-row">' + D.renderAvatar(initials, '', '') + '<div class="mp-group-dir-info">';
             html += '<span class="mp-group-dir-name">' + D.esc(displayName);
+            if (tm.role === 'leader') html += ' <span class="mp-group-dir-role" style="background:#D5393B;color:#fff;font-size:0.72rem;padding:1px 6px;border-radius:10px;">Leader</span>';
             if (mt === 'nonmember') html += ' <span class="mp-group-dir-role" style="background:#f0a500;color:#fff;font-size:0.72rem;padding:1px 6px;border-radius:10px;">Non-member</span>';
             if (mt === 'child')     html += ' <span class="mp-group-dir-role" style="background:#4a8c6f;color:#fff;font-size:0.72rem;padding:1px 6px;border-radius:10px;">Child</span>';
             if (mt === 'family')    html += ' <span class="mp-group-dir-role" style="background:#112E53;color:#fff;font-size:0.72rem;padding:1px 6px;border-radius:10px;">Family</span>';
@@ -1139,7 +1149,10 @@
         e.preventDefault();
         var fd = new FormData(form);
         var action = fd.get('action_type'), teamId = fd.get('team_id') || '', name = (fd.get('team_name') || '').trim();
+        var leaderId = fd.get('leader_id') || '';
         var memberIds = fd.getAll('member_ids');
+        /* the designated leader is always on the team */
+        if (leaderId && memberIds.indexOf(leaderId) === -1) memberIds.push(leaderId);
         /* collect family selections (assigned as one unit) + which are newly added */
         var familyIds = fd.getAll('family_ids');
         var origFamilies = ((document.getElementById('tm-orig-families') || {}).value || '');
@@ -1169,6 +1182,7 @@
         }
         var teamData = {
           name: name,
+          leader_id:          leaderId || null,
           is_sunday_serving:  fd.get('is_sunday_serving')  === '1',
           allow_children:     fd.get('allow_children')     === '1',
           allow_nonmembers:   fd.get('allow_nonmembers')   === '1',
@@ -1185,17 +1199,17 @@
           if (upRes.error && upRes.error.message && upRes.error.message.indexOf('column') !== -1) {
             /* columns not migrated yet — retry with just name */
             hasSundayCols = false;
-            var upRes2 = await _sb2.from('teams').update({ name: name }).eq('id', teamId);
+            var upRes2 = await _sb2.from('teams').update({ name: name, leader_id: leaderId || null }).eq('id', teamId);
             if (upRes2.error) { alert('Save failed: ' + upRes2.error.message); return; }
           } else if (upRes.error) {
             alert('Save failed: ' + upRes.error.message); return;
           }
           await _sb2.from('team_members').delete().eq('team_id', teamId);
         } else {
-          var insertData = hasSundayCols ? fullData : { name: name };
+          var insertData = hasSundayCols ? fullData : { name: name, leader_id: leaderId || null };
           var { data: newT, error: newTErr } = await _sb2.from('teams').insert(insertData).select().single();
           if (newTErr && newTErr.message && newTErr.message.indexOf('column') !== -1) {
-            var { data: newT2, error: newTErr2 } = await _sb2.from('teams').insert({ name: name }).select().single();
+            var { data: newT2, error: newTErr2 } = await _sb2.from('teams').insert({ name: name, leader_id: leaderId || null }).select().single();
             if (newTErr2) { alert('Error creating team: ' + newTErr2.message); return; }
             newT = newT2;
           } else if (newTErr) {
@@ -1207,7 +1221,7 @@
         if (teamId && (memberIds.length || childRows.length || nonmemberRows.length || familyIds.length)) {
           var insertRows = [];
           memberIds.forEach(function(pid) {
-            insertRows.push({ team_id: teamId, member_id: pid, role: 'member', member_type: 'member' });
+            insertRows.push({ team_id: teamId, member_id: pid, role: (pid === leaderId ? 'leader' : 'member'), member_type: 'member' });
           });
           childRows.forEach(function(cr) {
             insertRows.push({ team_id: teamId, member_id: cr.parent_id || null, child_id: cr.child_id, role: 'member', member_type: 'child' });
@@ -1225,7 +1239,7 @@
                nullable for children / non-members). Save the regular members so
                they aren't lost, then tell the user EXACTLY what happened instead
                of failing silently. */
-            var membersOnly = memberIds.map(function(pid){ return { team_id: teamId, member_id: pid, role: 'member' }; });
+            var membersOnly = memberIds.map(function(pid){ return { team_id: teamId, member_id: pid, role: (pid === leaderId ? 'leader' : 'member') }; });
             var fbErr = null;
             if (membersOnly.length) { var fb = await _sb2.from('team_members').insert(membersOnly); fbErr = fb.error; }
             if (fbErr) {
