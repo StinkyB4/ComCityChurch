@@ -1824,7 +1824,7 @@ details[open] .mp-group-accordion-chevron { transform: rotate(90deg); }
 .mp-sched-strip-container { margin: 0 -32px; }
 .mp-sched-scroll-mirror   { overflow-x: scroll; overflow-y: hidden; height: 12px; }
 .mp-sched-mirror-inner    { height: 1px; }
-.mp-sched-strip-wrap      { overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; padding: 8px 32px 16px; cursor: grab; }
+.mp-sched-strip-wrap      { overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity; overscroll-behavior-x: contain; padding: 8px 32px 16px; cursor: grab; }
 .mp-sched-strip-wrap:active { cursor: grabbing; }
 .mp-sched-strip           { display: flex; gap: 16px; width: max-content; }
 .mp-sched-scroll-hint     { text-align: center; font-size: 0.78rem; color: var(--mp-text-3); margin: 4px 0 20px; }
