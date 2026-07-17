@@ -810,29 +810,59 @@
           wrap.scrollLeft = to; if (mirror) mirror.scrollLeft = to;
         }
         if (mirror) {
-          var syncing = false;
-          mirror.addEventListener('scroll', function () { if (!syncing) { syncing = true; wrap.scrollLeft = mirror.scrollLeft; syncing = false; } });
-          wrap.addEventListener('scroll', function () { if (!syncing) { syncing = true; mirror.scrollLeft = wrap.scrollLeft; syncing = false; } });
+          /* scroll events are async, so a plain re-entrancy flag can't stop the
+             two panes from echoing stale positions back at each other mid-fling;
+             lock onto whichever pane the user is actually scrolling instead */
+          var syncSource = null, syncTimer = null;
+          var syncScroll = function (src, dst) {
+            if (syncSource && syncSource !== src) return;
+            /* setting scrollLeft on a snap container re-snaps instantly, so while
+               the mirror is driving the strip keep snap off, restoring on idle */
+            if (src === mirror) wrap.style.scrollSnapType = 'none';
+            syncSource = src;
+            clearTimeout(syncTimer);
+            syncTimer = setTimeout(function () {
+              if (syncSource === mirror && !dragging) wrap.style.scrollSnapType = '';
+              syncSource = null;
+            }, 150);
+            if (Math.abs(dst.scrollLeft - src.scrollLeft) >= 1) dst.scrollLeft = src.scrollLeft;
+          };
+          mirror.addEventListener('scroll', function () { syncScroll(mirror, wrap); }, { passive: true });
+          wrap.addEventListener('scroll', function () { syncScroll(wrap, mirror); }, { passive: true });
         }
 
-        /* drag-to-scroll on the card strip */
-        var isDragging = false, dragStartX = 0, dragScrollLeft = 0;
+        /* drag-to-scroll on the card strip (mouse only — touch uses native scrolling) */
+        var dragging = false, dragMoved = false, dragStartX = 0, dragScrollLeft = 0;
         wrap.style.cursor = 'grab';
-        wrap.addEventListener('mousedown', function (e) {
-          if (e.button !== 0) return;
-          isDragging = true; dragStartX = e.pageX - wrap.offsetLeft; dragScrollLeft = wrap.scrollLeft;
+        wrap.addEventListener('pointerdown', function (e) {
+          if (e.pointerType !== 'mouse' || e.button !== 0) return;
+          dragging = true; dragMoved = false;
+          dragStartX = e.clientX; dragScrollLeft = wrap.scrollLeft;
           wrap.style.cursor = 'grabbing'; wrap.style.userSelect = 'none';
         });
-        document.addEventListener('mouseup', function () {
-          if (!isDragging) return;
-          isDragging = false; wrap.style.cursor = 'grab'; wrap.style.userSelect = '';
+        wrap.addEventListener('pointermove', function (e) {
+          if (!dragging) return;
+          var dx = e.clientX - dragStartX;
+          if (!dragMoved && Math.abs(dx) > 4) {
+            dragMoved = true;
+            /* snap must be off while we set scrollLeft by hand, or the browser
+               re-snaps every assignment and the drag stutters */
+            wrap.style.scrollSnapType = 'none';
+            if (wrap.setPointerCapture) { try { wrap.setPointerCapture(e.pointerId); } catch (err) {} }
+          }
+          if (dragMoved) { e.preventDefault(); wrap.scrollLeft = dragScrollLeft - dx; }
         });
-        document.addEventListener('mousemove', function (e) {
-          if (!isDragging) return;
-          e.preventDefault();
-          var x = e.pageX - wrap.offsetLeft;
-          wrap.scrollLeft = dragScrollLeft - (x - dragStartX);
-        });
+        var endDrag = function () {
+          if (!dragging) return;
+          dragging = false;
+          wrap.style.scrollSnapType = '';
+          wrap.style.cursor = 'grab'; wrap.style.userSelect = '';
+        };
+        wrap.addEventListener('pointerup', endDrag);
+        wrap.addEventListener('pointercancel', endDrag);
+        wrap.addEventListener('click', function (e) {
+          if (dragMoved) { dragMoved = false; e.preventDefault(); e.stopPropagation(); }
+        }, true);
       });
 
       var gform = document.getElementById('guest-form');
