@@ -1037,7 +1037,8 @@ footer {
   .btn-group.centered { align-items: center; }
 
   .community-card { min-height: 320px; }
-  .sermon-grid { grid-template-columns: 1fr; }
+  /* .sermon-grid mobile layout lives at the end of this file, after the
+     base .sermon-grid rule that would otherwise override it. */
 }
 
 /* ── SERMON RSS FEED ─────────────────────────────────────────────── */
@@ -1108,4 +1109,126 @@ footer {
 .sermon-cta {
   text-align: center;
   margin-top: var(--space-xl);
+}
+
+/* ── SERMON CARDS — MOBILE ───────────────────────────────────────
+   Must live after the base .sermon-grid rule above: same specificity,
+   so source order decides. Desktop (>768px) is untouched.
+   Phones get a horizontal list card — square artwork (podcast art is
+   square, so it is no longer cropped) beside readable stacked text. */
+
+@media (max-width: 768px) {
+  .sermon-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+  }
+
+  .sermon-grid .sermon-card {
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1fr);
+    gap: var(--space-md);
+    align-items: start;
+    padding: var(--space-md);
+  }
+  /* Lift-on-hover reads as a stuck state on touch */
+  .sermon-grid .sermon-card:hover {
+    transform: none;
+    box-shadow: var(--shadow-card);
+  }
+
+  .sermon-grid .sermon-thumb {
+    width: 120px;
+    height: 120px;
+    padding: 0;
+    border-radius: 10px;
+    background-size: cover;
+    background-position: center;
+  }
+
+  /* Badge has no room over a thumbnail this size */
+  .sermon-grid .sermon-series,
+  .sermon-grid .sermon-series-badge { display: none; }
+
+  .sermon-grid .sermon-body {
+    padding: 0;
+    min-width: 0;
+  }
+
+  .sermon-grid .sermon-reference {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+
+  .sermon-grid .sermon-title {
+    font-size: 18px;
+    line-height: 1.3;
+    margin-bottom: 6px;
+    overflow-wrap: anywhere;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .sermon-grid .sermon-excerpt {
+    font-size: 14px;
+    -webkit-line-clamp: 2;
+    margin-bottom: var(--space-sm);
+  }
+
+  .sermon-grid .sermon-card .btn {
+    padding: 11px 20px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sermon-grid .sermon-card {
+    grid-template-columns: 80px minmax(0, 1fr);
+    gap: var(--space-sm);
+    padding: var(--space-sm);
+  }
+
+  .sermon-grid .sermon-thumb {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+  }
+
+  /* Titles are long ("SERIES: Passage - Speaker"), and the text column is
+     narrow here — give them the room to land the speaker name. */
+  .sermon-grid .sermon-title {
+    font-size: 15px;
+    line-height: 1.25;
+    -webkit-line-clamp: 4;
+  }
+
+  .sermon-grid .sermon-excerpt {
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: var(--space-xs);
+  }
+
+  /* Full-width tap target rather than a button squeezed into the column */
+  .sermon-grid .sermon-card .btn {
+    display: block;
+    text-align: center;
+    padding: 10px 16px;
+  }
+}
+
+@media (max-width: 360px) {
+  .sermon-grid .sermon-card {
+    grid-template-columns: 68px minmax(0, 1fr);
+    gap: var(--space-xs);
+  }
+
+  .sermon-grid .sermon-thumb {
+    width: 68px;
+    height: 68px;
+  }
+
+  .sermon-grid .sermon-reference { font-size: 10px; }
+  .sermon-grid .sermon-title { font-size: 14px; }
 }

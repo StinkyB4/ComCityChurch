@@ -85,6 +85,15 @@
   Q.lte = function (c, v) { this._filters.push(function (r) { return r[c] <= v; }); return this; };
   Q.in = function (c, vals) { var s = vals || []; this._filters.push(function (r) { return s.indexOf(r[c]) !== -1; }); return this; };
   Q.is = function (c, v) { this._filters.push(function (r) { return v === null ? (r[c] === null || r[c] === undefined) : r[c] === v; }); return this; };
+  Q.not = function (c, op, v) {
+    this._filters.push(function (r) {
+      if (op === 'is') return v === null || v === 'null' ? (r[c] !== null && r[c] !== undefined) : r[c] !== v;
+      if (op === 'eq') return r[c] !== v;
+      if (op === 'in') { var s = String(v).replace(/^\(|\)$/g, '').split(','); return s.indexOf(String(r[c])) === -1; }
+      return true;
+    });
+    return this;
+  };
   Q.contains = function () { return this; };
   Q.like = function (c, v) { var rx = new RegExp('^' + String(v).replace(/%/g, '.*') + '$', 'i'); this._filters.push(function (r) { return rx.test(r[c] || ''); }); return this; };
   Q.ilike = Q.like;
