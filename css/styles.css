@@ -878,9 +878,17 @@ footer {
   overflow: hidden;
 }
 
-/* All direct children of media-container stack above the bg layers and overlay */
-.media-container > *:not(.media-bg):not(.media-overlay):not(.team-overlay):not(.slideshow-dots) {
+/* All direct children of media-container stack above the bg layers and overlay.
+   .breadcrumb is excluded because it positions itself (absolute, pinned to the
+   hero's top-left); forcing position:relative here turned its top/left offsets
+   into a shift from its in-flow spot, landing it on top of the <h1>. */
+.media-container > *:not(.media-bg):not(.media-overlay):not(.team-overlay):not(.slideshow-dots):not(.breadcrumb) {
   position: relative;
+  z-index: 3;
+}
+
+/* Keeps the self-positioned breadcrumb above the overlay (z-index 2) */
+.media-container > .breadcrumb {
   z-index: 3;
 }
 
