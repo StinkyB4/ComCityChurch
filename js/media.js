@@ -247,7 +247,7 @@ const SITE_MEDIA = {
 
     "mens-discipleship": {
       type: "image",
-      src: "/assets/media/heroes/communities-hero.jpg",
+      src: "/assets/media/heroes/mens-hero.jpg",
       alt: "Men studying Scripture together",
       overlay: {
         type: "dark",
@@ -387,7 +387,7 @@ const SITE_MEDIA = {
       }
     },
     "mens-discipleship": {
-      src: "/assets/media/heroes/communities-hero.jpg",
+      src: "/assets/media/heroes/mens-hero.jpg",
       alt: "Men's Discipleship Morning",
       overlay: {
         type: "gradient",
