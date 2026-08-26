@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="/assets/logo.png">
   <title>The Story of God — Commissioned City Church</title>
-  <meta name="description" content="One story, from creation to new creation. Ten movements, ten symbols — a simple way to learn and retell the whole story of the Bible.">
+  <meta name="description" content="One story, from creation to new creation. Six movements, six symbols — a simple way to learn and retell the whole story of the Bible.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400&family=Montserrat:wght@600;700;800&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
@@ -14,57 +14,59 @@
   <style>
     /* ===== STORY OF GOD — PAGE-LOCAL STYLES ===== */
 
-    /* --- Symbol grid (overview) --- */
+    /* --- Symbol row (overview) --- */
     .sog-symbols {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: var(--space-md);
+      grid-template-columns: repeat(6, 1fr);
+      gap: var(--space-md) var(--space-sm);
       margin-top: var(--space-lg);
     }
     .sog-symbol {
       display: flex;
       flex-direction: column;
       align-items: center;
-      text-align: center;
-      gap: 10px;
-      padding: var(--space-md) 12px;
-      background: var(--white);
-      border: 1px solid rgba(17,46,83,.10);
-      border-radius: var(--radius-card);
+      gap: 16px;
+      padding: var(--space-sm) 4px;
+      background: none;
+      border: none;
       cursor: pointer;
       font: inherit;
       color: inherit;
-      transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
-    }
-    .sog-symbol:hover,
-    .sog-symbol:focus-visible {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 28px rgba(17,46,83,.12);
-      border-color: rgba(213,57,59,.45);
-      outline: none;
     }
     .sog-symbol .sog-mark {
-      width: 62px;
-      height: 62px;
+      width: 88px;
+      height: 88px;
       color: var(--navy);
-      transition: color var(--transition);
+      transition: transform var(--transition);
     }
-    .sog-symbol:hover .sog-mark { color: var(--red); }
-    .sog-symbol .sog-num {
-      font-family: 'Source Sans Pro', sans-serif;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: .14em;
-      text-transform: uppercase;
-      color: var(--red);
+    .sog-symbol .sog-ring {
+      fill: none;
+      transition: fill var(--transition);
     }
+    .sog-symbol .sog-glyph { transition: stroke var(--transition); }
     .sog-symbol .sog-name {
       font-family: 'Montserrat', sans-serif;
       font-weight: 600;
-      font-size: 15px;
-      line-height: 1.25;
+      font-size: 14px;
+      letter-spacing: .10em;
+      text-transform: uppercase;
       color: var(--navy);
+      padding-bottom: 5px;
+      border-bottom: 2px solid transparent;
+      transition: color var(--transition), border-color var(--transition);
     }
+    .sog-symbol:hover .sog-mark,
+    .sog-symbol:focus-visible .sog-mark { transform: translateY(-3px); }
+    .sog-symbol:hover .sog-ring,
+    .sog-symbol:focus-visible .sog-ring,
+    .sog-symbol.is-active .sog-ring { fill: var(--navy); }
+    .sog-symbol:hover .sog-glyph,
+    .sog-symbol:focus-visible .sog-glyph,
+    .sog-symbol.is-active .sog-glyph { stroke: var(--white); }
+    .sog-symbol:hover .sog-name,
+    .sog-symbol:focus-visible .sog-name,
+    .sog-symbol.is-active .sog-name { color: var(--red); border-bottom-color: var(--red); }
+    .sog-symbol:focus-visible { outline: none; }
 
     /* --- Accordion --- */
     .sog-accordion { max-width: 880px; margin: 0 auto; }
@@ -96,25 +98,21 @@
 
     .sog-item .sog-mark-sm {
       flex: 0 0 auto;
-      width: 42px;
-      height: 42px;
+      width: 46px;
+      height: 46px;
       color: var(--navy);
     }
+    .sog-item .sog-mark-sm .sog-ring { fill: none; transition: fill var(--transition); }
+    .sog-item[open] .sog-mark-sm .sog-ring { fill: var(--navy); }
+    .sog-item[open] .sog-mark-sm .sog-glyph { stroke: var(--white); }
     .sog-item[open] .sog-mark-sm { color: var(--red); }
 
     .sog-head { flex: 1 1 auto; min-width: 0; }
-    .sog-head .sog-num {
-      display: block;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: .14em;
-      text-transform: uppercase;
-      color: var(--red);
-      margin-bottom: 2px;
-    }
     .sog-head h3 {
-      font-size: clamp(19px, 2.4vw, 24px);
+      font-size: clamp(20px, 2.4vw, 26px);
       font-weight: 600;
+      letter-spacing: .04em;
+      text-transform: uppercase;
       margin: 0;
     }
 
@@ -128,7 +126,7 @@
     .sog-item[open] .sog-chevron { transform: rotate(180deg); color: var(--red); }
 
     .sog-body {
-      padding: 0 var(--space-md) var(--space-md) calc(42px + var(--space-md) + var(--space-md));
+      padding: 0 var(--space-md) var(--space-md) calc(46px + var(--space-md) + var(--space-md));
     }
     .sog-body p { font-size: 17px; color: var(--charcoal); max-width: 68ch; }
     .sog-ref {
@@ -169,29 +167,27 @@
     }
     .sog-step-num {
       flex: 0 0 auto;
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      background: var(--red);
-      color: var(--white);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 34px;
+      padding-top: 3px;
+      color: var(--red);
       font-family: 'Montserrat', sans-serif;
       font-weight: 700;
-      font-size: 17px;
+      font-size: 20px;
+      line-height: 1.2;
+      font-variant-numeric: tabular-nums;
     }
     .sog-step h4 { font-size: 19px; margin-bottom: 4px; }
     .sog-step p { font-size: 16px; color: var(--muted-blue); }
 
     @media (max-width: 1024px) {
-      .sog-symbols { grid-template-columns: repeat(3, 1fr); }
+      .sog-symbols { grid-template-columns: repeat(3, 1fr); gap: var(--space-lg) var(--space-sm); }
     }
     @media (max-width: 768px) {
-      .sog-symbols { grid-template-columns: repeat(2, 1fr); gap: var(--space-sm); }
-      .sog-symbol .sog-mark { width: 52px; height: 52px; }
+      .sog-symbols { grid-template-columns: repeat(2, 1fr); gap: var(--space-md) var(--space-sm); }
+      .sog-symbol .sog-mark { width: 68px; height: 68px; }
+      .sog-symbol .sog-name { font-size: 12px; letter-spacing: .08em; }
       .sog-item summary { gap: var(--space-sm); padding: 16px var(--space-sm); }
-      .sog-item .sog-mark-sm { width: 34px; height: 34px; }
+      .sog-item .sog-mark-sm { width: 38px; height: 38px; }
       .sog-body { padding: 0 var(--space-sm) var(--space-md) var(--space-sm); }
       .sog-controls { padding: 0 var(--space-xs); }
     }
@@ -299,7 +295,7 @@
   <div style="position:relative;z-index:1;">
     <span class="eyebrow fade-in-up">Discipleship Resource</span>
     <h1 id="page-heading" class="fade-in-up delay-1" style="color:white;">The Story of God</h1>
-    <p class="page-hero-sub fade-in-up delay-2">One story, told in ten movements — from the first light of creation to a world made new.</p>
+    <p class="page-hero-sub fade-in-up delay-2">One story, told in six movements — from the first light of creation to a world made new.</p>
   </div>
 </section>
 
@@ -310,7 +306,7 @@
     <h2 class="fade-in-up delay-1" style="margin-bottom:var(--space-md);">The Bible Is Not a Rulebook. It's a Story.</h2>
     <div class="fade-in-up delay-2">
       <p>Most of us met the Bible in pieces — a verse on a coffee mug, a passage at a funeral, a lesson we half-remember from childhood. The pieces are true, but held apart from one another they rarely add up to anything we can live inside. <strong>The Story of God</strong> puts the pieces back in order.</p>
-      <p>Over ten sessions we walk the whole arc of Scripture — creation, rebellion, promise, rescue, Jesus, cross and resurrection, Spirit, church, and the restoration of everything — told as one continuous narrative. No lecture, no notes to fill in. Someone tells the story out loud, the group retells it together, and then we talk: What did you notice? What does this say about God? What does it say about us? Where do we see ourselves in it?</p>
+      <p>Together we walk the whole arc of Scripture — creation, rebellion, promise, redemption, church, and restoration — told as one continuous narrative. No lecture, no notes to fill in. Someone tells the story out loud, the group retells it together, and then we talk: What did you notice? What does this say about God? What does it say about us? Where do we see ourselves in it?</p>
       <p>It is deliberately simple, because simple things travel. By the end, you don't just know <em>about</em> the Story — you can tell it. To a friend at work. To your kids at bedtime. To the neighbour who asks you an honest question over the fence. That's the point: not more information, but a story you can carry and hand on.</p>
     </div>
   </div>
@@ -375,125 +371,59 @@
 <section class="section" id="symbols">
   <div class="container" style="max-width:1120px;">
     <div class="section-heading text-center fade-in-up">
-      <span class="eyebrow">Ten Movements</span>
+      <span class="eyebrow">Six Movements</span>
       <h2>The Symbols</h2>
-      <p style="max-width:680px;margin:0 auto;">Each session carries a simple symbol — a hook for the memory, so the whole Story can be recalled and retold on a napkin, a whiteboard, or the back of your hand. Tap any symbol to read its synopsis.</p>
+      <p style="max-width:680px;margin:0 auto;">Each movement carries a simple symbol — a hook for the memory, so the whole Story can be recalled and retold on a napkin, a whiteboard, or the back of your hand. Tap any symbol to read its synopsis.</p>
     </div>
 
     <div class="sog-symbols">
 
-      <button class="sog-symbol fade-in-up" data-target="sog-1" type="button">
-        <svg class="sog-mark" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M32 6c-8 0-14 5-15 12-5 2-8 6-8 11 0 7 6 12 13 12h20c7 0 13-5 13-12 0-5-3-9-8-11-1-7-7-12-15-12z"/>
-          <path d="M32 41v16"/>
-          <path d="M24 57h16"/>
-          <circle cx="25" cy="22" r="2.6" fill="currentColor" stroke="none"/>
-          <circle cx="39" cy="28" r="2.6" fill="#D5393B" stroke="none"/>
+      <button class="sog-symbol fade-in-up" data-target="sog-creation" type="button">
+        <svg class="sog-mark" viewBox="0 0 64 64" aria-hidden="true">
+          <circle class="sog-ring" cx="32" cy="32" r="26" stroke="currentColor" stroke-width="2.5"/>
+          <path class="sog-glyph" d="M20 27l12 13 12-13" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <span class="sog-num">One</span>
-        <span class="sog-name">Creation &amp; Rebellion</span>
+        <span class="sog-name">Creation</span>
       </button>
 
-      <button class="sog-symbol fade-in-up delay-1" data-target="sog-2" type="button">
-        <svg class="sog-mark" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M8 42a24 24 0 0 1 48 0" stroke="#D5393B"/>
-          <path d="M15 42a17 17 0 0 1 34 0"/>
-          <path d="M22 42a10 10 0 0 1 20 0"/>
-          <path d="M6 50c4 0 4 3 8 3s4-3 8-3 4 3 8 3 4-3 8-3 4 3 8 3 4-3 8-3"/>
-          <path d="M6 57c4 0 4 3 8 3s4-3 8-3 4 3 8 3 4-3 8-3 4 3 8 3 4-3 8-3"/>
+      <button class="sog-symbol fade-in-up delay-1" data-target="sog-rebellion" type="button">
+        <svg class="sog-mark" viewBox="0 0 64 64" aria-hidden="true">
+          <circle class="sog-ring" cx="32" cy="32" r="26" stroke="currentColor" stroke-width="2.5"/>
+          <path class="sog-glyph" d="M22 22l20 20M42 22L22 42" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <span class="sog-num">Two</span>
-        <span class="sog-name">Sinful Humanity</span>
+        <span class="sog-name">Rebellion</span>
       </button>
 
-      <button class="sog-symbol fade-in-up delay-2" data-target="sog-3" type="button">
-        <svg class="sog-mark" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M32 10l4.4 9.4L46 21l-7 7.2 1.7 10.3L32 33.6l-8.7 4.9L25 28.2 18 21l9.6-1.6z" stroke="#D5393B"/>
-          <path d="M14 44l1.8 3.9L20 48.6l-2.9 3 .7 4.3-3.8-2-3.8 2 .7-4.3-2.9-3 4.2-.7z"/>
-          <path d="M50 44l1.8 3.9 4.2.7-2.9 3 .7 4.3-3.8-2-3.8 2 .7-4.3-2.9-3 4.2-.7z"/>
-          <circle cx="32" cy="52" r="2" fill="currentColor" stroke="none"/>
+      <button class="sog-symbol fade-in-up delay-2" data-target="sog-promise" type="button">
+        <svg class="sog-mark" viewBox="0 0 64 64" aria-hidden="true">
+          <circle class="sog-ring" cx="32" cy="32" r="26" stroke="currentColor" stroke-width="2.5"/>
+          <path class="sog-glyph" d="M27 20l13 12-13 12" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <span class="sog-num">Three</span>
-        <span class="sog-name">A People of God</span>
+        <span class="sog-name">Promise</span>
       </button>
 
-      <button class="sog-symbol fade-in-up delay-3" data-target="sog-4" type="button">
-        <svg class="sog-mark" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M10 22a6 6 0 0 1 6-6h13v40H16a6 6 0 0 1-6-6z"/>
-          <path d="M54 22a6 6 0 0 0-6-6H35v40h13a6 6 0 0 0 6-6z"/>
-          <path d="M16 28h8M16 36h8M16 44h8M40 28h8M40 36h8M40 44h8" stroke="#D5393B" stroke-width="2"/>
+      <button class="sog-symbol fade-in-up delay-3" data-target="sog-redemption" type="button">
+        <svg class="sog-mark" viewBox="0 0 64 64" aria-hidden="true">
+          <circle class="sog-ring" cx="32" cy="32" r="26" stroke="currentColor" stroke-width="2.5"/>
+          <path class="sog-glyph" d="M32 19v26M19 32h26" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <span class="sog-num">Four</span>
-        <span class="sog-name">Exodus &amp; Law</span>
+        <span class="sog-name">Redemption</span>
       </button>
 
-      <button class="sog-symbol fade-in-up" data-target="sog-5" type="button">
-        <svg class="sog-mark" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="32" cy="12" r="5" stroke="#D5393B"/>
-          <path d="M5 36C11 18 25 15 31 28"/>
-          <path d="M59 36C53 18 39 15 33 28"/>
-          <path d="M29 28h6l-3 30z"/>
+      <button class="sog-symbol fade-in-up delay-4" data-target="sog-church" type="button">
+        <svg class="sog-mark" viewBox="0 0 64 64" aria-hidden="true">
+          <circle class="sog-ring" cx="32" cy="32" r="26" stroke="currentColor" stroke-width="2.5"/>
+          <path class="sog-glyph" d="M27 20l13 12-13 12" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <span class="sog-num">Five</span>
-        <span class="sog-name">The Person of Jesus</span>
+        <span class="sog-name">Church</span>
       </button>
 
-      <button class="sog-symbol fade-in-up delay-1" data-target="sog-6" type="button">
-        <svg class="sog-mark" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M10 46L13 18l11 12 8-18 8 18 11-12 3 28z"/>
-          <path d="M10 52h44"/>
-          <circle cx="32" cy="36" r="2.6" fill="#D5393B" stroke="none"/>
+      <button class="sog-symbol fade-in-up" data-target="sog-restoration" type="button">
+        <svg class="sog-mark" viewBox="0 0 64 64" aria-hidden="true">
+          <circle class="sog-ring" cx="32" cy="32" r="26" stroke="currentColor" stroke-width="2.5"/>
+          <path class="sog-glyph" d="M20 27l12 13 12-13" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <span class="sog-num">Six</span>
-        <span class="sog-name">The Works of Jesus</span>
-      </button>
-
-      <button class="sog-symbol fade-in-up delay-2" data-target="sog-7" type="button">
-        <svg class="sog-mark" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M10 54V34a13 13 0 0 1 26 0v20"/>
-          <path d="M17 54V40a6 6 0 0 1 12 0v14"/>
-          <path d="M4 54h56"/>
-          <circle cx="49" cy="44" r="9" stroke="#D5393B"/>
-        </svg>
-        <span class="sog-num">Seven</span>
-        <span class="sog-name">Death &amp; Resurrection</span>
-      </button>
-
-      <button class="sog-symbol fade-in-up delay-3" data-target="sog-8" type="button">
-        <svg class="sog-mark" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M32 6c2 10 14 16 14 28a14 14 0 0 1-28 0C18 22 30 16 32 6z"/>
-          <path d="M32 30c1 5 5 7 5 11a5 5 0 0 1-10 0c0-4 4-6 5-11z" stroke="#D5393B"/>
-        </svg>
-        <span class="sog-num">Eight</span>
-        <span class="sog-name">The Mission &amp; Power</span>
-      </button>
-
-      <button class="sog-symbol fade-in-up" data-target="sog-9" type="button">
-        <svg class="sog-mark" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M7 40h50"/>
-          <path d="M14 40v16M50 40v16"/>
-          <path d="M19 10h13l-1.6 13a4.9 4.9 0 0 1-9.8 0z" stroke="#D5393B"/>
-          <path d="M25.5 28v9M20 37h11" stroke="#D5393B"/>
-          <ellipse cx="44" cy="32" rx="10" ry="6"/>
-          <path d="M38 30c3 1.6 9 1.6 12 0"/>
-        </svg>
-        <span class="sog-num">Nine</span>
-        <span class="sog-name">Life in the Spirit</span>
-      </button>
-
-      <button class="sog-symbol fade-in-up delay-1" data-target="sog-10" type="button">
-        <svg class="sog-mark" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="32" cy="8" r="4.5" stroke="#D5393B"/>
-          <path d="M8 46V28l7-6 7 6v18"/>
-          <path d="M22 46V22h20v24"/>
-          <path d="M42 46V30l7-6 7 6v16"/>
-          <path d="M28 46V36a4 4 0 0 1 8 0v10"/>
-          <path d="M4 46h56"/>
-          <path d="M6 53c5 0 5 4 10 4s5-4 10-4 5 4 10 4 5-4 10-4 5 4 10 4"/>
-          <path d="M6 60c5 0 5 4 10 4s5-4 10-4 5 4 10 4 5-4 10-4 5 4 10 4"/>
-        </svg>
-        <span class="sog-num">Ten</span>
-        <span class="sog-name">Creation Restored</span>
+        <span class="sog-name">Restoration</span>
       </button>
 
     </div>
@@ -504,9 +434,9 @@
 <section class="section section--gray" id="sessions">
   <div class="container">
     <div class="section-heading text-center fade-in-up">
-      <span class="eyebrow">Session by Session</span>
+      <span class="eyebrow">Movement by Movement</span>
       <h2>Walk Through the Story</h2>
-      <p style="max-width:660px;margin:0 auto;">A one-paragraph synopsis of each movement. These are summaries, not the sessions themselves — the Story is meant to be told out loud, in a room, with people you know.</p>
+      <p style="max-width:660px;margin:0 auto;">A synopsis of each movement. These are summaries, not the telling itself — the Story is meant to be spoken out loud, in a room, with people you know.</p>
     </div>
 
     <div class="sog-controls fade-in-up">
@@ -515,173 +445,105 @@
 
     <div class="sog-accordion">
 
-      <details class="sog-item fade-in-up" id="sog-1">
+      <details class="sog-item fade-in-up" id="sog-creation">
         <summary>
-          <svg class="sog-mark-sm" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M32 6c-8 0-14 5-15 12-5 2-8 6-8 11 0 7 6 12 13 12h20c7 0 13-5 13-12 0-5-3-9-8-11-1-7-7-12-15-12z"/><path d="M32 41v16"/><path d="M24 57h16"/>
+          <svg class="sog-mark-sm" viewBox="0 0 64 64" aria-hidden="true">
+            <circle class="sog-ring" cx="32" cy="32" r="26" stroke="currentColor" stroke-width="3"/>
+            <path class="sog-glyph" d="M20 27l12 13 12-13" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
           <span class="sog-head">
-            <span class="sog-num">Session One</span>
-            <h3>Creation &amp; Rebellion</h3>
+            <h3>Creation</h3>
           </span>
           <svg class="sog-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </summary>
         <div class="sog-body">
-          <span class="sog-ref">Genesis 1–3 · Job 38 · Revelation 12</span>
-          <p>Before anything else, there was God — holy, good, and lacking nothing. He laid the foundations of the earth while angels sang for joy, and when some of those angels rebelled He would not let evil remain in His presence. Then He filled a world with light and water, seed and season, fish and birds and wild things, and called it good. Last of all He made humans in His own image, blessed them, shared His authority with them, and set them in a garden where everything they needed was already theirs. One tree was withheld — the knowledge of good and evil — because deciding what is good and what is evil belongs to God alone. Trusting a serpent's word over God's, Adam and Eve reached for it anyway, and the same rebellion that emptied heaven took root in the world. They were sent out of the garden, away from God's presence. And yet God came looking for them, and clothed them with His own hands before they went.</p>
+          <span class="sog-ref">Genesis 1–2 · Job 38</span>
+          <p>Before anything else, there was God — holy, good, complete in Himself, needing nothing. He laid the foundations of the earth while angels sang for joy. He made light and separated it from darkness, divided the sea from the sky, gathered the waters so dry land could appear. He filled the world with plants that carry their own seed, with sun and moon and stars to set the seasons turning, with fish and birds and every kind of wild thing — and He looked at all of it and said it was good. Last of all He made humans, male and female, in His own image, to be like Him. He blessed them, shared His own authority with them, told them to fill the earth and draw out its hidden potential, and placed them in a garden where everything they needed was already theirs. This is the world as God intended it: God with people, people with each other, everything flourishing under a good King.</p>
         </div>
       </details>
 
-      <details class="sog-item fade-in-up" id="sog-2">
+      <details class="sog-item fade-in-up" id="sog-rebellion">
         <summary>
-          <svg class="sog-mark-sm" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M8 42a24 24 0 0 1 48 0"/><path d="M17 42a15 15 0 0 1 30 0"/><path d="M6 52c5 0 5 4 10 4s5-4 10-4 5 4 10 4 5-4 10-4 5 4 10 4"/>
+          <svg class="sog-mark-sm" viewBox="0 0 64 64" aria-hidden="true">
+            <circle class="sog-ring" cx="32" cy="32" r="26" stroke="currentColor" stroke-width="3"/>
+            <path class="sog-glyph" d="M22 22l20 20M42 22L22 42" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
           <span class="sog-head">
-            <span class="sog-num">Session Two</span>
-            <h3>Sinful Humanity</h3>
+            <h3>Rebellion</h3>
           </span>
           <svg class="sog-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </summary>
         <div class="sog-body">
-          <span class="sog-ref">Genesis 4–9</span>
-          <p>Outside the garden the rebellion spreads. Cain, furious that his brother's offering was received and his was not, ignores God's warning that sin is crouching at the door — and kills Abel in a field. What began as one choice in one heart turns out to run through every heart. Generations later the earth is so saturated with violence that God grieves having made humanity at all, and the flood comes. But even in judgment God rescues: Noah, his family, and the animals ride out the ruin in a boat God told him to build. When the waters go down, Noah worships, God promises never to destroy the earth this way again, and hangs a rainbow in the clouds as the sign of it. This session sits with a hard truth — every one of us has chosen self over God, and God sees the heart, not just the behaviour — and with a stranger one: God keeps showing mercy to people who have not earned it.</p>
+          <span class="sog-ref">Genesis 3–11</span>
+          <p>In the middle of the garden stood a tree God had withheld — the knowledge of good and evil — because deciding what is good and what is evil belongs to God alone. The serpent asked a question that made God sound stingy, and Adam and Eve reached for the fruit, trading trust for the right to judge for themselves. They were sent out of the garden, away from God's presence — though God came looking for them first, and clothed them with His own hands before they went. What began in two hearts spread to every heart. Cain killed his brother in a field. Violence filled the earth until God grieved having made humanity at all, and the flood came — yet even in judgment He rescued Noah, and hung a rainbow in the clouds as a promise. Then Noah's descendants gathered on a plain to build a tower and make a name for themselves, and God scattered them across the world. This is the human condition: not a few bad people, but all of us, choosing self over God.</p>
         </div>
       </details>
 
-      <details class="sog-item fade-in-up" id="sog-3">
+      <details class="sog-item fade-in-up" id="sog-promise">
         <summary>
-          <svg class="sog-mark-sm" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M32 10l4.4 9.4L46 21l-7 7.2 1.7 10.3L32 33.6l-8.7 4.9L25 28.2 18 21l9.6-1.6z"/><circle cx="14" cy="48" r="2.5" fill="currentColor" stroke="none"/><circle cx="32" cy="53" r="2.5" fill="currentColor" stroke="none"/><circle cx="50" cy="48" r="2.5" fill="currentColor" stroke="none"/>
+          <svg class="sog-mark-sm" viewBox="0 0 64 64" aria-hidden="true">
+            <circle class="sog-ring" cx="32" cy="32" r="26" stroke="currentColor" stroke-width="3"/>
+            <path class="sog-glyph" d="M27 20l13 12-13 12" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
           <span class="sog-head">
-            <span class="sog-num">Session Three</span>
-            <h3>A People of God</h3>
+            <h3>Promise</h3>
           </span>
           <svg class="sog-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </summary>
         <div class="sog-body">
-          <span class="sog-ref">Genesis 11–50</span>
-          <p>Humanity gathers on a plain to build a tower and make a name for itself; God confuses their language and scatters them across the earth. Then He does something nobody would have scripted — He sets out to bless the whole world through one family. He calls a childless seventy-five-year-old named Abram out of his country with a promise: a land, descendants beyond counting, and blessing for every nation on earth through his offspring. Abram believes God, and God counts it to him as righteousness. But the promise takes decades to arrive, and Abraham and Sarah stumble through it — impatience, a scheme with Hagar, laughter at God's timing — before Isaac is finally born. Isaac fathers Jacob, whose name God changes to Israel; Jacob's twelve sons become a nation, carried down into Egypt through Joseph and a famine. Every one of them is flawed. God chose them by grace, not merit, and He never once withdrew the promise. This is where our identity as the family of God begins.</p>
+          <span class="sog-ref">Genesis 12–50 · Exodus · The Prophets</span>
+          <p>Then God does something nobody would have scripted: He sets out to rescue the whole world through one family. He calls a childless seventy-five-year-old named Abram out of his country with a promise — a land, descendants beyond counting, and blessing for every nation on earth through his offspring. Abram believes God, and God counts it to him as righteousness. The promise takes decades and survives their impatience, their scheming, and their laughter at God's timing. Isaac fathers Jacob, renamed Israel; Israel's twelve sons become a nation, carried into Egypt by famine and held there in slavery for four hundred years. God hears them. He raises up Moses, and on the night the blood of a lamb marks their doorframes death passes over them and they walk out free. Rescue comes first; instruction comes second. At Sinai God gives them the Law — not to earn their freedom but to show a freed people how to live with a holy God among them — along with a tabernacle, a priesthood, and sacrifice so their sin can be covered. They were meant to display His glory to the nations. Instead came kings, prophets, exile, and everyone doing what was right in their own eyes. The Old Testament closes with a people still waiting on a promise God has never broken.</p>
         </div>
       </details>
 
-      <details class="sog-item fade-in-up" id="sog-4">
+      <details class="sog-item fade-in-up" id="sog-redemption">
         <summary>
-          <svg class="sog-mark-sm" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M10 22a6 6 0 0 1 6-6h13v40H16a6 6 0 0 1-6-6z"/><path d="M54 22a6 6 0 0 0-6-6H35v40h13a6 6 0 0 0 6-6z"/><path d="M17 30h6M17 40h6M41 30h6M41 40h6"/>
+          <svg class="sog-mark-sm" viewBox="0 0 64 64" aria-hidden="true">
+            <circle class="sog-ring" cx="32" cy="32" r="26" stroke="currentColor" stroke-width="3"/>
+            <path class="sog-glyph" d="M32 19v26M19 32h26" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
           <span class="sog-head">
-            <span class="sog-num">Session Four</span>
-            <h3>Exodus &amp; Law</h3>
+            <h3>Redemption</h3>
           </span>
           <svg class="sog-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </summary>
         <div class="sog-body">
-          <span class="sog-ref">Exodus 1–20 · Leviticus · The Kings &amp; Prophets</span>
-          <p>Four hundred years of slavery in Egypt, and God has not forgotten. He hears His people, raises up Moses, and confronts Pharaoh with plague after plague until the final night, when the blood of a lamb on the doorframe turns death aside and Israel walks out free. Pharaoh changes his mind and pursues them; God opens the sea, brings His people through on dry ground, and closes it behind them. Notice the order — rescue comes first, instruction second. At Sinai God gives Israel the Law, not to earn their freedom but to show a freed people how to live with a holy God in their midst, and He gives them a tabernacle, a priesthood, and a system of sacrifice so their sin can be atoned for and they can live close to Him. They were meant to display His glory to the watching nations. Instead the garden pattern repeats — judges, kings, prophets, exile, everyone doing what was right in their own eyes — and the Old Testament closes with a people still waiting on a promise God has not broken.</p>
+          <span class="sog-ref">The Gospels</span>
+          <p>After centuries of silence, God keeps His promise in person. Jesus is born to a virgin in a backwater town — fully God, fully human — and grows up working with His hands. He is baptized in the Jordan alongside sinful people though He has no sin of His own, and the Father's voice names Him as His beloved Son. Driven into the wilderness, He answers forty days of temptation with the word of God: where the first humans grasped, He trusts; where Israel failed, He obeys. Then He calls ordinary people to follow Him and begins showing the world what God's reign looks like — the sick healed, storms stilled, thousands fed, the dead raised, and stories in which the last end up first and a father runs down the road toward the son who wasted everything. He is the true King, and He comes as a servant. He is betrayed, condemned though no fault is found in Him, and crucified between two criminals, praying for the people driving in the nails. At the moment He dies, the temple curtain tears from top to bottom. He is the Passover Lamb and the final sacrifice, taking our sin and our punishment in our place. He is buried, sealed, and guarded — and on the third day the tomb is empty. Sin and death are beaten. Jesus is Lord.</p>
         </div>
       </details>
 
-      <details class="sog-item fade-in-up" id="sog-5">
+      <details class="sog-item fade-in-up" id="sog-church">
         <summary>
-          <svg class="sog-mark-sm" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="32" cy="12" r="5"/><path d="M5 36C11 18 25 15 31 28"/><path d="M59 36C53 18 39 15 33 28"/><path d="M29 28h6l-3 30z"/>
+          <svg class="sog-mark-sm" viewBox="0 0 64 64" aria-hidden="true">
+            <circle class="sog-ring" cx="32" cy="32" r="26" stroke="currentColor" stroke-width="3"/>
+            <path class="sog-glyph" d="M27 20l13 12-13 12" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
           <span class="sog-head">
-            <span class="sog-num">Session Five</span>
-            <h3>The Person of Jesus</h3>
+            <h3>Church</h3>
           </span>
           <svg class="sog-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </summary>
         <div class="sog-body">
-          <span class="sog-ref">Matthew 1–4 · Luke 1–4 · John 1</span>
-          <p>After centuries of silence, God keeps His promise in person. Jesus is born to a young virgin in a backwater town — fully God, fully human — and grows up in obscurity working with His hands. At about thirty He walks down to the Jordan and asks John to baptize Him, stepping into the water shoulder to shoulder with sinful people though He had no sin of His own. The Spirit descends on Him like a dove, and the Father's voice says, "This is my Son, whom I love." Then that same Spirit drives Him into the wilderness, where for forty days the same tempter who spoke in the garden offers Him bread, safety, and power — and Jesus answers every offer with the word of God. Where the first humans grasped, He trusts. Where Israel failed, He obeys. Then He walks up to a handful of ordinary fishermen and a tax collector and says two words that reorder their lives: "Follow me."</p>
+          <span class="sog-ref">Acts · The Epistles</span>
+          <p>The risen Jesus spends forty days with His followers — patient even with Thomas, who wanted to put his hand in the wound — and then gives them their commission: all authority in heaven and on earth is His, so go and make disciples of every nation, baptizing them and teaching them to walk in His ways, and know that He is with them always. Then He ascends. Days later a hundred and twenty of them are praying in Jerusalem when a sound like a roaring wind fills the house, the Holy Spirit fills every one of them, and they spill into the street speaking languages they never learned. Peter — the one who denied Him — stands up and preaches, and three thousand turn from their sins and are baptized that day. What follows is a new kind of community: devoted to the apostles' teaching, to prayer, to breaking bread in each other's homes, so generous that no one among them is in need. Jesus even reaches into the ranks of His enemies and calls Paul, who had been hunting Christians, to carry the good news across the Roman world. This is the church — an ordinary people, filled with the Spirit, sent into their own cities on His mission.</p>
         </div>
       </details>
 
-      <details class="sog-item fade-in-up" id="sog-6">
+      <details class="sog-item fade-in-up" id="sog-restoration">
         <summary>
-          <svg class="sog-mark-sm" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M10 46L13 18l11 12 8-18 8 18 11-12 3 28z"/><path d="M10 52h44"/>
+          <svg class="sog-mark-sm" viewBox="0 0 64 64" aria-hidden="true">
+            <circle class="sog-ring" cx="32" cy="32" r="26" stroke="currentColor" stroke-width="3"/>
+            <path class="sog-glyph" d="M20 27l12 13 12-13" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
           <span class="sog-head">
-            <span class="sog-num">Session Six</span>
-            <h3>The Works of Jesus</h3>
+            <h3>Restoration</h3>
           </span>
           <svg class="sog-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </summary>
         <div class="sog-body">
-          <span class="sog-ref">The Gospels · Luke 15 · John 14</span>
-          <p>Jesus's life is a working preview of the world put right. He heals bodies nobody else would touch, calms a storm with a sentence, feeds thousands from a boy's lunch, drives out evil, and calls the dead back out of the grave — every miracle both a rescue for the person in front of Him and a sign of who He is. He teaches about the kingdom of God in stories that turn the room upside down: the last end up first, the lost get searched for until they're found, and a father hikes up his robe and runs down the road toward the son who wasted everything. He is the true King, and He arrives as a servant, saying plainly that He Himself is the way back to the Father. Then, on His last night, He takes bread and a cup with His friends, tells them His body will be broken and His blood poured out for the forgiveness of sins, and hands them a meal to remember it by until He comes back.</p>
-        </div>
-      </details>
-
-      <details class="sog-item fade-in-up" id="sog-7">
-        <summary>
-          <svg class="sog-mark-sm" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M10 54V34a13 13 0 0 1 26 0v20"/><path d="M17 54V40a6 6 0 0 1 12 0v14"/><path d="M4 54h56"/><circle cx="49" cy="44" r="9"/>
-          </svg>
-          <span class="sog-head">
-            <span class="sog-num">Session Seven</span>
-            <h3>Death &amp; Resurrection</h3>
-          </span>
-          <svg class="sog-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </summary>
-        <div class="sog-body">
-          <span class="sog-ref">Matthew 26–28 · Luke 22–24 · John 18–20</span>
-          <p>He is betrayed by a friend, arrested at night, and condemned on charges that will not hold — the governor says out loud that he finds no fault in Him. He is flogged, mocked, and crucified between two criminals, and while He is dying He prays for the people driving in the nails. At the moment of His death the temple curtain, the one that had stood between people and God's presence since Sinai, tears from top to bottom. This is the point the whole Story has been building toward: Jesus is the Passover Lamb and the final sacrifice, taking our sin and our punishment onto Himself, in our place, so we can be brought back. He is buried in a borrowed tomb, sealed with a stone and guarded by soldiers. On the third day the stone is rolled away and the tomb is empty — not stolen, not symbolic. He is alive, and He shows Himself, over and over, to people who touch Him and eat with Him. Sin, death, and evil are beaten. Jesus is Lord over all of it.</p>
-        </div>
-      </details>
-
-      <details class="sog-item fade-in-up" id="sog-8">
-        <summary>
-          <svg class="sog-mark-sm" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M32 6c2 10 14 16 14 28a14 14 0 0 1-28 0C18 22 30 16 32 6z"/><path d="M32 30c1 5 5 7 5 11a5 5 0 0 1-10 0c0-4 4-6 5-11z"/>
-          </svg>
-          <span class="sog-head">
-            <span class="sog-num">Session Eight</span>
-            <h3>The Mission &amp; Power</h3>
-          </span>
-          <svg class="sog-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </summary>
-        <div class="sog-body">
-          <span class="sog-ref">John 20 · Matthew 28 · Acts 1–2 · 1 Corinthians 15</span>
-          <p>Over forty days the risen Jesus appears to more than five hundred witnesses — and He is patient with doubt, telling Thomas to put his hand in the wound and see for himself. Then He gives His followers their commission: all authority in heaven and on earth has been given to Him, so go and make disciples of every nation, baptizing them and teaching them to walk in His ways, and know that He is with them always, to the very end. And with that He ascends. Days later a hundred and twenty of them are praying together in Jerusalem when a sound like a roaring wind fills the house, the Holy Spirit fills every one of them, and they spill out into the street speaking languages they never learned. A crowd gathers, and Peter — the one who denied Him — stands up and explains: this is the promise the prophets spoke of, Jesus is the Messiah, turn from your sins and find forgiveness in Him. Three thousand believe and are baptized that day. The mission belongs to Jesus; the power belongs to His Spirit.</p>
-        </div>
-      </details>
-
-      <details class="sog-item fade-in-up" id="sog-9">
-        <summary>
-          <svg class="sog-mark-sm" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M7 40h50"/><path d="M14 40v16M50 40v16"/><path d="M19 10h13l-1.6 13a4.9 4.9 0 0 1-9.8 0z"/><path d="M25.5 28v9M20 37h11"/><ellipse cx="44" cy="32" rx="10" ry="6"/>
-          </svg>
-          <span class="sog-head">
-            <span class="sog-num">Session Nine</span>
-            <h3>Life in the Spirit</h3>
-          </span>
-          <svg class="sog-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </summary>
-        <div class="sog-body">
-          <span class="sog-ref">Acts 2 &amp; 4 · Acts 9 · Galatians 5 · 2 Corinthians 8</span>
-          <p>So what do Spirit-filled people actually do on a Tuesday? Luke tells us plainly. They devote themselves to the apostles' teaching, to prayer, to breaking bread in one another's homes, and to each other — so thoroughly that there is not a needy person among them, because the ones who own land and houses sell them to cover the ones who don't. They eat together with glad and generous hearts, celebrate communion, testify to the resurrection, and God adds to their number daily. Guided by the Spirit the church spills out past Jerusalem, and Jesus even reaches into the ranks of His enemies and calls Paul — who had been hunting Christians — to carry the good news across the Roman world, planting churches and writing letters to keep them faithful on mission in their own cities. This is ordinary life reordered by the Spirit: character reshaped from the inside out, held in community, spent on mission. It is the life we're inviting you into.</p>
-        </div>
-      </details>
-
-      <details class="sog-item fade-in-up" id="sog-10">
-        <summary>
-          <svg class="sog-mark-sm" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="32" cy="8" r="4.5"/><path d="M8 46V28l7-6 7 6v18"/><path d="M22 46V22h20v24"/><path d="M42 46V30l7-6 7 6v16"/><path d="M28 46V36a4 4 0 0 1 8 0v10"/><path d="M4 46h56"/><path d="M6 53c5 0 5 4 10 4s5-4 10-4 5 4 10 4 5-4 10-4 5 4 10 4"/>
-          </svg>
-          <span class="sog-head">
-            <span class="sog-num">Session Ten</span>
-            <h3>Creation Restored</h3>
-          </span>
-          <svg class="sog-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </summary>
-        <div class="sog-body">
-          <span class="sog-ref">Luke 17 · Acts 3 · 1 Corinthians 15 · Revelation 21–22</span>
-          <p>Jesus promised to come back, and He said that when He does nobody will need to be told — it will be like lightning flashing across the whole sky. He will set creation free from its curse, put an end to evil and sin and rebellion for good, and raise His people to live forever in bodies like His own. God gave John a glimpse of it and John wrote it down: a new heaven and a new earth, the holy city coming down out of heaven dressed like a bride, a river of the water of life running clear as crystal down the middle of the main street, and the Tree of Life growing on both banks with leaves for the healing of the nations. God Himself will live with His people, and He will wipe every tear from their eyes — no more death, no more grief, no more crying, no more pain, because the old order of things has passed away. The Story ends where it started, only better: God with us, at home, in a world made new.</p>
+          <span class="sog-ref">Luke 17 · 1 Corinthians 15 · Revelation 21–22</span>
+          <p>Jesus promised to come back, and He said that when He does nobody will need to be told — it will be like lightning flashing across the whole sky. He will set creation free from its curse, put an end to evil and sin and rebellion for good, and raise His people to live forever in bodies like His own. God gave John a glimpse of it and John wrote it down: a new heaven and a new earth, the holy city coming down out of heaven dressed like a bride, a river of the water of life running clear as crystal down the middle of the main street, and the Tree of Life growing on both banks with leaves for the healing of the nations. God Himself will live with His people, and He will wipe every tear from their eyes — no more death, no more grief, no more crying, no more pain, because the old order of things has passed away. The Story ends where it began, only better: God with us, at home, in a world made new.</p>
         </div>
       </details>
 
@@ -801,6 +663,7 @@
       if (!target) return;
       target.open = true;
       syncToggleAll();
+      syncSymbols();
       // Offset for the sticky navbar.
       const nav = document.querySelector('.navbar');
       const offset = (nav ? nav.offsetHeight : 0) + 16;
@@ -819,6 +682,14 @@
     toggleAll.setAttribute('aria-expanded', String(allOpen));
   }
 
+  // Mirror each open movement in the symbol row above.
+  function syncSymbols() {
+    document.querySelectorAll('.sog-symbol').forEach(function (tile) {
+      const target = document.getElementById(tile.dataset.target);
+      tile.classList.toggle('is-active', !!(target && target.open));
+    });
+  }
+
   if (toggleAll) {
     toggleAll.addEventListener('click', function () {
       const allOpen = items.every(function (i) { return i.open; });
@@ -827,7 +698,7 @@
     });
   }
 
-  items.forEach(function (i) { i.addEventListener('toggle', syncToggleAll); });
+  items.forEach(function (i) { i.addEventListener('toggle', function () { syncToggleAll(); syncSymbols(); }); });
 
   // Deep link support — /story-of-god.html#sog-7 opens that session.
   if (window.location.hash) {
@@ -836,6 +707,7 @@
   }
 
   syncToggleAll();
+  syncSymbols();
 })();
 </script>
 </body>
