@@ -159,6 +159,69 @@
     }
     .sog-toggle-all:hover { color: var(--red); }
 
+    /* --- Upcoming group cards --- */
+    .sog-group {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .sog-group h4 { margin-bottom: var(--space-sm); }
+    .sog-group-when {
+      display: block;
+      font-family: 'Source Sans Pro', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .10em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 6px;
+    }
+    .sog-group-meta {
+      list-style: none;
+      margin: 0 0 var(--space-md);
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .sog-group-meta li {
+      position: relative;
+      padding-left: 18px;
+      font-size: 16px;
+      line-height: 1.5;
+      color: var(--muted-blue);
+    }
+    .sog-group-meta li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 10px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--red);
+      opacity: .55;
+    }
+    .sog-group-link {
+      margin-top: auto;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--navy);
+      border-bottom: 2px solid transparent;
+      padding-bottom: 2px;
+      transition: color var(--transition), border-color var(--transition);
+    }
+    .sog-group-link:hover,
+    .sog-group-link:focus-visible { color: var(--red); border-bottom-color: var(--red); }
+
+    .sog-no-groups {
+      max-width: 620px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .sog-no-groups p { color: var(--muted-blue); margin-bottom: var(--space-md); }
+
     /* --- Rhythm cards --- */
     .sog-step {
       display: flex;
@@ -551,31 +614,80 @@
   </div>
 </section>
 
-<!-- ===== WAYS TO WALK THROUGH IT ===== -->
-<section class="section section--gray">
+<!-- ===== UPCOMING GROUPS =====
+     TO UPDATE THIS SECTION:
+       Add a group    → copy one "GROUP CARD" block and edit the four fields below
+       Remove a group → delete its whole "GROUP CARD" block
+       No groups on   → delete all the cards and uncomment the "NO GROUPS" block
+                        at the bottom of this section
+
+     Each card has four editable fields:
+       .sog-group-when   the date line (red, above the name)
+       h4                the group name
+       .sog-group-meta   two to four short detail lines (time, format, host, childcare)
+       .sog-group-link   the mailto — change the subject= so replies are easy to sort
+
+     Cards use .delay-1 / .delay-2 so they fade in one after another. With more
+     than three, restart the sequence: no delay, delay-1, delay-2, no delay, ...
+     ================================================================= -->
+<section class="section section--gray" id="groups">
   <div class="container" style="max-width:1080px;">
     <div class="section-heading text-center fade-in-up">
-      <span class="eyebrow">Set the Pace</span>
-      <h2>However Long You Have</h2>
-      <p style="max-width:700px;margin:0 auto;">There is no fixed format. We've told the Story a movement at a time over many weeks, in a single long day, across two half-days, and on a weekend away — and any of those work. What matters is that a group gets all the way through it together.</p>
+      <span class="eyebrow">Upcoming</span>
+      <h2>Story of God Groups</h2>
+      <p style="max-width:700px;margin:0 auto;">Here is what is on the calendar. You do not need to be a member, and you do not need to have read a word of the Bible before — come as you are, and bring someone. Email us and we will save you a spot.</p>
     </div>
+
     <div class="grid-3">
-      <div class="mission-card fade-in-up">
+
+      <!-- GROUP CARD -->
+      <div class="mission-card sog-group fade-in-up">
         <div class="mission-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
-        <h4>Spread Out</h4>
-        <p style="color:var(--muted-blue);font-size:16px;">A movement at a time, whenever your missional community already gathers. The slowest way and, honestly, the best — the Story has room to settle into the ordinary rhythms of your life together.</p>
+        <span class="sog-group-when">Starts Wednesday, September 17</span>
+        <h4>South Osborne</h4>
+        <ul class="sog-group-meta">
+          <li>Wednesdays, 7:00pm</li>
+          <li>A movement each week</li>
+          <li>Hosted by the Osborne family</li>
+        </ul>
+        <a class="sog-group-link" href="mailto:info@commissionedcity.church?subject=Story%20of%20God%20%E2%80%94%20South%20Osborne">Ask about this group →</a>
       </div>
-      <div class="mission-card fade-in-up delay-1">
-        <div class="mission-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
-        <h4>All at Once</h4>
-        <p style="color:var(--muted-blue);font-size:16px;">A full day, or a weekend away together. A powerful way to launch a new community or DNA group — the whole arc lands in one stretch, with real time to talk in between.</p>
+
+      <!-- GROUP CARD -->
+      <div class="mission-card sog-group fade-in-up delay-1">
+        <div class="mission-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+        <span class="sog-group-when">Saturday, October 4</span>
+        <h4>One-Day Intensive</h4>
+        <ul class="sog-group-meta">
+          <li>9:00am – 4:00pm, lunch provided</li>
+          <li>The whole Story in one sitting</li>
+          <li>Good for a core team or a new MC</li>
+        </ul>
+        <a class="sog-group-link" href="mailto:info@commissionedcity.church?subject=Story%20of%20God%20%E2%80%94%20One-Day%20Intensive">Ask about this group →</a>
       </div>
-      <div class="mission-card fade-in-up delay-2">
-        <div class="mission-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16"/></svg></div>
-        <h4>Split in Two</h4>
-        <p style="color:var(--muted-blue);font-size:16px;">Two half-days, a couple of mornings, or a pair of evenings. Often the easiest to actually pull off when childcare and work schedules have to line up.</p>
+
+      <!-- GROUP CARD -->
+      <div class="mission-card sog-group fade-in-up delay-2">
+        <div class="mission-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+        <span class="sog-group-when">November 8 &amp; 15</span>
+        <h4>Two Saturday Mornings</h4>
+        <ul class="sog-group-meta">
+          <li>9:00am – 12:30pm, both mornings</li>
+          <li>The Story split across two sittings</li>
+          <li>Childcare available</li>
+        </ul>
+        <a class="sog-group-link" href="mailto:info@commissionedcity.church?subject=Story%20of%20God%20%E2%80%94%20Two%20Saturday%20Mornings">Ask about this group →</a>
       </div>
+
     </div>
+
+    <!-- NO GROUPS — uncomment this and delete the cards above when nothing is scheduled
+    <div class="sog-no-groups fade-in-up">
+      <p>Nothing is on the calendar right now — but we start new groups all through the year, and we will start one around your schedule if you can gather a few people.</p>
+      <a class="btn btn-outline-navy" href="mailto:info@commissionedcity.church?subject=Story%20of%20God%20%E2%80%94%20Starting%20a%20group">Email Us About Starting One →</a>
+    </div>
+    -->
+
   </div>
 </section>
 
