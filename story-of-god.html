@@ -615,32 +615,44 @@
 </section>
 
 <!-- ===== UPCOMING GROUPS =====
-     TO UPDATE THIS SECTION:
-       Add a group    → copy one "GROUP CARD" block and edit the four fields below
-       Remove a group → delete its whole "GROUP CARD" block
-       No groups on   → delete all the cards and uncomment the "NO GROUPS" block
-                        at the bottom of this section
+     This section has two states. Right now the "NOTHING SCHEDULED" block
+     is live and the card grid below it is commented out.
 
-     Each card has four editable fields:
-       .sog-group-when   the date line (red, above the name)
+     TO ADVERTISE GROUPS:
+       1. Delete the "NOTHING SCHEDULED" block
+       2. Uncomment the GROUP CARDS grid
+       3. Fill in one card per group, copying the card block as needed
+
+     TO GO BACK TO NOTHING SCHEDULED:
+       Comment the grid out again and restore the block above it.
+
+     EACH CARD HAS FOUR FIELDS TO EDIT:
+       .sog-group-when   the date line, in red above the name
        h4                the group name
-       .sog-group-meta   two to four short detail lines (time, format, host, childcare)
-       .sog-group-link   the mailto — change the subject= so replies are easy to sort
+       .sog-group-meta   two to four short lines: time, format, host, childcare
+       .sog-group-link   the mailto; change subject= so replies sort themselves
 
-     Cards use .delay-1 / .delay-2 so they fade in one after another. With more
-     than three, restart the sequence: no delay, delay-1, delay-2, no delay, ...
+     Cards fade in on a stagger. Past three, restart the sequence:
+     no delay, delay-1, delay-2, no delay, delay-1, delay-2 ...
      ================================================================= -->
 <section class="section section--gray" id="groups">
   <div class="container" style="max-width:1080px;">
     <div class="section-heading text-center fade-in-up">
       <span class="eyebrow">Upcoming</span>
       <h2>Story of God Groups</h2>
-      <p style="max-width:700px;margin:0 auto;">Here is what is on the calendar. You do not need to be a member, and you do not need to have read a word of the Bible before — come as you are, and bring someone. Email us and we will save you a spot.</p>
+      <p style="max-width:700px;margin:0 auto;">Groups are open to anyone. You do not need to be a member, and you do not need to have read a word of the Bible before &mdash; come as you are, and bring someone with you.</p>
     </div>
+
+    <!-- NOTHING SCHEDULED -->
+    <div class="sog-no-groups fade-in-up">
+      <p>Nothing is on the calendar right now &mdash; but we start new groups all through the year, and we will start one around your schedule if you can gather a few people.</p>
+      <a class="btn btn-outline-navy" href="mailto:info@commissionedcity.church?subject=Story%20of%20God%20%E2%80%94%20Starting%20a%20group">Email Us About Starting One &rarr;</a>
+    </div>
+
+    <!-- GROUP CARDS &mdash; uncomment this grid and fill in one card per group
 
     <div class="grid-3">
 
-      <!-- GROUP CARD -->
       <div class="mission-card sog-group fade-in-up">
         <div class="mission-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
         <span class="sog-group-when">Starts Wednesday, September 17</span>
@@ -650,42 +662,23 @@
           <li>A movement each week</li>
           <li>Hosted by the Osborne family</li>
         </ul>
-        <a class="sog-group-link" href="mailto:info@commissionedcity.church?subject=Story%20of%20God%20%E2%80%94%20South%20Osborne">Ask about this group →</a>
+        <a class="sog-group-link" href="mailto:info@commissionedcity.church?subject=Story%20of%20God%20%E2%80%94%20South%20Osborne">Ask about this group &rarr;</a>
       </div>
 
-      <!-- GROUP CARD -->
       <div class="mission-card sog-group fade-in-up delay-1">
         <div class="mission-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
         <span class="sog-group-when">Saturday, October 4</span>
         <h4>One-Day Intensive</h4>
         <ul class="sog-group-meta">
-          <li>9:00am – 4:00pm, lunch provided</li>
+          <li>9:00am to 4:00pm, lunch provided</li>
           <li>The whole Story in one sitting</li>
           <li>Good for a core team or a new MC</li>
         </ul>
-        <a class="sog-group-link" href="mailto:info@commissionedcity.church?subject=Story%20of%20God%20%E2%80%94%20One-Day%20Intensive">Ask about this group →</a>
-      </div>
-
-      <!-- GROUP CARD -->
-      <div class="mission-card sog-group fade-in-up delay-2">
-        <div class="mission-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
-        <span class="sog-group-when">November 8 &amp; 15</span>
-        <h4>Two Saturday Mornings</h4>
-        <ul class="sog-group-meta">
-          <li>9:00am – 12:30pm, both mornings</li>
-          <li>The Story split across two sittings</li>
-          <li>Childcare available</li>
-        </ul>
-        <a class="sog-group-link" href="mailto:info@commissionedcity.church?subject=Story%20of%20God%20%E2%80%94%20Two%20Saturday%20Mornings">Ask about this group →</a>
+        <a class="sog-group-link" href="mailto:info@commissionedcity.church?subject=Story%20of%20God%20%E2%80%94%20One-Day%20Intensive">Ask about this group &rarr;</a>
       </div>
 
     </div>
 
-    <!-- NO GROUPS — uncomment this and delete the cards above when nothing is scheduled
-    <div class="sog-no-groups fade-in-up">
-      <p>Nothing is on the calendar right now — but we start new groups all through the year, and we will start one around your schedule if you can gather a few people.</p>
-      <a class="btn btn-outline-navy" href="mailto:info@commissionedcity.church?subject=Story%20of%20God%20%E2%80%94%20Starting%20a%20group">Email Us About Starting One →</a>
-    </div>
     -->
 
   </div>
