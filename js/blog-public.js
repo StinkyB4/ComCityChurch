@@ -41,7 +41,7 @@
 
     var now = new Date().toISOString();
     var data = await sbFetch(
-      'blog_posts?select=*&or=(status.eq.published,and(status.eq.scheduled,publish_at.lte.' + encodeURIComponent(now) + '))&order=publish_at.desc'
+      'blog_posts?select=slug,title,category,excerpt,author_name,hero_image_url,publish_at,created_at&or=(status.eq.published,and(status.eq.scheduled,publish_at.lte.' + encodeURIComponent(now) + '))&order=publish_at.desc'
     );
     if (!data || !data.length) return;
 
@@ -103,11 +103,11 @@
     /* fetch post — for preview mode, try with auth cookie (same origin) */
     var data;
     if (preview) {
-      data = await sbFetchWithAuth('blog_posts?select=*&slug=eq.' + encodeURIComponent(slug) + '&limit=1');
+      data = await sbFetchWithAuth('blog_posts?select=slug,title,category,content,author_name,hero_image_url,publish_at,created_at,status&slug=eq.' + encodeURIComponent(slug) + '&limit=1');
     } else {
       var now = new Date().toISOString();
       data = await sbFetch(
-        'blog_posts?select=*&slug=eq.' + encodeURIComponent(slug) +
+        'blog_posts?select=slug,title,category,content,author_name,hero_image_url,publish_at,created_at&slug=eq.' + encodeURIComponent(slug) +
         '&or=(status.eq.published,and(status.eq.scheduled,publish_at.lte.' + encodeURIComponent(now) + '))&limit=1'
       );
     }

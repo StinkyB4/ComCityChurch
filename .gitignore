@@ -15,3 +15,7 @@ desktop.ini
 *.swp
 *.swo
 .vscode/
+
+# Sermon → blog automation
+scripts/sermon-to-blog/node_modules/
+scripts/sermon-to-blog/transcript.txt

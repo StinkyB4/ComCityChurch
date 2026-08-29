@@ -1,0 +1,15 @@
+{
+  "name": "sermon-to-blog",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Weekly job: Google Drive sermon recording → transcript → blog draft in Supabase",
+  "main": "index.mjs",
+  "scripts": {
+    "start": "node index.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.0",
+    "zod": "^4.1.0"
+  }
+}
