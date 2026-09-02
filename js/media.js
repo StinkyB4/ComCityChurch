@@ -377,7 +377,7 @@ const SITE_MEDIA = {
       }
     },
     "moms-and-womens": {
-      src: "/assets/media/heroes/communities-hero.jpg",
+      src: "/assets/media/heroes/womens-hero.jpg",
       alt: "Women's MC community",
       overlay: {
         type: "gradient",
@@ -397,7 +397,7 @@ const SITE_MEDIA = {
       }
     },
     "womens-prayer": {
-      src: "/assets/media/heroes/communities-hero.jpg",
+      src: "/assets/media/heroes/womens_prayer-hero.jpg",
       alt: "Women's Prayer Call",
       overlay: {
         type: "gradient",
