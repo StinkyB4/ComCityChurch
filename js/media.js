@@ -39,8 +39,6 @@
 // the real photo has not been supplied yet. Swap in the real image when ready:
 //   heroes.team   -> about-hero.jpg     heroes.visit -> contact-hero.jpg
 //   heroes.give   -> communities-hero.jpg
-//   heroes.{moms-and-womens,mens-discipleship,womens-prayer} -> communities-hero.jpg
-//   communities.{moms-and-womens,mens-discipleship,womens-prayer} -> communities-hero.jpg
 //   (MC neighbourhood heroes reuse their matching community card photo.)
 const SITE_MEDIA = {
 
@@ -237,7 +235,7 @@ const SITE_MEDIA = {
 
     "moms-and-womens": {
       type: "image",
-      src: "/assets/media/heroes/communities-hero.jpg",
+      src: "/assets/media/heroes/womens-hero.jpg",
       alt: "Women gathering together",
       overlay: {
         type: "dark",
@@ -257,7 +255,7 @@ const SITE_MEDIA = {
 
     "womens-prayer": {
       type: "image",
-      src: "/assets/media/heroes/communities-hero.jpg",
+      src: "/assets/media/heroes/womens_prayer-hero.jpg",
       alt: "Women in prayer",
       overlay: {
         type: "dark",
