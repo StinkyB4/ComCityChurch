@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="/assets/logo.png">
+  <title>The Story of God — Commissioned City Church</title>
+  <meta name="description" content="One story, from creation to new creation. Six movements, six symbols — a simple way to learn and retell the whole story of the Bible.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400&family=Montserrat:wght@600;700;800&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+
+  <style>
+    /* ===== STORY OF GOD — PAGE-LOCAL STYLES ===== */
+
+    /* --- Symbol row (overview) --- */
+    .sog-symbols {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: var(--space-md) var(--space-sm);
+      margin-top: var(--space-lg);
+    }
+    .sog-symbol {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: var(--space-sm) 4px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font: inherit;
+      color: inherit;
+    }
+    .sog-symbol .sog-mark {
+      width: 88px;
+      height: 88px;
+      color: var(--navy);
+      transition: transform var(--transition);
+    }
+    .sog-symbol .sog-ring {
+      fill: none;
+      transition: fill var(--transition);
+    }
+    .sog-symbol .sog-glyph { transition: stroke var(--transition); }
+    .sog-symbol .sog-name {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      letter-spacing: .10em;
+      text-transform: uppercase;
+      color: var(--navy);
+      padding-bottom: 5px;
+      border-bottom: 2px solid transparent;
+      transition: color var(--transition), border-color var(--transition);
+    }
+    .sog-symbol:hover .sog-mark,
+    .sog-symbol:focus-visible .sog-mark { transform: translateY(-3px); }
+    .sog-symbol:hover .sog-ring,
+    .sog-symbol:focus-visible .sog-ring,
+    .sog-symbol.is-active .sog-ring { fill: var(--navy); }
+    .sog-symbol:hover .sog-glyph,
+    .sog-symbol:focus-visible .sog-glyph,
+    .sog-symbol.is-active .sog-glyph { stroke: var(--white); }
+    .sog-symbol:hover .sog-name,
+    .sog-symbol:focus-visible .sog-name,
+    .sog-symbol.is-active .sog-name { color: var(--red); border-bottom-color: var(--red); }
+    .sog-symbol:focus-visible { outline: none; }
+
+    /* --- Accordion --- */
+    .sog-accordion { max-width: 880px; margin: 0 auto; }
+
+    .sog-item {
+      border-left: 4px solid var(--red);
+      background: var(--white);
+      border-radius: 0 var(--radius-card) var(--radius-card) 0;
+      box-shadow: 0 2px 12px rgba(17,46,83,.06);
+      margin-bottom: var(--space-sm);
+      overflow: hidden;
+    }
+    .sog-item + .sog-item { margin-top: 0; }
+    .sog-item[open] { box-shadow: 0 6px 26px rgba(17,46,83,.12); }
+
+    .sog-item summary {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: 20px var(--space-md);
+      cursor: pointer;
+      list-style: none;
+      transition: background var(--transition);
+    }
+    .sog-item summary::-webkit-details-marker,
+    .sog-item summary::marker { display: none; }
+    .sog-item summary:hover { background: var(--gray-bg); }
+    .sog-item summary:focus-visible { outline: 2px solid var(--red); outline-offset: -2px; }
+
+    .sog-item .sog-mark-sm {
+      flex: 0 0 auto;
+      width: 46px;
+      height: 46px;
+      color: var(--navy);
+    }
+    .sog-item .sog-mark-sm .sog-ring { fill: none; transition: fill var(--transition); }
+    .sog-item[open] .sog-mark-sm .sog-ring { fill: var(--navy); }
+    .sog-item[open] .sog-mark-sm .sog-glyph { stroke: var(--white); }
+    .sog-item[open] .sog-mark-sm { color: var(--red); }
+
+    .sog-head { flex: 1 1 auto; min-width: 0; }
+    .sog-head h3 {
+      font-size: clamp(20px, 2.4vw, 26px);
+      font-weight: 600;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      margin: 0;
+    }
+
+    .sog-chevron {
+      flex: 0 0 auto;
+      width: 22px;
+      height: 22px;
+      color: var(--muted-blue);
+      transition: transform var(--transition), color var(--transition);
+    }
+    .sog-item[open] .sog-chevron { transform: rotate(180deg); color: var(--red); }
+
+    .sog-body {
+      padding: 0 var(--space-md) var(--space-md) calc(46px + var(--space-md) + var(--space-md));
+    }
+    .sog-body p { font-size: 17px; color: var(--charcoal); max-width: 68ch; }
+    .sog-ref {
+      display: block;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 18px;
+      color: var(--muted-blue);
+      margin-bottom: var(--space-sm);
+    }
+
+    .sog-controls {
+      display: flex;
+      justify-content: flex-end;
+      max-width: 880px;
+      margin: 0 auto var(--space-sm);
+    }
+    .sog-toggle-all {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: 'Source Sans Pro', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--muted-blue);
+      padding: 6px 2px;
+      transition: color var(--transition);
+    }
+    .sog-toggle-all:hover { color: var(--red); }
+
+    /* --- Upcoming group cards --- */
+    .sog-group {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .sog-group h4 { margin-bottom: var(--space-sm); }
+    .sog-group-when {
+      display: block;
+      font-family: 'Source Sans Pro', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .10em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 6px;
+    }
+    .sog-group-meta {
+      list-style: none;
+      margin: 0 0 var(--space-md);
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .sog-group-meta li {
+      position: relative;
+      padding-left: 18px;
+      font-size: 16px;
+      line-height: 1.5;
+      color: var(--muted-blue);
+    }
+    .sog-group-meta li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 10px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--red);
+      opacity: .55;
+    }
+    .sog-group-link {
+      margin-top: auto;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--navy);
+      border-bottom: 2px solid transparent;
+      padding-bottom: 2px;
+      transition: color var(--transition), border-color var(--transition);
+    }
+    .sog-group-link:hover,
+    .sog-group-link:focus-visible { color: var(--red); border-bottom-color: var(--red); }
+
+    .sog-no-groups {
+      max-width: 620px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .sog-no-groups p { color: var(--muted-blue); margin-bottom: var(--space-md); }
+
+    /* --- Rhythm cards --- */
+    .sog-step {
+      display: flex;
+      gap: var(--space-md);
+      align-items: flex-start;
+    }
+    .sog-step-num {
+      flex: 0 0 auto;
+      width: 34px;
+      padding-top: 3px;
+      color: var(--red);
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 20px;
+      line-height: 1.2;
+      font-variant-numeric: tabular-nums;
+    }
+    .sog-step h4 { font-size: 19px; margin-bottom: 4px; }
+    .sog-step p { font-size: 16px; color: var(--muted-blue); }
+
+    @media (max-width: 1024px) {
+      .sog-symbols { grid-template-columns: repeat(3, 1fr); gap: var(--space-lg) var(--space-sm); }
+    }
+    @media (max-width: 768px) {
+      .sog-symbols { grid-template-columns: repeat(2, 1fr); gap: var(--space-md) var(--space-sm); }
+      .sog-symbol .sog-mark { width: 68px; height: 68px; }
+      .sog-symbol .sog-name { font-size: 12px; letter-spacing: .08em; }
+      .sog-item summary { gap: var(--space-sm); padding: 16px var(--space-sm); }
+      .sog-item .sog-mark-sm { width: 38px; height: 38px; }
+      .sog-body { padding: 0 var(--space-sm) var(--space-md) var(--space-sm); }
+      .sog-controls { padding: 0 var(--space-xs); }
+    }
+    @media (max-width: 380px) {
+      .sog-symbols { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== NAVIGATION ===== -->
+<nav class="navbar" aria-label="Main navigation">
+  <div class="nav-inner">
+    <a class="nav-logo" href="index.html" aria-label="Commissioned City Church home">
+      <img src="assets/logo.png" alt="Commissioned City Church" onerror="this.parentElement.innerHTML='<div class=\'nav-logo-placeholder\'><div class=\'logo-mark\'><svg viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'white\' stroke-width=\'2\'><path d=\'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5\'/></svg></div><div class=\'logo-text\'>COMMISSIONED<br>CITY CHURCH</div></div>'">
+    </a>
+    <ul class="nav-links" role="list">
+      <li><a href="index.html">Home</a></li>
+      <li class="nav-has-dropdown">
+        <a href="about.html">About</a>
+        <ul class="nav-dropdown" role="list">
+          <li><a href="team.html">Meet the Team</a></li>
+          <li><a href="believe.html">What We Believe</a></li>
+          <li><a href="partnerships.html">Our Partnerships</a></li>
+        </ul>
+      </li>
+      <li class="nav-has-dropdown">
+        <a href="communities.html">Communities</a>
+        <ul class="nav-dropdown" role="list">
+          <li><a href="communities/south-osborne.html">South Osborne</a></li>
+          <li><a href="communities/river-heights.html">River Heights</a></li>
+          <li><a href="communities/st-james.html">St. James</a></li>
+          <li><a href="communities/youth.html">Youth</a></li>
+          <li><a href="communities/moms-and-womens.html">Women's MC</a></li>
+          <li><a href="communities/mens-discipleship.html">Men's Discipleship</a></li>
+          <li><a href="communities/womens-prayer.html">Women's Prayer Call</a></li>
+        </ul>
+      </li>
+      <li><a href="gatherings.html">Gatherings</a></li>
+      <li class="nav-has-dropdown">
+        <a href="blog.html">Resources</a>
+        <ul class="nav-dropdown" role="list">
+          <li><a href="sermons.html">Sermons</a></li>
+          <li><a href="blog.html">Blog</a></li>
+          <li><a href="story-of-god.html">The Story of God</a></li>
+        </ul>
+      </li>
+      <li><a href="give.html">Give</a></li>
+      <li><a href="/members/" target="_blank" rel="noopener">Log In</a></li>
+    </ul>
+    <a href="visit.html" class="btn btn-primary nav-cta">Plan Your Visit →</a>
+    <button class="nav-hamburger" aria-label="Open menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="nav-mobile" role="dialog" aria-modal="true">
+  <button class="nav-mobile-close" aria-label="Close menu">✕</button>
+  <a href="index.html">Home</a>
+  <div class="nav-mobile-group">
+    <a href="about.html">About</a>
+    <div class="nav-mobile-sub">
+      <a href="team.html">Meet the Team</a>
+      <a href="believe.html">What We Believe</a>
+      <a href="partnerships.html">Our Partnerships</a>
+    </div>
+  </div>
+  <div class="nav-mobile-group">
+    <a href="communities.html">Communities</a>
+    <div class="nav-mobile-sub">
+      <a href="communities/south-osborne.html">South Osborne</a>
+      <a href="communities/river-heights.html">River Heights</a>
+      <a href="communities/st-james.html">St. James</a>
+      <a href="communities/youth.html">Youth</a>
+      <a href="communities/moms-and-womens.html">Women's MC</a>
+      <a href="communities/mens-discipleship.html">Men's Discipleship</a>
+      <a href="communities/womens-prayer.html">Women's Prayer Call</a>
+    </div>
+  </div>
+  <a href="gatherings.html">Gatherings</a>
+  <div class="nav-mobile-group">
+    <a href="blog.html">Resources</a>
+    <div class="nav-mobile-sub">
+      <a href="sermons.html">Sermons</a>
+      <a href="blog.html">Blog</a>
+      <a href="story-of-god.html">The Story of God</a>
+    </div>
+  </div>
+  <a href="give.html">Give</a>
+  <a href="/members/" target="_blank" rel="noopener">Log In</a>
+  <a href="visit.html" class="btn btn-primary">Plan Your Visit →</a>
+</div>
+
+<main>
+
+<!-- ===== PAGE HERO ===== -->
+<section class="page-hero page-hero--navy" style="position:relative; overflow:hidden;" aria-labelledby="page-heading">
+  <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:.05;" viewBox="0 0 200 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <pattern id="sog-weave" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse">
+        <path d="M0 25 Q12.5 5 25 25 T50 25" fill="none" stroke="white" stroke-width="1.5"/>
+        <circle cx="25" cy="25" r="2" fill="white"/>
+      </pattern>
+    </defs>
+    <rect width="200" height="200" fill="url(#sog-weave)"/>
+  </svg>
+  <div style="position:relative;z-index:1;">
+    <span class="eyebrow fade-in-up">Discipleship Resource</span>
+    <h1 id="page-heading" class="fade-in-up delay-1" style="color:white;">The Story of God</h1>
+    <p class="page-hero-sub fade-in-up delay-2">One story, told in six movements — from the first light of creation to a world made new.</p>
+  </div>
+</section>
+
+<!-- ===== OVERVIEW ===== -->
+<section class="section section--gray">
+  <div class="container" style="max-width:820px;">
+    <span class="eyebrow fade-in-up">The Big Idea</span>
+    <h2 class="fade-in-up delay-1" style="margin-bottom:var(--space-md);">The Bible Is Not a Rulebook. It's a Story.</h2>
+    <div class="fade-in-up delay-2">
+      <p>Most of us met the Bible in pieces — a verse on a coffee mug, a passage at a funeral, a lesson we half-remember from childhood. The pieces are true, but held apart from one another they rarely add up to anything we can live inside. <strong>The Story of God</strong> puts the pieces back in order.</p>
+      <p>Together we walk the whole arc of Scripture — creation, rebellion, promise, redemption, church, and restoration — told as one continuous narrative. No lecture, no notes to fill in. Someone tells the story out loud, the group retells it together, and then we talk: What did you notice? What does this say about God? What does it say about us? Where do we see ourselves in it?</p>
+      <p>It is deliberately simple, because simple things travel. By the end, you don't just know <em>about</em> the Story — you can tell it. To a friend at work. To your kids at bedtime. To the neighbour who asks you an honest question over the fence. That's the point: not more information, but a story you can carry and hand on.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== THE SYMBOLS ===== -->
+<section class="section" id="symbols">
+  <div class="container" style="max-width:1120px;">
+    <div class="section-heading text-center fade-in-up">
+      <span class="eyebrow">Six Movements</span>
+      <h2>The Symbols</h2>
+      <p style="max-width:680px;margin:0 auto;">Each movement carries a simple symbol — a hook for the memory, so the whole Story can be recalled and retold on a napkin, a whiteboard, or the back of your hand. Tap any symbol to read its synopsis.</p>
+    </div>
+
+    <div class="sog-symbols">
+
+      <button class="sog-symbol fade-in-up" data-target="sog-creation" type="button">
+        <svg class="sog-mark" viewBox="0 0 64 64" aria-hidden="true">
+          <circle class="sog-ring" cx="32" cy="32" r="26" stroke="currentColor" stroke-width="2.5"/>
+          <path class="sog-glyph" d="M20 27l12 13 12-13" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="sog-name">Creation</span>
+      </button>
+
+      <button class="sog-symbol fade-in-up delay-1" data-target="sog-rebellion" type="button">
+        <svg class="sog-mark" viewBox="0 0 64 64" aria-hidden="true">
+          <circle class="sog-ring" cx="32" cy="32" r="26" stroke="currentColor" stroke-width="2.5"/>
+          <path class="sog-glyph" d="M22 22l20 20M42 22L22 42" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="sog-name">Rebellion</span>
+      </button>
+
+      <button class="sog-symbol fade-in-up delay-2" data-target="sog-promise" type="button">
+        <svg class="sog-mark" viewBox="0 0 64 64" aria-hidden="true">
+          <circle class="sog-ring" cx="32" cy="32" r="26" stroke="currentColor" stroke-width="2.5"/>
+          <path class="sog-glyph" d="M27 20l13 12-13 12" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="sog-name">Promise</span>
+      </button>
+
+      <button class="sog-symbol fade-in-up delay-3" data-target="sog-redemption" type="button">
+        <svg class="sog-mark" viewBox="0 0 64 64" aria-hidden="true">
+          <circle class="sog-ring" cx="32" cy="32" r="26" stroke="currentColor" stroke-width="2.5"/>
+          <path class="sog-glyph" d="M32 19v26M19 32h26" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="sog-name">Redemption</span>
+      </button>
+
+      <button class="sog-symbol fade-in-up delay-4" data-target="sog-church" type="button">
+        <svg class="sog-mark" viewBox="0 0 64 64" aria-hidden="true">
+          <circle class="sog-ring" cx="32" cy="32" r="26" stroke="currentColor" stroke-width="2.5"/>
+          <path class="sog-glyph" d="M27 20l13 12-13 12" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="sog-name">Church</span>
+      </button>
+
+      <button class="sog-symbol fade-in-up" data-target="sog-restoration" type="button">
+        <svg class="sog-mark" viewBox="0 0 64 64" aria-hidden="true">
+          <circle class="sog-ring" cx="32" cy="32" r="26" stroke="currentColor" stroke-width="2.5"/>
+          <path class="sog-glyph" d="M20 27l12 13 12-13" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="sog-name">Restoration</span>
+      </button>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== THE STORY, MOVEMENT BY MOVEMENT ===== -->
+<section class="section section--gray" id="movements">
+  <div class="container">
+    <div class="section-heading text-center fade-in-up">
+      <span class="eyebrow">Movement by Movement</span>
+      <h2>Walk Through the Story</h2>
+      <p style="max-width:660px;margin:0 auto;">A synopsis of each movement. These are summaries, not the telling itself — the Story is meant to be spoken out loud, in a room, with people you know.</p>
+    </div>
+
+    <div class="sog-controls fade-in-up">
+      <button class="sog-toggle-all" type="button" aria-expanded="false">Expand All +</button>
+    </div>
+
+    <div class="sog-accordion">
+
+      <details class="sog-item fade-in-up" id="sog-creation">
+        <summary>
+          <svg class="sog-mark-sm" viewBox="0 0 64 64" aria-hidden="true">
+            <circle class="sog-ring" cx="32" cy="32" r="26" stroke="currentColor" stroke-width="3"/>
+            <path class="sog-glyph" d="M20 27l12 13 12-13" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="sog-head">
+            <h3>Creation</h3>
+          </span>
+          <svg class="sog-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </summary>
+        <div class="sog-body">
+          <span class="sog-ref">Genesis 1–2 · Job 38</span>
+          <p>Before anything else, there was God — holy, good, complete in Himself, needing nothing. He laid the foundations of the earth while angels sang for joy. He made light and separated it from darkness, divided the sea from the sky, gathered the waters so dry land could appear. He filled the world with plants that carry their own seed, with sun and moon and stars to set the seasons turning, with fish and birds and every kind of wild thing — and He looked at all of it and said it was good. Last of all He made humans, male and female, in His own image, to be like Him. He blessed them, shared His own authority with them, told them to fill the earth and draw out its hidden potential, and placed them in a garden where everything they needed was already theirs. This is the world as God intended it: God with people, people with each other, everything flourishing under a good King.</p>
+        </div>
+      </details>
+
+      <details class="sog-item fade-in-up" id="sog-rebellion">
+        <summary>
+          <svg class="sog-mark-sm" viewBox="0 0 64 64" aria-hidden="true">
+            <circle class="sog-ring" cx="32" cy="32" r="26" stroke="currentColor" stroke-width="3"/>
+            <path class="sog-glyph" d="M22 22l20 20M42 22L22 42" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="sog-head">
+            <h3>Rebellion</h3>
+          </span>
+          <svg class="sog-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </summary>
+        <div class="sog-body">
+          <span class="sog-ref">Genesis 3–11</span>
+          <p>In the middle of the garden stood a tree God had withheld — the knowledge of good and evil — because deciding what is good and what is evil belongs to God alone. The serpent asked a question that made God sound stingy, and Adam and Eve reached for the fruit, trading trust for the right to judge for themselves. They were sent out of the garden, away from God's presence — though God came looking for them first, and clothed them with His own hands before they went. What began in two hearts spread to every heart. Cain killed his brother in a field. Violence filled the earth until God grieved having made humanity at all, and the flood came — yet even in judgment He rescued Noah, and hung a rainbow in the clouds as a promise. Then Noah's descendants gathered on a plain to build a tower and make a name for themselves, and God scattered them across the world. This is the human condition: not a few bad people, but all of us, choosing self over God.</p>
+        </div>
+      </details>
+
+      <details class="sog-item fade-in-up" id="sog-promise">
+        <summary>
+          <svg class="sog-mark-sm" viewBox="0 0 64 64" aria-hidden="true">
+            <circle class="sog-ring" cx="32" cy="32" r="26" stroke="currentColor" stroke-width="3"/>
+            <path class="sog-glyph" d="M27 20l13 12-13 12" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="sog-head">
+            <h3>Promise</h3>
+          </span>
+          <svg class="sog-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </summary>
+        <div class="sog-body">
+          <span class="sog-ref">Genesis 12–50 · Exodus · The Prophets</span>
+          <p>Then God does something nobody would have scripted: He sets out to rescue the whole world through one family. He calls a childless seventy-five-year-old named Abram out of his country with a promise — a land, descendants beyond counting, and blessing for every nation on earth through his offspring. Abram believes God, and God counts it to him as righteousness. The promise takes decades and survives their impatience, their scheming, and their laughter at God's timing. Isaac fathers Jacob, renamed Israel; Israel's twelve sons become a nation, carried into Egypt by famine and held there in slavery for four hundred years. God hears them. He raises up Moses, and on the night the blood of a lamb marks their doorframes death passes over them and they walk out free. Rescue comes first; instruction comes second. At Sinai God gives them the Law — not to earn their freedom but to show a freed people how to live with a holy God among them — along with a tabernacle, a priesthood, and sacrifice so their sin can be covered. They were meant to display His glory to the nations. Instead came kings, prophets, exile, and everyone doing what was right in their own eyes. The Old Testament closes with a people still waiting on a promise God has never broken.</p>
+        </div>
+      </details>
+
+      <details class="sog-item fade-in-up" id="sog-redemption">
+        <summary>
+          <svg class="sog-mark-sm" viewBox="0 0 64 64" aria-hidden="true">
+            <circle class="sog-ring" cx="32" cy="32" r="26" stroke="currentColor" stroke-width="3"/>
+            <path class="sog-glyph" d="M32 19v26M19 32h26" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="sog-head">
+            <h3>Redemption</h3>
+          </span>
+          <svg class="sog-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </summary>
+        <div class="sog-body">
+          <span class="sog-ref">The Gospels</span>
+          <p>After centuries of silence, God keeps His promise in person. Jesus is born to a virgin in a backwater town — fully God, fully human — and grows up working with His hands. He is baptized in the Jordan alongside sinful people though He has no sin of His own, and the Father's voice names Him as His beloved Son. Driven into the wilderness, He answers forty days of temptation with the word of God: where the first humans grasped, He trusts; where Israel failed, He obeys. Then He calls ordinary people to follow Him and begins showing the world what God's reign looks like — the sick healed, storms stilled, thousands fed, the dead raised, and stories in which the last end up first and a father runs down the road toward the son who wasted everything. He is the true King, and He comes as a servant. He is betrayed, condemned though no fault is found in Him, and crucified between two criminals, praying for the people driving in the nails. At the moment He dies, the temple curtain tears from top to bottom. He is the Passover Lamb and the final sacrifice, taking our sin and our punishment in our place. He is buried, sealed, and guarded — and on the third day the tomb is empty. Sin and death are beaten. Jesus is Lord.</p>
+        </div>
+      </details>
+
+      <details class="sog-item fade-in-up" id="sog-church">
+        <summary>
+          <svg class="sog-mark-sm" viewBox="0 0 64 64" aria-hidden="true">
+            <circle class="sog-ring" cx="32" cy="32" r="26" stroke="currentColor" stroke-width="3"/>
+            <path class="sog-glyph" d="M27 20l13 12-13 12" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="sog-head">
+            <h3>Church</h3>
+          </span>
+          <svg class="sog-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </summary>
+        <div class="sog-body">
+          <span class="sog-ref">Acts · The Epistles</span>
+          <p>The risen Jesus spends forty days with His followers — patient even with Thomas, who wanted to put his hand in the wound — and then gives them their commission: all authority in heaven and on earth is His, so go and make disciples of every nation, baptizing them and teaching them to walk in His ways, and know that He is with them always. Then He ascends. Days later a hundred and twenty of them are praying in Jerusalem when a sound like a roaring wind fills the house, the Holy Spirit fills every one of them, and they spill into the street speaking languages they never learned. Peter — the one who denied Him — stands up and preaches, and three thousand turn from their sins and are baptized that day. What follows is a new kind of community: devoted to the apostles' teaching, to prayer, to breaking bread in each other's homes, so generous that no one among them is in need. Jesus even reaches into the ranks of His enemies and calls Paul, who had been hunting Christians, to carry the good news across the Roman world. This is the church — an ordinary people, filled with the Spirit, sent into their own cities on His mission.</p>
+        </div>
+      </details>
+
+      <details class="sog-item fade-in-up" id="sog-restoration">
+        <summary>
+          <svg class="sog-mark-sm" viewBox="0 0 64 64" aria-hidden="true">
+            <circle class="sog-ring" cx="32" cy="32" r="26" stroke="currentColor" stroke-width="3"/>
+            <path class="sog-glyph" d="M20 27l12 13 12-13" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="sog-head">
+            <h3>Restoration</h3>
+          </span>
+          <svg class="sog-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </summary>
+        <div class="sog-body">
+          <span class="sog-ref">Luke 17 · 1 Corinthians 15 · Revelation 21–22</span>
+          <p>Jesus promised to come back, and He said that when He does nobody will need to be told — it will be like lightning flashing across the whole sky. He will set creation free from its curse, put an end to evil and sin and rebellion for good, and raise His people to live forever in bodies like His own. God gave John a glimpse of it and John wrote it down: a new heaven and a new earth, the holy city coming down out of heaven dressed like a bride, a river of the water of life running clear as crystal down the middle of the main street, and the Tree of Life growing on both banks with leaves for the healing of the nations. God Himself will live with His people, and He will wipe every tear from their eyes — no more death, no more grief, no more crying, no more pain, because the old order of things has passed away. The Story ends where it began, only better: God with us, at home, in a world made new.</p>
+        </div>
+      </details>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== HOW A TELLING WORKS ===== -->
+<section class="section">
+  <div class="container" style="max-width:1000px;">
+    <div class="section-heading text-center fade-in-up">
+      <span class="eyebrow">How It Works</span>
+      <h2>The Shape of a Telling</h2>
+      <p style="max-width:640px;margin:0 auto;">However long you have together, the rhythm is the same every time you sit down.</p>
+    </div>
+    <div class="grid-2" style="gap:var(--space-lg) var(--space-xl);">
+      <div class="sog-step fade-in-up">
+        <div class="sog-step-num">1</div>
+        <div>
+          <h4>Review</h4>
+          <p>Retell the movement you covered last before adding anything new. Nobody moves ahead until everyone is caught up.</p>
+        </div>
+      </div>
+      <div class="sog-step fade-in-up delay-1">
+        <div class="sog-step-num">2</div>
+        <div>
+          <h4>Tell</h4>
+          <p>The new story is told out loud — two to five minutes, straight through, no side trips or sermonizing.</p>
+        </div>
+      </div>
+      <div class="sog-step fade-in-up delay-2">
+        <div class="sog-step-num">3</div>
+        <div>
+          <h4>Retell</h4>
+          <p>The group puts the events back in order in their own words. This is where the Story starts to stick.</p>
+        </div>
+      </div>
+      <div class="sog-step fade-in-up delay-3">
+        <div class="sog-step-num">4</div>
+        <div>
+          <h4>Dialogue</h4>
+          <p>Open questions, honest answers, all of it anchored in the narrative itself — "Where did we see that in the story?"</p>
+        </div>
+      </div>
+      <div class="sog-step fade-in-up">
+        <div class="sog-step-num">5</div>
+        <div>
+          <h4>Intersect</h4>
+          <p>Connect your own story to God's. Where are you in this? What would change if it were true?</p>
+        </div>
+      </div>
+      <div class="sog-step fade-in-up delay-1">
+        <div class="sog-step-num">6</div>
+        <div>
+          <h4>Repeat</h4>
+          <p>Pick up the next movement whenever your group next gathers. Then turn around and lead the whole thing for someone else.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== UPCOMING GROUPS =====
+     This section has two states. Right now the "NOTHING SCHEDULED" block
+     is live and the card grid below it is commented out.
+
+     TO ADVERTISE GROUPS:
+       1. Delete the "NOTHING SCHEDULED" block
+       2. Uncomment the GROUP CARDS grid
+       3. Fill in one card per group, copying the card block as needed
+
+     TO GO BACK TO NOTHING SCHEDULED:
+       Comment the grid out again and restore the block above it.
+
+     EACH CARD HAS FOUR FIELDS TO EDIT:
+       .sog-group-when   the date line, in red above the name
+       h4                the group name
+       .sog-group-meta   two to four short lines: time, format, host, childcare
+       .sog-group-link   the mailto; change subject= so replies sort themselves
+
+     Cards fade in on a stagger. Past three, restart the sequence:
+     no delay, delay-1, delay-2, no delay, delay-1, delay-2 ...
+     ================================================================= -->
+<section class="section section--gray" id="groups">
+  <div class="container" style="max-width:1080px;">
+    <div class="section-heading text-center fade-in-up">
+      <span class="eyebrow">Upcoming</span>
+      <h2>Story of God Groups</h2>
+      <p style="max-width:700px;margin:0 auto;">Groups are open to anyone. You do not need to be a member, and you do not need to have read a word of the Bible before &mdash; come as you are, and bring someone with you.</p>
+    </div>
+
+    <!-- NOTHING SCHEDULED -->
+    <div class="sog-no-groups fade-in-up">
+      <p>Nothing is on the calendar right now &mdash; but we start new groups all through the year, and we will start one around your schedule if you can gather a few people.</p>
+      <a class="btn btn-outline-navy" href="mailto:info@commissionedcity.church?subject=Story%20of%20God%20%E2%80%94%20Starting%20a%20group">Email Us About Starting One &rarr;</a>
+    </div>
+
+    <!-- GROUP CARDS &mdash; uncomment this grid and fill in one card per group
+
+    <div class="grid-3">
+
+      <div class="mission-card sog-group fade-in-up">
+        <div class="mission-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+        <span class="sog-group-when">Starts Wednesday, September 17</span>
+        <h4>South Osborne</h4>
+        <ul class="sog-group-meta">
+          <li>Wednesdays, 7:00pm</li>
+          <li>A movement each week</li>
+          <li>Hosted by the Osborne family</li>
+        </ul>
+        <a class="sog-group-link" href="mailto:info@commissionedcity.church?subject=Story%20of%20God%20%E2%80%94%20South%20Osborne">Ask about this group &rarr;</a>
+      </div>
+
+      <div class="mission-card sog-group fade-in-up delay-1">
+        <div class="mission-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+        <span class="sog-group-when">Saturday, October 4</span>
+        <h4>One-Day Intensive</h4>
+        <ul class="sog-group-meta">
+          <li>9:00am to 4:00pm, lunch provided</li>
+          <li>The whole Story in one sitting</li>
+          <li>Good for a core team or a new MC</li>
+        </ul>
+        <a class="sog-group-link" href="mailto:info@commissionedcity.church?subject=Story%20of%20God%20%E2%80%94%20One-Day%20Intensive">Ask about this group &rarr;</a>
+      </div>
+
+    </div>
+
+    -->
+
+  </div>
+</section>
+
+<!-- ===== SCRIPTURE PULL QUOTE ===== -->
+<section class="section-sm">
+  <div class="container">
+    <p class="pull-quote fade-in-up">"He has rescued us from the dominion of darkness and brought us into the kingdom of the Son he loves, in whom we have redemption, the forgiveness of sins."</p>
+    <p class="quote-attr fade-in-up delay-1">Colossians 1:13–14</p>
+  </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section class="section section--navy text-center">
+  <div class="container">
+    <span class="eyebrow fade-in-up">Start the Journey</span>
+    <h2 class="fade-in-up delay-1" style="color:white; max-width:660px; margin:0 auto var(--space-md);">Walk the Story With Us</h2>
+    <p class="fade-in-up delay-2" style="color:rgba(255,255,255,.75); max-width:660px; margin:0 auto var(--space-lg);">The Story of God isn't a course with a timetable — it's something we do around tables, in living rooms, with whoever will come, at whatever pace that group can manage. If you'd like to walk through it, or you'd like to learn to lead it for the people already in your life, tell us and we'll build it around your schedule.</p>
+    <div class="btn-group centered fade-in-up delay-3" style="justify-content:center;">
+      <a href="contact.html" class="btn btn-red">Get in Touch →</a>
+      <a href="communities.html" class="btn btn-outline-white">Find a Community</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ATTRIBUTION ===== -->
+<section class="section-sm">
+  <div class="container text-center" style="max-width:720px;">
+    <p class="small fade-in-up">The Story of God grew out of story sets developed by the International Mission Board, adapted by Caesar Kalinowski and Mike Novelli for Soma, and edited over the years by the leadership of the Soma Family of Churches. We're grateful to use it, and grateful for our sister churches who tell this Story alongside us — including <a href="https://missiodeicommunities.com/story" target="_blank" rel="noopener" style="color:var(--red);">Missio Dei Communities</a>. The full facilitator's guide is available free from <a href="https://saturatetheworld.com/storyofgod" target="_blank" rel="noopener" style="color:var(--red);">Saturate</a>.</p>
+  </div>
+</section>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <a href="index.html" aria-label="Commissioned City Church">
+        <img src="assets/logo.png" alt="Commissioned City Church" class="footer-logo-img" style="height:120px; background:white; border-radius:10px; padding:8px 12px; margin-bottom:var(--space-md);" onerror="this.outerHTML='<div style=\'font-family:Montserrat,sans-serif;font-weight:800;font-size:18px;color:white;margin-bottom:var(--space-md);\'>COMMISSIONED<br>CITY CHURCH</div>'">
+      </a>
+      <p class="footer-tagline">For the Good of the City<br>For the Glory of Christ</p>
+      <div class="footer-social">
+        <a href="#" aria-label="Instagram" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="white" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="white" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.5" fill="white"/></svg></a>
+        <a href="#" aria-label="Facebook" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="believe.html">What We Believe</a></li>
+        <li><a href="gospel.html">The Gospel</a></li>
+        <li><a href="communities.html">Communities</a></li>
+        <li><a href="gatherings.html">Gatherings</a></li>
+        <li><a href="sermons.html">Sermons</a></li>
+        <li><a href="story-of-god.html">The Story of God</a></li>
+        <li><a href="give.html">Give</a></li>
+        <li><a href="contact.html">Connect</a></li>
+      </ul>
+    </div>
+    <div class="footer-col footer-contact">
+      <h4>Find Us</h4>
+      <p>205 Roseberry St<br>Winnipeg, MB R3J 1T3</p>
+      <p style="margin-top:var(--space-sm);">Coffee — 10:00am Sunday<br>Worship — 10:30am Sunday</p>
+      <p style="margin-top:var(--space-sm);"><a href="mailto:info@commissionedcity.church">info@commissionedcity.church</a></p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>Matthew 28:18–20 · © 2025 Commissioned City Church</span>
+    <span>Winnipeg, Manitoba</span>
+  </div>
+</footer>
+
+<script src="js/media.js"></script>
+<script src="js/main.js"></script>
+<script>
+/* ===== STORY OF GOD — PAGE SCRIPT ===== */
+(function storyOfGod() {
+  const items = Array.from(document.querySelectorAll('.sog-item'));
+  if (!items.length) return;
+
+  // Symbol tiles jump to (and open) their movement.
+  document.querySelectorAll('.sog-symbol').forEach(function (tile) {
+    tile.addEventListener('click', function () {
+      const target = document.getElementById(tile.dataset.target);
+      if (!target) return;
+      target.open = true;
+      syncToggleAll();
+      syncSymbols();
+      // Offset for the sticky navbar.
+      const nav = document.querySelector('.navbar');
+      const offset = (nav ? nav.offsetHeight : 0) + 16;
+      const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+      window.scrollTo({ top: top, behavior: 'smooth' });
+    });
+  });
+
+  // Expand / collapse all.
+  const toggleAll = document.querySelector('.sog-toggle-all');
+
+  function syncToggleAll() {
+    if (!toggleAll) return;
+    const allOpen = items.every(function (i) { return i.open; });
+    toggleAll.textContent = allOpen ? 'Collapse All −' : 'Expand All +';
+    toggleAll.setAttribute('aria-expanded', String(allOpen));
+  }
+
+  // Mirror each open movement in the symbol row above.
+  function syncSymbols() {
+    document.querySelectorAll('.sog-symbol').forEach(function (tile) {
+      const target = document.getElementById(tile.dataset.target);
+      tile.classList.toggle('is-active', !!(target && target.open));
+    });
+  }
+
+  if (toggleAll) {
+    toggleAll.addEventListener('click', function () {
+      const allOpen = items.every(function (i) { return i.open; });
+      items.forEach(function (i) { i.open = !allOpen; });
+      syncToggleAll();
+    });
+  }
+
+  items.forEach(function (i) { i.addEventListener('toggle', function () { syncToggleAll(); syncSymbols(); }); });
+
+  // Deep link support — /story-of-god.html#sog-promise opens that movement.
+  if (window.location.hash) {
+    const hashed = document.querySelector(window.location.hash);
+    if (hashed && hashed.classList.contains('sog-item')) hashed.open = true;
+  }
+
+  syncToggleAll();
+  syncSymbols();
+})();
+</script>
+</body>
+</html>
