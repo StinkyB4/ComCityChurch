@@ -309,16 +309,11 @@ const SITE_MEDIA = {
       overlay: { type: "dark", opacity: 0.50 }
     },
 
-    // AWAITING ARTWORK — post-four-idols.jpg is still a placeholder (the
-    // gospel-hero photo). Drop the chosen image in at this same path; no
-    // other change is needed. Then check the overlay against it: 0.35 lets
-    // a dark image through, 0.50 is the house default, 0.65+ suits a light
-    // or busy image sitting behind white hero text.
     "blog-four-idols": {
       type: "image",
-      src: "/assets/media/blog/post-four-idols.jpg",
-      alt: "The Four Idols: Control, Approval, Comfort, and Success",
-      overlay: { type: "dark", opacity: 0.55 }
+      src: "/assets/media/heroes/four-idols.jpg",
+      alt: "Nicolas Poussin, The Adoration of the Golden Calf (c. 1633\u201334): Israelites dancing around the golden calf while Moses descends with the tablets",
+      overlay: { type: "dark", opacity: 0.50 }
     },
 
     // PLACEHOLDER IMAGE — post-root-to-fruit.jpg currently reuses the vine
