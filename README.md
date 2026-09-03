@@ -158,19 +158,41 @@ Three more switches sit on the `<body>` tag:
 
 ### Changing the links
 
-Each button is one `<a class="lp-btn">` block in the `THE LINKS` section.
-Copy a block to add a link, delete it to remove one, move it to reorder.
-Each has an emoji icon, a bold label, and an optional small sub-line.
-For a link that leaves the site, add `target="_blank" rel="noopener"` and
-change the arrow from `→` to `↗`.
+Each button is one `<a class="lp-btn">` block in **Section 5**. Copy a block to
+add a link, delete it to remove one, move it to reorder. Each has an icon, a
+bold label, and an optional small sub-line. For a link that leaves the site, add
+`target="_blank" rel="noopener"` and swap the arrow to `#icon-arrow-out`.
+
+### Icons
+
+There are no emoji anywhere in this file — they render differently on every
+device. Icons are inline SVG, defined once as a sprite in **Section 8** and
+referenced by name, so changing one is a single-word edit:
+
+```html
+<use href="#icon-pin">   →   <use href="#icon-heart">
+```
+
+Available: `people`, `pin`, `steps`, `headphones`, `book`, `calendar`, `heart`,
+`gift`, `home`, `mail`, `play`, `cross`, `coffee`, `info`, `map`, plus
+`chevron` and `arrow-out` for the arrow on the right of each button. Section 8
+lists them with suggested uses. To drop an icon entirely, delete that button's
+`<span class="lp-btn-icon">` line.
 
 ### Social icons
 
 Instagram and Facebook are pre-written but commented out, because we don't have
 those addresses on file yet — put the URL in and delete the comment markers
-around the block to switch each on. Spare icons for YouTube, Apple Podcasts, X,
-TikTok, phone and directions sit in a comment block at the bottom of the file;
+around the block to switch each on. Spare blocks for YouTube, Apple Podcasts, X,
+TikTok, phone and directions sit in a comment near the bottom of the file;
 copy one up into the socials row to use it.
+
+### Editing it with Claude
+
+**Section 9** at the bottom of the file is a set of conventions for AI
+assistants — keep it self-contained, no emoji, all colours as `--lp-*` tokens,
+uniform button blocks, and re-check the 390×844 layout before finishing. Point
+Claude at that section when asking for changes.
 
 ### If you add a new page for it to link to
 
