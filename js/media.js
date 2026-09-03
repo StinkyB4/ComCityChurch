@@ -318,6 +318,17 @@ const SITE_MEDIA = {
       overlay: { type: "dark", opacity: 0.55 }
     },
 
+    // PLACEHOLDER IMAGE — post-root-to-fruit.jpg currently reuses the vine
+    // etching from the "being before doing" block. Swap in the real image
+    // at the same path when ready. Overlay is heavier than the 0.50 default
+    // because the etching is a very light, cream-toned image.
+    "blog-root-to-fruit": {
+      type: "image",
+      src: "/assets/media/blog/post-root-to-fruit.jpg",
+      alt: "Root to Fruit",
+      overlay: { type: "dark", opacity: 0.62 }
+    },
+
     "blog-sabbath": {
       type: "image",
       src: "/assets/media/blog/post-sabbath.jpg",
