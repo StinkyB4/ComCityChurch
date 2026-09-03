@@ -46,6 +46,7 @@
       <li class="nav-has-dropdown">
         <a href="blog.html">Resources</a>
         <ul class="nav-dropdown" role="list">
+          <li><a href="first-steps.html">First Steps</a></li>
           <li><a href="sermons.html">Sermons</a></li>
           <li><a href="blog.html">Blog</a></li>
           <li><a href="story-of-god.html">The Story of God</a></li>
@@ -85,6 +86,7 @@
   <div class="nav-mobile-group">
     <a href="blog.html">Resources</a>
     <div class="nav-mobile-sub">
+      <a href="first-steps.html">First Steps</a>
       <a href="sermons.html">Sermons</a>
       <a href="blog.html">Blog</a>
       <a href="story-of-god.html">The Story of God</a>
@@ -106,17 +108,30 @@
     position: relative;
     display: flex;
     gap: var(--space-md);
-    align-items: flex-start;
+    /* stretch, not flex-start, so the body column below can fill the card's
+       full height. Grid already gives paired cards equal heights. */
+    align-items: stretch;
     background: var(--white);
     border-radius: var(--radius-card);
     box-shadow: var(--shadow-card);
     padding: var(--space-lg);
+  }
+  /* Fills the card height and becomes a column, so the button can be pushed
+     to the bottom. Without this the button just follows the paragraph, and
+     cards with shorter copy end up with their buttons riding higher than
+     their neighbour's. */
+  .fs-step-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
   }
   .fs-step-num {
     /* Explicit width + height rather than a flex-basis: the card flips to
        flex-direction: column on narrow screens, and a basis would become the
        badge's height there and squash it out of round. */
     flex: none;
+    /* Pinned to the top now that the card stretches its children. */
+    align-self: flex-start;
     width: 52px;
     height: 52px;
     display: flex;
@@ -131,8 +146,14 @@
     line-height: 1;
   }
   .fs-step h3 { font-size: 22px; margin-bottom: var(--space-xs); }
-  .fs-step p  { color: var(--muted-blue); font-size: 16.5px; }
-  .fs-step .btn { margin-top: var(--space-sm); }
+  /* The margin-bottom is the minimum gap above the button; margin-top:auto
+     on the button absorbs whatever height is left over. */
+  .fs-step p  { color: var(--muted-blue); font-size: 16.5px; margin-bottom: var(--space-sm); }
+  .fs-step .btn {
+    margin-top: auto;
+    /* Otherwise the column's default stretch makes the button full width. */
+    align-self: flex-start;
+  }
 
   @media (max-width: 480px) {
     .fs-step { flex-direction: column; gap: var(--space-sm); padding: var(--space-md); }
@@ -173,7 +194,7 @@
 
       <div class="fs-step fade-in-up">
         <div class="fs-step-num" aria-hidden="true">1</div>
-        <div>
+        <div class="fs-step-body">
           <h3>Come and See</h3>
           <p>The first step is the easiest one: show up. Join us on a Sunday — coffee at 10:00am, worship at 10:30am. Come as you are, sit wherever you like, and leave whenever you need to. There's no pressure and nobody will single you out.</p>
           <a href="visit.html" class="btn btn-primary">Plan Your Visit →</a>
@@ -182,7 +203,7 @@
 
       <div class="fs-step fade-in-up delay-1">
         <div class="fs-step-num" aria-hidden="true">2</div>
-        <div>
+        <div class="fs-step-body">
           <h3>Hear the Good News</h3>
           <p>Everything we do rests on one message: that God has come to rescue us in Jesus Christ. Before anything else, it's worth understanding what that message actually is — and what it would mean for you to trust it.</p>
           <a href="gospel.html" class="btn btn-primary">Read the Gospel →</a>
@@ -191,7 +212,7 @@
 
       <div class="fs-step fade-in-up delay-2">
         <div class="fs-step-num" aria-hidden="true">3</div>
-        <div>
+        <div class="fs-step-body">
           <h3>Find Your People</h3>
           <p>Sunday is where we gather; our Missional Communities are where we're known. They meet through the week in homes across Winnipeg for food, honest conversation, prayer, and life on mission together. This is where visiting turns into belonging.</p>
           <a href="communities.html" class="btn btn-primary">Explore Communities →</a>
@@ -200,7 +221,7 @@
 
       <div class="fs-step fade-in-up delay-3">
         <div class="fs-step-num" aria-hidden="true">4</div>
-        <div>
+        <div class="fs-step-body">
           <h3>Follow Jesus Together</h3>
           <p>Following Jesus was never meant to be a solo project. Baptism, membership, serving on a team, being discipled and discipling others — these are the ordinary ways we grow. Tell us where you are and we'll help you take the next step.</p>
           <a href="contact.html" class="btn btn-primary">Get Connected →</a>
