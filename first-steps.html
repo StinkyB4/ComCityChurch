@@ -1,0 +1,294 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="/assets/logo.png">
+  <title>First Steps — Commissioned City Church</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400&family=Montserrat:wght@600;700;800&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <meta name="description" content="Four simple next steps at Commissioned City Church — come and see, hear the gospel, find a community, and follow Jesus.">
+  <link rel="preload" href="assets/media/heroes/home-4.jpg" as="image" fetchpriority="high">
+</head>
+<body>
+
+<!-- ===== NAVIGATION ===== -->
+<nav class="navbar" aria-label="Main navigation">
+  <div class="nav-inner">
+    <a class="nav-logo" href="index.html" aria-label="Commissioned City Church home">
+      <img src="assets/logo.png" alt="Commissioned City Church" onerror="this.parentElement.innerHTML='<div class=\'nav-logo-placeholder\'><div class=\'logo-mark\'><svg viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'white\' stroke-width=\'2\'><path d=\'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5\'/></svg></div><div class=\'logo-text\'>COMMISSIONED<br>CITY CHURCH</div></div>'">
+    </a>
+    <ul class="nav-links" role="list">
+      <li><a href="index.html">Home</a></li>
+      <li class="nav-has-dropdown">
+        <a href="about.html">About</a>
+        <ul class="nav-dropdown" role="list">
+          <li><a href="team.html">Meet the Team</a></li>
+          <li><a href="believe.html">What We Believe</a></li>
+          <li><a href="partnerships.html">Our Partnerships</a></li>
+        </ul>
+      </li>
+      <li class="nav-has-dropdown">
+        <a href="communities.html">Communities</a>
+        <ul class="nav-dropdown" role="list">
+          <li><a href="communities/south-osborne.html">South Osborne</a></li>
+          <li><a href="communities/river-heights.html">River Heights</a></li>
+          <li><a href="communities/st-james.html">St. James</a></li>
+          <li><a href="communities/youth.html">Youth</a></li>
+          <li><a href="communities/moms-and-womens.html">Women's MC</a></li>
+          <li><a href="communities/mens-discipleship.html">Men's Discipleship</a></li>
+          <li><a href="communities/womens-prayer.html">Women's Prayer Call</a></li>
+        </ul>
+      </li>
+      <li><a href="gatherings.html">Gatherings</a></li>
+      <li class="nav-has-dropdown">
+        <a href="blog.html">Resources</a>
+        <ul class="nav-dropdown" role="list">
+          <li><a href="sermons.html">Sermons</a></li>
+          <li><a href="blog.html">Blog</a></li>
+          <li><a href="story-of-god.html">The Story of God</a></li>
+        </ul>
+      </li>
+      <li><a href="give.html">Give</a></li>
+      <li><a href="/members/" target="_blank" rel="noopener">Log In</a></li>
+    </ul>
+    <a href="visit.html" class="btn btn-primary nav-cta">Plan Your Visit →</a>
+    <button class="nav-hamburger" aria-label="Open menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="nav-mobile" role="dialog" aria-modal="true">
+  <button class="nav-mobile-close" aria-label="Close menu">✕</button>
+  <a href="index.html">Home</a>
+  <div class="nav-mobile-group">
+    <a href="about.html">About</a>
+    <div class="nav-mobile-sub">
+      <a href="team.html">Meet the Team</a>
+      <a href="believe.html">What We Believe</a>
+      <a href="partnerships.html">Our Partnerships</a>
+    </div>
+  </div>
+  <div class="nav-mobile-group">
+    <a href="communities.html">Communities</a>
+    <div class="nav-mobile-sub">
+      <a href="communities/south-osborne.html">South Osborne</a>
+      <a href="communities/river-heights.html">River Heights</a>
+      <a href="communities/st-james.html">St. James</a>
+      <a href="communities/youth.html">Youth</a>
+      <a href="communities/moms-and-womens.html">Women's MC</a>
+      <a href="communities/mens-discipleship.html">Men's Discipleship</a>
+      <a href="communities/womens-prayer.html">Women's Prayer Call</a>
+    </div>
+  </div>
+  <a href="gatherings.html">Gatherings</a>
+  <div class="nav-mobile-group">
+    <a href="blog.html">Resources</a>
+    <div class="nav-mobile-sub">
+      <a href="sermons.html">Sermons</a>
+      <a href="blog.html">Blog</a>
+      <a href="story-of-god.html">The Story of God</a>
+    </div>
+  </div>
+  <a href="give.html">Give</a>
+  <a href="/members/" target="_blank" rel="noopener">Log In</a>
+  <a href="visit.html" class="btn btn-primary">Plan Your Visit →</a>
+</div>
+
+
+<!-- Page-scoped styles for the numbered step cards. Everything else comes
+     from css/styles.css. -->
+<style>
+  .fs-steps { display: grid; gap: var(--space-md); margin-top: var(--space-lg); }
+  @media (min-width: 900px) { .fs-steps { grid-template-columns: repeat(2, 1fr); } }
+
+  .fs-step {
+    position: relative;
+    display: flex;
+    gap: var(--space-md);
+    align-items: flex-start;
+    background: var(--white);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: var(--space-lg);
+  }
+  .fs-step-num {
+    /* Explicit width + height rather than a flex-basis: the card flips to
+       flex-direction: column on narrow screens, and a basis would become the
+       badge's height there and squash it out of round. */
+    flex: none;
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--navy);
+    color: var(--white);
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    line-height: 1;
+  }
+  .fs-step h3 { font-size: 22px; margin-bottom: var(--space-xs); }
+  .fs-step p  { color: var(--muted-blue); font-size: 16.5px; }
+  .fs-step .btn { margin-top: var(--space-sm); }
+
+  @media (max-width: 480px) {
+    .fs-step { flex-direction: column; gap: var(--space-sm); padding: var(--space-md); }
+  }
+</style>
+
+<main>
+
+<!-- ===== HERO ===== -->
+<section class="hero-full" data-media="heroes.first-steps" style="min-height:56vh;" aria-labelledby="page-heading">
+  <div class="hero-full-content">
+    <span class="eyebrow fade-in-up">New Here?</span>
+    <h1 id="page-heading" class="fade-in-up delay-1">First Steps</h1>
+    <p class="hero-sub fade-in-up delay-2">You don't have to have it all figured out. Start with one step.</p>
+  </div>
+</section>
+
+<!-- ===== INTRO ===== -->
+<section class="section">
+  <div class="container text-block mx-auto">
+    <span class="eyebrow fade-in-up">Start Here</span>
+    <h2 class="fade-in-up delay-1">Everybody Starts Somewhere</h2>
+    <p class="fade-in-up delay-2">Maybe you've been walking with Jesus for decades. Maybe you haven't set foot in a church since you were a kid. Maybe you're not sure you believe any of it and you're just curious. Wherever you're coming from, you're welcome here — and there's a next step for you.</p>
+    <p class="fade-in-up delay-2">These four steps aren't a program to complete or a hoop to jump through. They're simply the path most people take as they move from visiting to belonging. Take them in order, or take the one that fits where you are right now.</p>
+  </div>
+</section>
+
+<!-- ===== THE FOUR STEPS ===== -->
+<section class="section section--gray" aria-labelledby="steps-heading">
+  <div class="container">
+    <div class="section-heading text-center mx-auto" style="max-width:600px;">
+      <span class="eyebrow fade-in-up">The Path</span>
+      <h2 id="steps-heading" class="fade-in-up delay-1">Four Steps</h2>
+      <p class="fade-in-up delay-2">Simple, unhurried, and always at your own pace.</p>
+    </div>
+
+    <div class="fs-steps">
+
+      <div class="fs-step fade-in-up">
+        <div class="fs-step-num" aria-hidden="true">1</div>
+        <div>
+          <h3>Come and See</h3>
+          <p>The first step is the easiest one: show up. Join us on a Sunday — coffee at 10:00am, worship at 10:30am. Come as you are, sit wherever you like, and leave whenever you need to. There's no pressure and nobody will single you out.</p>
+          <a href="visit.html" class="btn btn-primary">Plan Your Visit →</a>
+        </div>
+      </div>
+
+      <div class="fs-step fade-in-up delay-1">
+        <div class="fs-step-num" aria-hidden="true">2</div>
+        <div>
+          <h3>Hear the Good News</h3>
+          <p>Everything we do rests on one message: that God has come to rescue us in Jesus Christ. Before anything else, it's worth understanding what that message actually is — and what it would mean for you to trust it.</p>
+          <a href="gospel.html" class="btn btn-primary">Read the Gospel →</a>
+        </div>
+      </div>
+
+      <div class="fs-step fade-in-up delay-2">
+        <div class="fs-step-num" aria-hidden="true">3</div>
+        <div>
+          <h3>Find Your People</h3>
+          <p>Sunday is where we gather; our Missional Communities are where we're known. They meet through the week in homes across Winnipeg for food, honest conversation, prayer, and life on mission together. This is where visiting turns into belonging.</p>
+          <a href="communities.html" class="btn btn-primary">Explore Communities →</a>
+        </div>
+      </div>
+
+      <div class="fs-step fade-in-up delay-3">
+        <div class="fs-step-num" aria-hidden="true">4</div>
+        <div>
+          <h3>Follow Jesus Together</h3>
+          <p>Following Jesus was never meant to be a solo project. Baptism, membership, serving on a team, being discipled and discipling others — these are the ordinary ways we grow. Tell us where you are and we'll help you take the next step.</p>
+          <a href="contact.html" class="btn btn-primary">Get Connected →</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== SCRIPTURE ===== -->
+<section class="section">
+  <div class="container text-block mx-auto">
+    <div class="fade-in-up" style="padding: var(--space-lg); background: var(--gray-bg); border-radius: var(--radius-card); text-align:center;">
+      <p class="pull-quote">"Come, follow me," Jesus said, "and I will send you out to fish for people." At once they left their nets and followed him.</p>
+      <p class="quote-attr" style="margin-top:var(--space-sm);">— Mark 1:17–18</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== QUESTIONS ===== -->
+<section class="section section--gray" aria-labelledby="questions-heading">
+  <div class="container">
+    <div class="section-heading text-center mx-auto" style="max-width:560px;">
+      <span class="eyebrow fade-in-up">No Wrong Questions</span>
+      <h2 id="questions-heading" class="fade-in-up delay-1">Still Have Questions?</h2>
+      <p class="fade-in-up delay-2">Doubts and hard questions are welcome here — they always have been.</p>
+    </div>
+
+    <div class="grid-2" style="margin-top:var(--space-lg); max-width:800px; margin-left:auto; margin-right:auto;">
+      <div class="card fade-in-up" style="padding:var(--space-lg); text-align:center;">
+        <h3 style="font-size:24px; margin-bottom:var(--space-sm);">Coffee &amp; Conversation</h3>
+        <p style="color:var(--muted-blue); margin-bottom:var(--space-md);">One of our pastors would genuinely love to buy you a coffee and hear your story — no agenda, no pressure, no follow-up sales pitch.</p>
+        <a href="mailto:info@commissionedcity.church" class="btn btn-primary">Email Us</a>
+      </div>
+      <div class="card fade-in-up delay-1" style="padding:var(--space-lg); text-align:center;">
+        <h3 style="font-size:24px; margin-bottom:var(--space-sm);">Listen First</h3>
+        <p style="color:var(--muted-blue); margin-bottom:var(--space-md);">Want to get a feel for us before you show up? Our sermons are all on Spotify. Press play and hear what a normal Sunday sounds like.</p>
+        <a href="sermons.html" class="btn btn-primary">Listen to Sermons</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <a href="index.html" aria-label="Commissioned City Church">
+        <img src="assets/logo.png" alt="Commissioned City Church" class="footer-logo-img" style="height:120px; background:white; border-radius:10px; padding:8px 12px; margin-bottom:var(--space-md);" onerror="this.outerHTML='<div style=\'font-family:Montserrat,sans-serif;font-weight:800;font-size:18px;color:white;margin-bottom:var(--space-md);\'>COMMISSIONED<br>CITY CHURCH</div>'">
+      </a>
+      <p class="footer-tagline">For the Good of the City<br>For the Glory of Christ</p>
+      <div class="footer-social">
+        <a href="#" aria-label="Instagram" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="white" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="white" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.5" fill="white"/></svg></a>
+        <a href="#" aria-label="Facebook" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="believe.html">What We Believe</a></li>
+        <li><a href="gospel.html">The Gospel</a></li>
+        <li><a href="communities.html">Communities</a></li>
+        <li><a href="gatherings.html">Gatherings</a></li>
+        <li><a href="sermons.html">Sermons</a></li>
+        <li><a href="story-of-god.html">The Story of God</a></li>
+        <li><a href="give.html">Give</a></li>
+        <li><a href="contact.html">Connect</a></li>
+      </ul>
+    </div>
+    <div class="footer-col footer-contact">
+      <h4>Find Us</h4>
+      <p>205 Roseberry St<br>Winnipeg, MB R3J 1T3</p>
+      <p style="margin-top:var(--space-sm);">Coffee — 10:00am Sunday<br>Worship — 10:30am Sunday</p>
+      <p style="margin-top:var(--space-sm);"><a href="mailto:info@commissionedcity.church">info@commissionedcity.church</a></p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>Matthew 28:18–20 · © 2025 Commissioned City Church</span>
+    <span>Winnipeg, Manitoba</span>
+  </div>
+</footer>
+
+<script src="js/media.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

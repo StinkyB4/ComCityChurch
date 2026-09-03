@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  =====================================================================
+  COMMISSIONED CITY CHURCH  ·  LINK PAGE  ·  lives at /links
+  =====================================================================
+
+  WHAT THIS PAGE IS
+  -----------------
+  This is the "link in bio" page, like Linktree. It is the page people
+  land on when they tap the link in our Instagram profile or scan the
+  printed QR code. It is one big logo and a stack of buttons.
+
+  On purpose, this page is NOT in the website's menu, footer, or quick
+  links, and it is hidden from Google. The only way to reach it is the
+  direct address:  https://commissionedcity.church/links
+
+
+  HOW TO EDIT IT
+  --------------
+  Everything is in this one file. There is no other file to open, no
+  database, and no admin login. If you can edit this file and save it,
+  you can change the page.
+
+  The file is split into clearly labelled sections. Each section starts
+  with a banner like this:
+
+      /* == SECTION 1 == ...            (inside the styling area)
+      < ! - -  == SECTION 4 == ...     (inside the page content area)
+
+  Here is what is in each one:
+
+      SECTION 1  COLOURS AND SIZES ...... change any colour, the
+                                          background photo, the logo size
+      SECTION 2  LAYOUT ................. the machinery. Leave it alone.
+      SECTION 3  ON / OFF SWITCHES ...... photo vs plain background,
+                                          filled vs outlined buttons
+      SECTION 4  LOGO AND HEADING ....... the wording at the top
+      SECTION 5  THE BUTTONS ............ add, remove, reorder, re-word
+      SECTION 6  SOCIAL ICONS ........... the small round icons
+      SECTION 7  FOOTER ................. the small print at the bottom
+      SECTION 8  ICON LIBRARY ........... every icon you can choose from
+      SECTION 9  NOTES FOR AI ASSISTANTS  rules for Claude and similar
+
+  You do not need to understand the whole file. Skip to the section you
+  want, follow the instructions written there, and save.
+
+
+  A FEW GROUND RULES
+  ------------------
+  * Notes like this one are wrapped in markers the browser ignores.
+    A note opens with  < ! - -  and closes with  - - >  , written here
+    with spaces between the characters so this example does not end the
+    note early. In the real file they have no spaces. Inside the styling
+    area the markers are  /*  and  */  instead.
+
+  * To hide something without deleting it, wrap it in those markers.
+    To bring it back, take the markers away. This is safer than
+    deleting, because you can always undo it.
+
+  * Always change things one at a time, save, and look at the page.
+    If something breaks, you know exactly what caused it.
+
+  * Quote marks, angle brackets and semicolons matter. If you copy a
+    whole block and edit only the words inside it, you will be fine.
+
+
+  HOW TO PREVIEW YOUR CHANGES
+  ---------------------------
+  Double-click this file and it opens in your web browser. The logo may
+  not appear when you open it this way, because the file is not being
+  served by a web server yet. That is normal and it will be correct once
+  the change is published. Everything else previews accurately.
+
+  To check it looks right on a phone: in your browser press F12, then
+  click the small phone/tablet icon in the panel that appears.
+
+
+  IF YOU ARE AN AI ASSISTANT (CLAUDE OR SIMILAR)
+  ----------------------------------------------
+  Read SECTION 9 at the bottom of this file before making any change.
+  It sets out the conventions this file must keep.
+
+  =====================================================================
+-->
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<!-- The browser tab name, and the heading people see when they share
+     the link in a text message. -->
+<title>Commissioned City Church — Start Here</title>
+
+<!-- The one-line summary shown under the title in a shared link. Keep it
+     under about 155 characters or the end gets cut off. -->
+<meta name="description" content="One place to find everything — get connected, plan a visit, take your first steps, listen to sermons, and read the gospel.">
+
+<!-- Keeps this page out of Google, so it does not compete with the real
+     homepage in search results. Delete this line if you ever decide you
+     DO want it to show up in search. -->
+<meta name="robots" content="noindex, follow">
+
+<!-- The preview card shown when the link is pasted into Instagram,
+     iMessage, WhatsApp or Facebook. If you change the title above, change
+     og:title here to match. -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Commissioned City Church — Start Here">
+<meta property="og:description" content="Get connected · Plan a visit · First steps · Sermons · The gospel">
+<meta property="og:image" content="/assets/logo.png">
+<meta name="twitter:card" content="summary">
+
+<link rel="icon" type="image/png" href="/assets/logo.png">
+<link rel="apple-touch-icon" href="/assets/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+/* =====================================================================
+   == SECTION 1 ==  COLOURS AND SIZES
+   =====================================================================
+
+   THIS IS THE MAIN CONTROL PANEL FOR THE PAGE.
+
+   These nine settings control how the whole page looks. Change one here
+   and it updates everywhere it is used. You never need to hunt through
+   the rest of the styling to recolour something.
+
+   HOW TO READ A LINE
+   ------------------
+       --lp-bg:  #112E53;   /* Background colour * /
+       \______/  \_______/  \____________________/
+        name      value      note explaining it
+
+   Change ONLY the value, the part between the colon and the semicolon.
+   Do not rename the setting itself, or the page will lose track of it.
+   Keep the semicolon at the end.
+
+   HOW TO WRITE A COLOUR
+   ---------------------
+   Use a hex code, which is a # followed by six characters: #112E53
+   Plain English names also work: white, black, navy
+   To pick a new colour, search the web for "colour picker" and copy the
+   hex code it gives you.
+
+   OUR CHURCH COLOURS
+   ------------------
+       navy      #112E53      our main dark blue
+       red       #D5393B      our accent red
+       white     #FFFFFF
+       light     #F4F5F7      very pale grey
+       charcoal  #30343B      near-black for body text
+       slate     #5C718E      muted blue-grey
+
+   THREE COMBINATIONS THAT ARE KNOWN TO LOOK GOOD
+   ----------------------------------------------
+   Navy background, white buttons  (what the page uses now):
+       --lp-bg: #112E53;  --lp-btn: #FFFFFF;  --lp-btn-text: #112E53;
+       --lp-font: #FFFFFF;   and leave data-plate="on" in SECTION 3.
+
+   Pale background, navy buttons:
+       --lp-bg: #F4F5F7;  --lp-btn: #112E53;  --lp-btn-text: #FFFFFF;
+       --lp-font: #112E53;   and set data-plate="off" in SECTION 3.
+
+   Photo background, white buttons:
+       --lp-bg-image: url("/assets/media/heroes/home-4.jpg");
+       --lp-overlay: 0.55;   and set data-bg="image" in SECTION 3.
+
+   IMPORTANT: whatever you choose, make sure the button text is easy to
+   read against the button colour. Dark text on a light button, or light
+   text on a dark button. Never light on light.
+   ===================================================================== */
+:root {
+
+  /* ---- THE BACKGROUND ---- */
+
+  /* The background colour of the page. */
+  --lp-bg: #112E53;
+
+  /* A background photo, instead of a plain colour.
+     For no photo, write exactly:   none
+     For a photo, point at a file already on the website, like this:
+         url("/assets/media/heroes/home-4.jpg")
+     Photos you can use right now live in /assets/media/heroes/ and
+     include home-1.jpg, home-2.jpg, home-3.jpg, home-4.jpg,
+     gospel-hero.jpg, sermons-hero.jpg and communities-hero.jpg.
+     To use your own, put the picture in that folder first, then write
+     its name here.
+     AFTER SETTING A PHOTO, you must also change data-bg to "image"
+     down in SECTION 3, or the photo will not show. */
+  --lp-bg-image: none;
+
+  /* How much the background photo is darkened, so white text stays
+     readable on top of it. 0 is no darkening, 1 is solid black.
+     0.45 is a good starting point. Raise it if text is hard to read.
+     This does nothing unless you are using a photo. */
+  --lp-overlay: 0.45;
+
+
+  /* ---- THE BUTTONS ---- */
+
+  /* The colour of the buttons themselves. */
+  --lp-btn: #FFFFFF;
+
+  /* The colour of the writing inside the buttons. This must contrast
+     strongly with the button colour above, or nobody can read it. */
+  --lp-btn-text: #112E53;
+
+  /* How rounded the button corners are.
+         999px  fully rounded, a pill shape (what we use now)
+         14px   gently rounded rectangle
+         0      hard square corners                              */
+  --lp-radius: 999px;
+
+
+  /* ---- THE TEXT AND LOGO ---- */
+
+  /* The colour of the church name, the tagline underneath it, the small
+     round social icons, and the footer. Not the button text, which is
+     set separately above. */
+  --lp-font: #FFFFFF;
+
+  /* How big the logo is, in pixels. Bigger number, more dominant logo.
+     Sensible range is 140px to 240px. It shrinks itself automatically
+     on small phones, so you do not need to worry about that. */
+  --lp-logo: 180px;
+
+
+  /* ---- LEAVE THIS ONE ALONE ----
+     Used by the outlined button style. SECTION 3 controls it. */
+  --lp-border: transparent;
+}
+
+
+/* =====================================================================
+   == SECTION 2 ==  LAYOUT
+
+   This is the machinery that arranges the page and makes it work on
+   phones. You should not need to change anything from here down to
+   SECTION 4.
+
+   If you want a different colour or size, go back to SECTION 1. Every
+   colour below is written as var(--lp-something), which means "use
+   whatever SECTION 1 says". That is why changing it in one place is
+   enough.
+   ===================================================================== */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--lp-font);
+  background-color: var(--lp-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The background sits in its own fixed layer so it stays still while the
+   page scrolls. The usual CSS trick for this is unreliable on iPhones,
+   which is why it is done this way. */
+.lp-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background-color: var(--lp-bg);
+  background-image: var(--lp-bg-image);
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+.lp-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+}
+/* The darkening only applies over a photo. A plain colour needs none. */
+body[data-bg="image"] .lp-bg::after { opacity: var(--lp-overlay); }
+
+.lp-wrap {
+  width: 100%;
+  max-width: 540px;
+  margin: 0 auto;
+  padding:
+    calc(30px + env(safe-area-inset-top))
+    max(20px, env(safe-area-inset-left))
+    calc(34px + env(safe-area-inset-bottom))
+    max(20px, env(safe-area-inset-right));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* ---------- LOGO AND HEADING ---------- */
+.lp-logo-plate {
+  width: var(--lp-logo);
+  max-width: 68vw;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+body[data-plate="on"] .lp-logo-plate {
+  background: #fff;
+  border-radius: 26px;
+  padding: 14px;
+  box-shadow: 0 10px 34px rgba(0, 0, 0, .22);
+}
+.lp-logo-plate img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.lp-headline {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  font-size: clamp(24px, 6.4vw, 32px);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--lp-font);
+}
+.lp-sub {
+  margin-top: 10px;
+  font-size: 15px;
+  line-height: 1.5;
+  opacity: .82;
+  max-width: 34ch;
+  color: var(--lp-font);
+}
+/* If you empty the headline or tagline, its space disappears too. */
+.lp-headline:empty, .lp-sub:empty { display: none; }
+
+/* ---------- THE BUTTONS ---------- */
+.lp-links {
+  width: 100%;
+  margin-top: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.lp-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 60px;
+  padding: 13px 20px;
+  border-radius: var(--lp-radius);
+  background: var(--lp-btn);
+  color: var(--lp-btn-text);
+  border: 2px solid var(--lp-border);
+  text-decoration: none;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .16);
+  transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+/* The outlined style: see-through middle, the button colour becomes the
+   outline and the writing. Switched on in SECTION 3. */
+body[data-btn="outline"] .lp-btn {
+  background: transparent;
+  border-color: var(--lp-btn);
+  color: var(--lp-btn);
+  box-shadow: none;
+}
+
+/* Icons are drawings, not letters, so they stay identical on every
+   phone and computer. They take their colour from the button text. */
+.lp-btn-icon {
+  flex: 0 0 26px;
+  height: 26px;
+}
+.lp-btn-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.lp-btn-text { flex: 1 1 auto; min-width: 0; text-align: left; }
+.lp-btn-label { font-size: 17px; line-height: 1.25; }
+.lp-btn-sub {
+  display: block;
+  margin-top: 3px;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-weight: 400;
+  font-size: 13.5px;
+  line-height: 1.35;
+  opacity: .72;
+}
+/* An empty small line takes up no space, so buttons stay even. */
+.lp-btn-sub:empty { display: none; }
+
+.lp-btn-arrow {
+  flex: 0 0 16px;
+  height: 16px;
+  opacity: .45;
+  transition: transform .16s ease;
+}
+.lp-btn-arrow svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Lift-on-hover is for mouse users only. Phones get the press-down
+   effect below instead, because a phone has no hover. */
+@media (hover: hover) and (pointer: fine) {
+  .lp-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.24); filter: brightness(1.04); }
+  .lp-btn:hover .lp-btn-arrow { transform: translateX(4px); }
+  body[data-btn="outline"] .lp-btn:hover { background: rgba(255,255,255,.1); }
+}
+.lp-btn:active { transform: scale(.985); }
+.lp-btn:focus-visible { outline: 3px solid var(--lp-font); outline-offset: 3px; }
+
+/* ---------- SOCIAL ICONS ---------- */
+.lp-socials {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  /* Tuned so the social row still clears the fold on a 390x844 phone. */
+  margin-top: 21px;
+}
+/* Remove every social icon and the whole row disappears cleanly. */
+.lp-socials:empty { display: none; }
+
+.lp-social {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--lp-font);
+  border: 1.5px solid color-mix(in srgb, var(--lp-font) 38%, transparent);
+  transition: background .16s ease, transform .16s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.lp-social svg { width: 22px; height: 22px; display: block; }
+@media (hover: hover) and (pointer: fine) {
+  .lp-social:hover { background: color-mix(in srgb, var(--lp-font) 18%, transparent); transform: translateY(-2px); }
+}
+.lp-social:active { transform: scale(.94); }
+.lp-social:focus-visible { outline: 3px solid var(--lp-font); outline-offset: 2px; }
+
+/* ---------- FOOTER ---------- */
+.lp-footer {
+  margin-top: 22px;
+  font-size: 12.5px;
+  opacity: .62;
+  color: var(--lp-font);
+}
+.lp-footer a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.lp-footer:empty { display: none; }
+
+/* ---------- SMALL PHONES (iPhone SE and older Androids) ----------
+   Trims the buttons just enough that the small lines still fit on one
+   line at 360px wide, so every button keeps the same height. */
+@media (max-width: 380px) {
+  .lp-btn { padding: 12px 16px; gap: 12px; }
+  .lp-btn-icon { flex: 0 0 23px; height: 23px; }
+  .lp-btn-label { font-size: 16px; }
+  .lp-btn-sub { font-size: 12.5px; }
+  .lp-social { width: 46px; height: 46px; }
+}
+
+/* ---------- BIGGER SCREENS ---------- */
+@media (min-width: 600px) {
+  body { font-size: 18px; }
+  .lp-wrap { padding-top: 56px; padding-bottom: 56px; }
+  .lp-logo-plate { max-width: none; }
+}
+
+/* Respects the phone setting for people who get motion sickness. */
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+</style>
+</head>
+
+<!--
+  =====================================================================
+  == SECTION 3 ==  ON / OFF SWITCHES
+  =====================================================================
+
+  Three switches sit on the <body> line directly below. Each one has a
+  small set of allowed words. Swap the word between the quote marks.
+  Spelling must match exactly, in lower case.
+
+      data-bg      Controls the background.
+                   "color"  a plain colour, from --lp-bg
+                   "image"  a photo, from --lp-bg-image, with the
+                            darkening from --lp-overlay applied
+                   If you set a photo in SECTION 1 but leave this on
+                   "color", the photo will not appear. This is the most
+                   common thing people get caught by.
+
+      data-btn     Controls the button style.
+                   "solid"    filled-in buttons
+                   "outline"  see-through buttons with a coloured edge
+
+      data-plate   Controls the white square behind the logo.
+                   "on"   white rounded plate behind the logo
+                   "off"  the bare logo on its own
+                   Our logo is navy and red artwork with a see-through
+                   background. On a dark page it vanishes without the
+                   plate. Rule of thumb: dark background, "on".
+                   Light background, "off".
+  =====================================================================
+-->
+<body data-bg="color" data-btn="solid" data-plate="on">
+
+<div class="lp-bg" aria-hidden="true"></div>
+
+<main class="lp-wrap">
+
+  <!--
+    =================================================================
+    == SECTION 4 ==  LOGO AND HEADING
+    =================================================================
+    To use a different logo, change the address in src="..." below.
+    To resize it, use --lp-logo in SECTION 1, not here.
+    To change the wording, edit the text between the > and < marks.
+    To remove the tagline, delete the words but keep the empty tags.
+    =================================================================
+  -->
+  <div class="lp-logo-plate">
+    <img src="/assets/logo.png" alt="Commissioned City Church"
+         width="682" height="681" fetchpriority="high">
+  </div>
+
+  <h1 class="lp-headline">Commissioned City Church</h1>
+  <p class="lp-sub">For the Good of the City · For the Glory of Christ</p>
+
+
+  <!--
+    =================================================================
+    == SECTION 5 ==  THE BUTTONS
+    =================================================================
+
+    Each button is one block that starts with  <a class="lp-btn"
+    and ends with  </a>. A block is five lines long.
+
+    TO REORDER THEM  Cut a whole block, from <a to </a>, and paste it
+                     where you want it. Order on screen equals order
+                     in this file, top to bottom.
+
+    TO REMOVE ONE    Delete the whole block, from <a to </a>.
+                     Or comment it out to hide it temporarily.
+
+    TO RE-WORD ONE   Change the words between > and < on the label and
+                     sub lines. Leave the tags around them alone.
+
+    TO ADD ONE       Copy a whole existing block, paste it, then edit
+                     the four things marked below.
+
+    THE FOUR THINGS YOU CAN EDIT IN A BLOCK
+    ---------------------------------------
+      1. href="/visit"
+         Where the button goes. For a page on our own site, write a
+         slash and the page name, like /visit or /give. For anywhere
+         else, paste the full address starting with https://
+
+         IMPORTANT: if you link to a NEW page on our site, someone has
+         to add it to staticwebapp.config.json as well, or the button
+         will show the homepage instead. Ask whoever manages the site,
+         or ask Claude to do it.
+
+      2. <use href="#icon-pin">
+         Which drawing appears on the left. Change only the word after
+         the # symbol. The full list of choices is in SECTION 8 at the
+         bottom of this file. To have no icon at all, delete the whole
+         <span class="lp-btn-icon"> line.
+
+      3. The label, the big line of writing.
+
+      4. The sub, the small grey line underneath. Optional. To drop it,
+         delete that whole line. Keep it to roughly 40 characters so it
+         fits on one line on a small phone.
+
+    LINKS THAT LEAVE OUR WEBSITE
+    ----------------------------
+    Add  target="_blank" rel="noopener"  inside the opening <a tag, so
+    it opens in a new tab, and change the arrow at the end of the block
+    from #icon-chevron to #icon-arrow-out so people can see it leads
+    away. Like this:
+
+        <a class="lp-btn" href="https://example.com" target="_blank" rel="noopener">
+
+    HOW MANY BUTTONS?
+    -----------------
+    Five fit on a phone screen without scrolling, which is the sweet
+    spot. Six or seven still work but people have to scroll. Past about
+    eight, the page stops feeling focused and fewer people tap anything.
+    =================================================================
+  -->
+  <nav class="lp-links" aria-label="Quick links">
+
+    <a class="lp-btn" href="/contact">
+      <span class="lp-btn-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#icon-people"></use></svg></span>
+      <span class="lp-btn-text">
+        <span class="lp-btn-label">Get Connected</span>
+        <span class="lp-btn-sub">Say hello and we'll be in touch</span>
+      </span>
+      <span class="lp-btn-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#icon-chevron"></use></svg></span>
+    </a>
+
+    <a class="lp-btn" href="/visit">
+      <span class="lp-btn-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#icon-pin"></use></svg></span>
+      <span class="lp-btn-text">
+        <span class="lp-btn-label">Plan a Visit</span>
+        <span class="lp-btn-sub">What to expect on your first Sunday</span>
+      </span>
+      <span class="lp-btn-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#icon-chevron"></use></svg></span>
+    </a>
+
+    <a class="lp-btn" href="/first-steps">
+      <span class="lp-btn-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#icon-steps"></use></svg></span>
+      <span class="lp-btn-text">
+        <span class="lp-btn-label">First Steps</span>
+        <span class="lp-btn-sub">New to faith or new to us? Start here</span>
+      </span>
+      <span class="lp-btn-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#icon-chevron"></use></svg></span>
+    </a>
+
+    <a class="lp-btn" href="/sermons">
+      <span class="lp-btn-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#icon-headphones"></use></svg></span>
+      <span class="lp-btn-text">
+        <span class="lp-btn-label">Sermons</span>
+        <span class="lp-btn-sub">Listen to the latest teaching</span>
+      </span>
+      <span class="lp-btn-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#icon-chevron"></use></svg></span>
+    </a>
+
+    <a class="lp-btn" href="/gospel">
+      <span class="lp-btn-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#icon-book"></use></svg></span>
+      <span class="lp-btn-text">
+        <span class="lp-btn-label">The Gospel</span>
+        <span class="lp-btn-sub">The best news you'll ever hear</span>
+      </span>
+      <span class="lp-btn-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#icon-chevron"></use></svg></span>
+    </a>
+
+  </nav>
+
+
+  <!--
+    =================================================================
+    == SECTION 6 ==  SOCIAL ICONS
+    =================================================================
+
+    The small round icons under the buttons. Each is one block that
+    starts with  <a class="lp-social"  and ends with  </a>.
+
+    INSTAGRAM AND FACEBOOK ARE CURRENTLY SWITCHED OFF because nobody
+    has given us those web addresses yet. To switch one on:
+
+        1. Find its block below. It is wrapped in the comment markers
+           described at the top of this file, which is what hides it.
+        2. Replace YOUR-HANDLE or YOUR-PAGE with the real address.
+        3. Delete the marker line directly above the block, and the
+           marker line directly below it. That makes it live.
+
+    TO REMOVE ONE   Delete the whole block, from <a to </a>.
+
+    TO ADD ONE      SECTION 8 at the bottom has ready-made blocks for
+                    YouTube, Apple Podcasts, X, TikTok, phone and
+                    directions. Copy the one you want up into here and
+                    fill in its href.
+
+    Every social icon needs an aria-label. That is the wording read
+    aloud to people using a screen reader, since a drawing alone tells
+    them nothing. Never leave it off.
+    =================================================================
+  -->
+  <div class="lp-socials">
+
+    <!-- INSTAGRAM - put the real address in href, then delete this line and the one below the block
+    <a class="lp-social" href="https://www.instagram.com/YOUR-HANDLE/" target="_blank" rel="noopener" aria-label="Instagram">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.6" cy="6.4" r="1.2" fill="currentColor" stroke="none"/></svg>
+    </a>
+    -->
+
+    <!-- FACEBOOK - same again
+    <a class="lp-social" href="https://www.facebook.com/YOUR-PAGE" target="_blank" rel="noopener" aria-label="Facebook">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+    </a>
+    -->
+
+    <a class="lp-social" href="https://open.spotify.com/show/2XGMvfMPl2GVUDEkHG5GTZ"
+       target="_blank" rel="noopener" aria-label="Sermons on Spotify">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm4.586 14.424a.75.75 0 01-1.032.25c-2.824-1.726-6.377-2.116-10.564-1.16a.75.75 0 11-.334-1.462c4.585-1.047 8.514-.598 11.68 1.34a.75.75 0 01.25 1.032zm1.223-2.722a.937.937 0 01-1.29.309c-3.23-1.986-8.157-2.56-11.98-1.4a.937.937 0 11-.545-1.794c4.366-1.325 9.795-.684 13.505 1.596a.937.937 0 01.31 1.289zm.106-2.835c-3.874-2.3-10.263-2.514-13.96-1.392a1.125 1.125 0 11-.653-2.153c4.243-1.288 11.3-1.04 15.76 1.608a1.124 1.124 0 11-1.147 1.937z"/></svg>
+    </a>
+
+    <a class="lp-social" href="mailto:info@commissionedcity.church" aria-label="Email us">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/></svg>
+    </a>
+
+  </div>
+
+  <!--
+    =================================================================
+    == SECTION 7 ==  FOOTER
+    =================================================================
+    The small print. Edit the words, or delete the whole line to
+    remove it. To add a link inside it, write it like this:
+        <a href="/contact">Contact us</a>
+    =================================================================
+  -->
+  <p class="lp-footer">© Commissioned City Church · Winnipeg, MB</p>
+
+</main>
+
+
+<!--
+  =====================================================================
+  == SECTION 8 ==  ICON LIBRARY
+  =====================================================================
+
+  Every drawing the page can use is defined once below, and each has a
+  name. Buttons just point at a name, which is why changing a button's
+  icon is a one-word edit.
+
+  TO CHANGE A BUTTON'S ICON
+  -------------------------
+  Find the button in SECTION 5, and change the word after the # symbol:
+
+      <use href="#icon-pin">      becomes      <use href="#icon-heart">
+
+  THE FULL LIST OF NAMES
+  ----------------------
+      #icon-people       two people          good for: get connected
+      #icon-pin          map pin             good for: plan a visit
+      #icon-steps        rising staircase    good for: first steps
+      #icon-headphones   headphones          good for: sermons, podcast
+      #icon-book         open book           good for: the gospel, bible
+      #icon-calendar     calendar            good for: events, services
+      #icon-heart        heart               good for: prayer, care
+      #icon-gift         wrapped gift        good for: giving, donate
+      #icon-home         house               good for: home, community
+      #icon-mail         envelope            good for: contact, email
+      #icon-play         play button         good for: watch, live stream
+      #icon-cross        cross               good for: faith, belief
+      #icon-coffee       coffee cup          good for: meet up, welcome
+      #icon-info         information circle  good for: about, FAQ
+      #icon-map          folded map          good for: directions
+      #icon-chevron      small arrow >       the arrow on the right of
+                                             every button
+      #icon-arrow-out    diagonal arrow      use instead of the chevron
+                                             when a button leaves our site
+
+  The block below has no visible appearance. It is a storage cupboard
+  the page draws from. Do not delete it, or every icon disappears.
+  =====================================================================
+-->
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true" focusable="false">
+  <symbol id="icon-people" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="icon-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0z"/><circle cx="12" cy="10" r="3"/></symbol>
+  <symbol id="icon-steps" viewBox="0 0 24 24"><path d="M3 21h6v-6h6V9h6V3"/></symbol>
+  <symbol id="icon-headphones" viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></symbol>
+  <symbol id="icon-book" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></symbol>
+  <symbol id="icon-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+  <symbol id="icon-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1L12 21l7.7-7.6 1.1-1a5.5 5.5 0 0 0 0-7.8z"/></symbol>
+  <symbol id="icon-gift" viewBox="0 0 24 24"><path d="M20 12v10H4V12"/><rect x="2" y="7" width="20" height="5" rx="1"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></symbol>
+  <symbol id="icon-home" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 22V12h6v10"/></symbol>
+  <symbol id="icon-mail" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/></symbol>
+  <symbol id="icon-play" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M10 8l6 4-6 4z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="icon-cross" viewBox="0 0 24 24"><path d="M12 2v20M6 8h12"/></symbol>
+  <symbol id="icon-coffee" viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4z"/><path d="M6 1v3M10 1v3M14 1v3"/></symbol>
+  <symbol id="icon-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
+  <symbol id="icon-map" viewBox="0 0 24 24"><path d="M9 3L3 6v15l6-3 6 3 6-3V3l-6 3-6-3z"/><path d="M9 3v15M15 6v15"/></symbol>
+  <symbol id="icon-chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+  <symbol id="icon-arrow-out" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></symbol>
+</svg>
+
+
+<!--
+  =====================================================================
+  SPARE SOCIAL ICON BLOCKS
+  =====================================================================
+  Copy any of these up into SECTION 6 and fill in the href. They are
+  inside a comment, so nothing here appears on the page.
+
+<a class="lp-social" href="" target="_blank" rel="noopener" aria-label="YouTube">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10.2 9.3l5 2.7-5 2.7z" fill="currentColor" stroke="none"/></svg>
+</a>
+
+<a class="lp-social" href="" target="_blank" rel="noopener" aria-label="Apple Podcasts">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9 16V9l7-1.4V15"/><circle cx="9" cy="16" r="1.6" fill="currentColor" stroke="none"/><circle cx="16" cy="15" r="1.6" fill="currentColor" stroke="none"/></svg>
+</a>
+
+<a class="lp-social" href="" target="_blank" rel="noopener" aria-label="X">
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.53 3h3.02l-6.6 7.54L21.8 21h-5.9l-4.2-5.5L6.7 21H3.68l6.9-7.87L2.5 3h5.9l3.96 5.2zm-1.06 16.2h1.67L7.6 4.72H5.8z"/></svg>
+</a>
+
+<a class="lp-social" href="" target="_blank" rel="noopener" aria-label="TikTok">
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.2 2h-3.1v13.1a2.6 2.6 0 11-1.9-2.5V9.4a5.7 5.7 0 105 5.7V9.2a6.4 6.4 0 003.6 1.1V7.2a3.6 3.6 0 01-3.6-3.6z"/></svg>
+</a>
+
+<a class="lp-social" href="tel:+12040000000" aria-label="Call us">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .4 1.9.7 2.8a2 2 0 01-.5 2.1L8.1 9.9a16 16 0 006 6l1.3-1.3a2 2 0 012.1-.4c.9.3 1.8.6 2.8.7a2 2 0 011.7 2z"/></svg>
+</a>
+
+<a class="lp-social" href="https://maps.google.com/?q=205+Roseberry+St,+Winnipeg,+MB+R3J+1T3" target="_blank" rel="noopener" aria-label="Directions">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1116 0z"/><circle cx="12" cy="10" r="3"/></svg>
+</a>
+
+  =====================================================================
+-->
+
+
+<!--
+  =====================================================================
+  == SECTION 9 ==  NOTES FOR AI ASSISTANTS (CLAUDE AND SIMILAR)
+  =====================================================================
+
+  Read this before editing this file. These are hard rules, not
+  preferences. Church staff who are not developers maintain this page by
+  hand, so its readability is a feature, not a nicety.
+
+  ARCHITECTURE, DO NOT CHANGE WITHOUT BEING ASKED
+  -----------------------------------------------
+  1.  This file is deliberately self-contained. CSS is inlined. There is
+      no JavaScript. It does not load /css/styles.css or /js/main.js,
+      unlike the rest of the site. Do not "improve" it by extracting the
+      CSS to a stylesheet, adding a build step, adding a framework, or
+      wiring it to Supabase. The isolation is the point: this page must
+      keep working when anything else on the site breaks, and it must
+      paint instantly on a phone on mobile data.
+  2.  Keep it to a single HTTP request plus the logo and the web font.
+  3.  Do not add analytics, cookie banners, trackers or third-party
+      embeds unless explicitly asked.
+  4.  Keep <meta name="robots" content="noindex, follow">.
+  5.  Never link this page from the site nav, footer, or quick links.
+      It is reached only by direct URL from Instagram and a QR code.
+
+  STYLING RULES
+  -------------
+  6.  Every colour, radius and size a person might reasonably want to
+      change lives in the :root block in SECTION 1, named --lp-*.
+      Never hardcode a colour anywhere else. If you add something that
+      needs a colour, use an existing var(--lp-*), or add a new token to
+      :root with a plain-English comment explaining it.
+  7.  Variants are driven by the data-bg, data-btn and data-plate
+      attributes on <body>, selected with body[data-x="y"] .thing.
+      Follow that pattern rather than adding new classes or a new
+      mechanism.
+  8.  No emoji anywhere in this file. Not in the page, not in comments.
+      Emoji render differently on every device and look unprofessional
+      on a church landing page. All iconography goes through the SVG
+      sprite in SECTION 8.
+  9.  To add an icon, add a <symbol> to that sprite with an id of
+      icon-something, draw it on a 24x24 canvas, and use no fill or
+      stroke attributes on its paths so it inherits colour and stroke
+      width from CSS. The only exception is a deliberately solid shape,
+      which sets fill="currentColor" stroke="none" on that path alone.
+      Then add a row to the name list in SECTION 8's comment. An icon
+      that is not listed there does not exist as far as staff know.
+
+  CONTENT RULES
+  -------------
+  10. Button blocks must stay structurally identical to one another:
+      icon span, text span containing label and optional sub, arrow
+      span. A person copies one block to make a new one, so an
+      inconsistent block breaks that. Same for social icon blocks.
+  11. Every icon-only link needs an aria-label. Every decorative SVG
+      needs aria-hidden="true". No exceptions.
+  12. Sub-labels stay near 40 characters so they hold one line at 360px
+      and buttons keep a uniform height.
+  13. Links leaving the site get target="_blank" rel="noopener" and the
+      #icon-arrow-out arrow instead of #icon-chevron.
+  14. If you add a button pointing at a new page on this site, add the
+      matching clean-URL route to staticwebapp.config.json in the same
+      change, or Azure serves the homepage instead. This has already
+      caught us once.
+
+  COMMENT RULES
+  -------------
+  15. The comments in this file are the entire user manual. When you
+      change behaviour, update the comment that describes it in the same
+      edit. A stale instruction is worse than none.
+  16. Write for a non-technical reader. Plain English, short sentences,
+      no jargon. Say what to type and what will happen. Assume no
+      knowledge of HTML or CSS.
+  17. Keep the SECTION banners and their numbering. The top-of-file
+      table of contents lists them, so if you add, remove or renumber a
+      section, update that table too.
+  18. Comment banners use plain ASCII, = and - characters. No box
+      drawing characters, no symbols, no emoji.
+
+  BEFORE YOU CALL IT DONE
+  -----------------------
+  19. Check it at 360x640 and 390x844. All five buttons and the social
+      row must sit above the fold at 390x844 with no horizontal scroll,
+      and every button must be the same height.
+  20. Tap targets stay at 44px or larger.
+  21. Check both data-bg values and both data-btn values still render
+      correctly, and that button text still contrasts against the button
+      colour in each.
+  22. Confirm no commented-out block leaked into the visible page.
+  =====================================================================
+-->
+
+</body>
+</html>
