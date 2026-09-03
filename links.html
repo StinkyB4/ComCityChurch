@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Commissioned City Church — Start Here</title>
+<meta name="description" content="One place to find everything — get connected, plan a visit, take your first steps, listen to sermons, and read the gospel.">
+
+<!-- Reached only by the dedicated Instagram link and the printed QR code.
+     Deliberately kept out of every menu, quick-link list and footer on the
+     site. Remove the line below if you ever want it in Google results. -->
+<meta name="robots" content="noindex, follow">
+
+<!-- Link preview (Instagram bio, iMessage, WhatsApp) -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Commissioned City Church — Start Here">
+<meta property="og:description" content="Get connected · Plan a visit · First steps · Sermons · The gospel">
+<meta property="og:image" content="/assets/logo.png">
+<meta name="twitter:card" content="summary">
+
+<link rel="icon" type="image/png" href="/assets/logo.png">
+<link rel="apple-touch-icon" href="/assets/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════════════════════════════════════════════
+   ★ EDIT THE LOOK OF THE PAGE HERE ★
+
+   These nine values control the entire page. Change a colour here and it
+   updates everywhere it is used — you never need to hunt through the CSS
+   below. Colours can be a hex code (#112E53), rgb(), or a plain name.
+
+   The church palette, for reference:
+     navy    #112E53      red      #D5393B      white     #FFFFFF
+     light   #F4F5F7      charcoal #30343B      slate     #5C718E
+   ═══════════════════════════════════════════════════════════════════════ */
+:root {
+  --lp-bg:        #112E53;   /* Background colour (behind the photo, if any) */
+  --lp-bg-image:  none;      /* Background photo. none  OR  url("/assets/media/heroes/home-4.jpg") */
+  --lp-overlay:   0.45;      /* How much the photo is dimmed, 0 = none, 1 = black. Ignored when there's no photo */
+
+  --lp-btn:       #FFFFFF;   /* Button colour */
+  --lp-btn-text:  #112E53;   /* Text colour inside the buttons */
+  --lp-font:      #FFFFFF;   /* Colour of the headline, tagline, socials and footer */
+
+  --lp-radius:    999px;     /* Button corners. 999px = full pill, 14px = soft rectangle, 0 = square */
+  --lp-logo:      180px;     /* How big the logo is. Bigger number = more dominant */
+  --lp-border:    transparent;
+}
+
+/* ── Two more switches live on the <body> tag further down ──────────────
+     data-bg="color"  →  flat colour background   (the --lp-overlay dim is off)
+     data-bg="image"  →  photo background         (the --lp-overlay dim is on)
+
+     data-btn="solid"   →  filled buttons
+     data-btn="outline" →  transparent buttons, outlined in --lp-btn
+
+     data-plate="on"  →  white rounded plate behind the logo. Needed on dark
+                         backgrounds, because the logo's navy artwork is
+                         transparent and would otherwise disappear.
+     data-plate="off" →  bare logo, for light backgrounds.
+   ──────────────────────────────────────────────────────────────────────── */
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Below this line is the layout. You shouldn't need to touch it.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--lp-font);
+  background-color: var(--lp-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The background sits in its own fixed layer so it stays put while the page
+   scrolls — background-attachment: fixed is unreliable on iOS. */
+.lp-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background-color: var(--lp-bg);
+  background-image: var(--lp-bg-image);
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+.lp-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+}
+/* The dim only applies over a photo — a flat colour needs no scrim. */
+body[data-bg="image"] .lp-bg::after { opacity: var(--lp-overlay); }
+
+.lp-wrap {
+  width: 100%;
+  max-width: 540px;
+  margin: 0 auto;
+  padding:
+    calc(30px + env(safe-area-inset-top))
+    max(20px, env(safe-area-inset-left))
+    calc(34px + env(safe-area-inset-bottom))
+    max(20px, env(safe-area-inset-right));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* ---------- HEADER ---------- */
+.lp-logo-plate {
+  width: var(--lp-logo);
+  max-width: 68vw;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+body[data-plate="on"] .lp-logo-plate {
+  background: #fff;
+  border-radius: 26px;
+  padding: 14px;
+  box-shadow: 0 10px 34px rgba(0, 0, 0, .22);
+}
+.lp-logo-plate img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.lp-headline {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  font-size: clamp(24px, 6.4vw, 32px);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--lp-font);
+}
+.lp-sub {
+  margin-top: 10px;
+  font-size: 15px;
+  line-height: 1.5;
+  opacity: .82;
+  max-width: 34ch;
+  color: var(--lp-font);
+}
+.lp-headline:empty, .lp-sub:empty { display: none; }
+
+/* ---------- LINK BUTTONS ---------- */
+.lp-links {
+  width: 100%;
+  margin-top: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.lp-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 60px;
+  padding: 13px 20px;
+  border-radius: var(--lp-radius);
+  background: var(--lp-btn);
+  color: var(--lp-btn-text);
+  border: 2px solid var(--lp-border);
+  text-decoration: none;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .16);
+  transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+/* Outline style: transparent fill, the button colour becomes the border. */
+body[data-btn="outline"] .lp-btn {
+  background: transparent;
+  border-color: var(--lp-btn);
+  color: var(--lp-btn);
+  box-shadow: none;
+}
+
+.lp-btn-icon {
+  flex: 0 0 30px;
+  font-size: 24px;
+  line-height: 1;
+  text-align: center;
+}
+.lp-btn-icon:empty { display: none; }
+
+.lp-btn-text { flex: 1 1 auto; min-width: 0; text-align: left; }
+.lp-btn-label { font-size: 17px; line-height: 1.25; }
+.lp-btn-sub {
+  display: block;
+  margin-top: 3px;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-weight: 400;
+  font-size: 13.5px;
+  line-height: 1.35;
+  opacity: .72;
+}
+.lp-btn-sub:empty { display: none; }
+
+.lp-btn-arrow {
+  flex: 0 0 auto;
+  font-size: 19px;
+  opacity: .5;
+  transition: transform .16s ease;
+}
+
+/* Hover is desktop-only; touch devices get the :active press instead. */
+@media (hover: hover) and (pointer: fine) {
+  .lp-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.24); filter: brightness(1.04); }
+  .lp-btn:hover .lp-btn-arrow { transform: translateX(4px); }
+  body[data-btn="outline"] .lp-btn:hover { background: rgba(255,255,255,.1); }
+}
+.lp-btn:active { transform: scale(.985); }
+.lp-btn:focus-visible { outline: 3px solid var(--lp-font); outline-offset: 3px; }
+
+/* ---------- SOCIAL ROW ---------- */
+.lp-socials {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+.lp-socials:empty { display: none; }
+
+.lp-social {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--lp-font);
+  border: 1.5px solid color-mix(in srgb, var(--lp-font) 38%, transparent);
+  transition: background .16s ease, transform .16s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.lp-social svg { width: 22px; height: 22px; display: block; }
+@media (hover: hover) and (pointer: fine) {
+  .lp-social:hover { background: color-mix(in srgb, var(--lp-font) 18%, transparent); transform: translateY(-2px); }
+}
+.lp-social:active { transform: scale(.94); }
+.lp-social:focus-visible { outline: 3px solid var(--lp-font); outline-offset: 2px; }
+
+/* ---------- FOOTER ---------- */
+.lp-footer {
+  margin-top: 22px;
+  font-size: 12.5px;
+  opacity: .62;
+  color: var(--lp-font);
+}
+.lp-footer a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.lp-footer:empty { display: none; }
+
+/* ---------- NARROW PHONES (iPhone SE / older Androids) ----------
+   Trims the button box just enough that the sublabels stay on one line at
+   360px, so every button keeps the same height. */
+@media (max-width: 380px) {
+  .lp-btn { padding: 12px 16px; gap: 12px; }
+  .lp-btn-icon { flex: 0 0 26px; font-size: 22px; }
+  .lp-btn-label { font-size: 16px; }
+  .lp-btn-sub { font-size: 12.5px; }
+  .lp-social { width: 46px; height: 46px; }
+}
+
+/* ---------- LARGER SCREENS ---------- */
+@media (min-width: 600px) {
+  body { font-size: 18px; }
+  .lp-wrap { padding-top: 56px; padding-bottom: 56px; }
+  .lp-logo-plate { max-width: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+</style>
+</head>
+
+<!-- The three switches described in the style block above. -->
+<body data-bg="color" data-btn="solid" data-plate="on">
+
+<div class="lp-bg" aria-hidden="true"></div>
+
+<main class="lp-wrap">
+
+  <!-- ═══════════ LOGO + HEADING ═══════════ -->
+  <div class="lp-logo-plate">
+    <img src="/assets/logo.png" alt="Commissioned City Church"
+         width="682" height="681" fetchpriority="high">
+  </div>
+
+  <h1 class="lp-headline">Commissioned City Church</h1>
+  <p class="lp-sub">For the Good of the City · For the Glory of Christ</p>
+
+
+  <!-- ═══════════ THE LINKS ═══════════════════════════════════════════
+       To add a link, copy one whole <a class="lp-btn"> block and edit it.
+       To remove one, delete its block. To reorder, move the blocks around.
+
+       · href   — where it goes ("/visit" for a page on this site, or a full
+                  https:// address for somewhere else)
+       · icon   — any emoji, or leave it empty for no icon
+       · label  — the big line
+       · sub    — the small line, optional (delete the whole span to drop it)
+
+       For a link that leaves the site, add  target="_blank" rel="noopener"
+       to the <a> tag and change the arrow from → to ↗.
+       ═══════════════════════════════════════════════════════════════════ -->
+  <nav class="lp-links" aria-label="Quick links">
+
+    <a class="lp-btn" href="/contact">
+      <span class="lp-btn-icon" aria-hidden="true">👋</span>
+      <span class="lp-btn-text">
+        <span class="lp-btn-label">Get Connected</span>
+        <span class="lp-btn-sub">Say hello and we'll be in touch</span>
+      </span>
+      <span class="lp-btn-arrow" aria-hidden="true">→</span>
+    </a>
+
+    <a class="lp-btn" href="/visit">
+      <span class="lp-btn-icon" aria-hidden="true">📍</span>
+      <span class="lp-btn-text">
+        <span class="lp-btn-label">Plan a Visit</span>
+        <span class="lp-btn-sub">What to expect on your first Sunday</span>
+      </span>
+      <span class="lp-btn-arrow" aria-hidden="true">→</span>
+    </a>
+
+    <a class="lp-btn" href="/first-steps">
+      <span class="lp-btn-icon" aria-hidden="true">🌱</span>
+      <span class="lp-btn-text">
+        <span class="lp-btn-label">First Steps</span>
+        <span class="lp-btn-sub">New to faith or new to us? Start here</span>
+      </span>
+      <span class="lp-btn-arrow" aria-hidden="true">→</span>
+    </a>
+
+    <a class="lp-btn" href="/sermons">
+      <span class="lp-btn-icon" aria-hidden="true">🎧</span>
+      <span class="lp-btn-text">
+        <span class="lp-btn-label">Sermons</span>
+        <span class="lp-btn-sub">Listen to the latest teaching</span>
+      </span>
+      <span class="lp-btn-arrow" aria-hidden="true">→</span>
+    </a>
+
+    <a class="lp-btn" href="/gospel">
+      <span class="lp-btn-icon" aria-hidden="true">📖</span>
+      <span class="lp-btn-text">
+        <span class="lp-btn-label">The Gospel</span>
+        <span class="lp-btn-sub">The best news you'll ever hear</span>
+      </span>
+      <span class="lp-btn-arrow" aria-hidden="true">→</span>
+    </a>
+
+  </nav>
+
+
+  <!-- ═══════════ SOCIAL ICONS ════════════════════════════════════════
+       Fill in the Instagram and Facebook addresses below and delete the
+       comment markers around them to switch those two on. Delete any icon
+       you don't want. Extra ready-made icons (YouTube, Apple Podcasts, X,
+       TikTok, phone, map) are in the reference block at the bottom of this
+       file — copy one up here to use it.
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div class="lp-socials">
+
+    <!-- INSTAGRAM — put the address in href, then delete this comment line and the one after the link
+    <a class="lp-social" href="https://www.instagram.com/YOUR-HANDLE/" target="_blank" rel="noopener" aria-label="Instagram">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.6" cy="6.4" r="1.2" fill="currentColor" stroke="none"/></svg>
+    </a>
+    -->
+
+    <!-- FACEBOOK — same again
+    <a class="lp-social" href="https://www.facebook.com/YOUR-PAGE" target="_blank" rel="noopener" aria-label="Facebook">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+    </a>
+    -->
+
+    <a class="lp-social" href="https://open.spotify.com/show/2XGMvfMPl2GVUDEkHG5GTZ"
+       target="_blank" rel="noopener" aria-label="Sermons on Spotify">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm4.586 14.424a.75.75 0 01-1.032.25c-2.824-1.726-6.377-2.116-10.564-1.16a.75.75 0 11-.334-1.462c4.585-1.047 8.514-.598 11.68 1.34a.75.75 0 01.25 1.032zm1.223-2.722a.937.937 0 01-1.29.309c-3.23-1.986-8.157-2.56-11.98-1.4a.937.937 0 11-.545-1.794c4.366-1.325 9.795-.684 13.505 1.596a.937.937 0 01.31 1.289zm.106-2.835c-3.874-2.3-10.263-2.514-13.96-1.392a1.125 1.125 0 11-.653-2.153c4.243-1.288 11.3-1.04 15.76 1.608a1.124 1.124 0 11-1.147 1.937z"/></svg>
+    </a>
+
+    <a class="lp-social" href="mailto:info@commissionedcity.church" aria-label="Email us">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/></svg>
+    </a>
+
+  </div>
+
+  <p class="lp-footer">© Commissioned City Church · Winnipeg, MB</p>
+
+</main>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SPARE SOCIAL ICONS — copy any of these into the .lp-socials block above
+     and fill in the href. They are inside a comment, so nothing here shows
+     on the page.
+
+<a class="lp-social" href="" target="_blank" rel="noopener" aria-label="YouTube">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10.2 9.3l5 2.7-5 2.7z" fill="currentColor" stroke="none"/></svg>
+</a>
+
+<a class="lp-social" href="" target="_blank" rel="noopener" aria-label="Apple Podcasts">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9 16V9l7-1.4V15"/><circle cx="9" cy="16" r="1.6" fill="currentColor" stroke="none"/><circle cx="16" cy="15" r="1.6" fill="currentColor" stroke="none"/></svg>
+</a>
+
+<a class="lp-social" href="" target="_blank" rel="noopener" aria-label="X">
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.53 3h3.02l-6.6 7.54L21.8 21h-5.9l-4.2-5.5L6.7 21H3.68l6.9-7.87L2.5 3h5.9l3.96 5.2zm-1.06 16.2h1.67L7.6 4.72H5.8z"/></svg>
+</a>
+
+<a class="lp-social" href="" target="_blank" rel="noopener" aria-label="TikTok">
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.2 2h-3.1v13.1a2.6 2.6 0 11-1.9-2.5V9.4a5.7 5.7 0 105 5.7V9.2a6.4 6.4 0 003.6 1.1V7.2a3.6 3.6 0 01-3.6-3.6z"/></svg>
+</a>
+
+<a class="lp-social" href="tel:+12040000000" aria-label="Call us">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .4 1.9.7 2.8a2 2 0 01-.5 2.1L8.1 9.9a16 16 0 006 6l1.3-1.3a2 2 0 012.1-.4c.9.3 1.8.6 2.8.7a2 2 0 011.7 2z"/></svg>
+</a>
+
+<a class="lp-social" href="https://maps.google.com/?q=205+Roseberry+St,+Winnipeg,+MB+R3J+1T3" target="_blank" rel="noopener" aria-label="Directions">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1116 0z"/><circle cx="12" cy="10" r="3"/></svg>
+</a>
+
+     ═══════════════════════════════════════════════════════════════════════ -->
+
+</body>
+</html>

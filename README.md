@@ -9,16 +9,17 @@ Static site deployed to **Azure Static Web Apps**.
 
 1. [File Structure](#file-structure)
 2. [Pages](#pages)
-3. [Media System Overview](#media-system-overview)
-4. [Adding & Swapping Photos](#adding--swapping-photos)
-5. [Hero Video Backgrounds](#hero-video-backgrounds)
-6. [YouTube Hero Backgrounds](#youtube-hero-backgrounds)
-7. [Live Stream on Sunday](#live-stream-on-sunday)
-8. [Team Photos](#team-photos)
-9. [Sermon Grid](#sermon-grid)
-10. [Overlay Reference](#overlay-reference)
-11. [Deployment](#deployment)
-12. [Known Limitations](#known-limitations)
+3. [The Link Page](#the-link-page)
+4. [Media System Overview](#media-system-overview)
+5. [Adding & Swapping Photos](#adding--swapping-photos)
+6. [Hero Video Backgrounds](#hero-video-backgrounds)
+7. [YouTube Hero Backgrounds](#youtube-hero-backgrounds)
+8. [Live Stream on Sunday](#live-stream-on-sunday)
+9. [Team Photos](#team-photos)
+10. [Sermon Grid](#sermon-grid)
+11. [Overlay Reference](#overlay-reference)
+12. [Deployment](#deployment)
+13. [Known Limitations](#known-limitations)
 
 ---
 
@@ -35,6 +36,8 @@ Static site deployed to **Azure Static Web Apps**.
 ├── sermons.html
 ├── give.html
 ├── contact.html
+├── first-steps.html
+├── links.html            ← link-in-bio page, standalone
 │
 ├── css/
 │   └── styles.css              ← shared styles (never edit for media)
@@ -101,8 +104,78 @@ Static site deployed to **Azure Static Web Apps**.
 | `/sermons` | `sermons.html` | Spotify link + sermon grid |
 | `/give` | `give.html` | Giving options + scripture |
 | `/contact` | `contact.html` | Visit info + contact form |
+| `/first-steps` | `first-steps.html` | Four next steps for newcomers |
+| `/links` | `links.html` | **Link-in-bio landing page** — see [The Link Page](#the-link-page) |
 
 > **Clean URLs** are handled by `staticwebapp.config.json` — `.html` extensions are never visible in the browser.
+
+---
+
+## The Link Page
+
+`/links` is the Linktree-style landing page for the Instagram bio link and the
+printed QR code. It is **deliberately not linked from anywhere on the site** —
+not the nav, not the footer, not the quick links — and carries a
+`noindex` tag so it stays off Google. The only way in is the direct URL:
+
+```
+https://commissionedcity.church/links
+```
+
+### It is one self-contained file
+
+`links.html` has no dependencies: its own CSS is inlined, there is no
+JavaScript, and it doesn't load `styles.css` or `main.js`. Editing it means
+opening that one file. Nothing else on the site can break it, and it can't
+break anything else.
+
+### Changing the colours
+
+Everything visual is controlled by nine values in the `:root` block at the very
+top of the file, under the `★ EDIT THE LOOK OF THE PAGE HERE ★` banner:
+
+| Value | What it does |
+|-------|--------------|
+| `--lp-bg` | Background colour |
+| `--lp-bg-image` | Background photo — `none`, or `url("/assets/media/heroes/home-4.jpg")` |
+| `--lp-overlay` | How much a background photo is dimmed (`0` – `1`) |
+| `--lp-btn` | Button colour |
+| `--lp-btn-text` | Text colour inside the buttons |
+| `--lp-font` | Colour of the headline, tagline, social icons and footer |
+| `--lp-radius` | Button corners — `999px` pill, `14px` soft, `0` square |
+| `--lp-logo` | Logo size in pixels |
+
+Three more switches sit on the `<body>` tag:
+
+| Attribute | Options |
+|-----------|---------|
+| `data-bg` | `color` (flat colour) or `image` (turns the photo dim on) |
+| `data-btn` | `solid` (filled) or `outline` (transparent, outlined) |
+| `data-plate` | `on` (white plate behind the logo — needed on dark backgrounds) or `off` |
+
+> The logo is navy-and-red artwork on a transparent background, so on a dark
+> page it needs `data-plate="on"` or it disappears into the background.
+
+### Changing the links
+
+Each button is one `<a class="lp-btn">` block in the `THE LINKS` section.
+Copy a block to add a link, delete it to remove one, move it to reorder.
+Each has an emoji icon, a bold label, and an optional small sub-line.
+For a link that leaves the site, add `target="_blank" rel="noopener"` and
+change the arrow from `→` to `↗`.
+
+### Social icons
+
+Instagram and Facebook are pre-written but commented out, because we don't have
+those addresses on file yet — put the URL in and delete the comment markers
+around the block to switch each on. Spare icons for YouTube, Apple Podcasts, X,
+TikTok, phone and directions sit in a comment block at the bottom of the file;
+copy one up into the socials row to use it.
+
+### If you add a new page for it to link to
+
+Add a clean-URL route in `staticwebapp.config.json`, or Azure will serve the
+homepage instead of your page.
 
 ---
 

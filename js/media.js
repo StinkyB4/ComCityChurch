@@ -119,6 +119,18 @@ const SITE_MEDIA = {
       }
     },
 
+    // First Steps page. Reuses a home hero until a dedicated photo is dropped
+    // in at /assets/media/heroes/first-steps-hero.jpg — swap the src below.
+    "first-steps": {
+      type: "image",
+      src: "/assets/media/heroes/home-4.jpg",
+      alt: "Taking a next step together",
+      overlay: {
+        type: "dark",
+        opacity: 0.58,
+      }
+    },
+
     communities: {
       type: "image",
       src: "/assets/media/heroes/communities-hero.jpg",
