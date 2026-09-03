@@ -309,13 +309,16 @@ const SITE_MEDIA = {
       overlay: { type: "dark", opacity: 0.50 }
     },
 
-    // PLACEHOLDER IMAGE — post-four-idols.jpg currently reuses the Gospel
-    // Fluency photo. Swap in the real image at the same path when ready.
+    // AWAITING ARTWORK — post-four-idols.jpg is still a placeholder (the
+    // gospel-hero photo). Intended image: Augustin Hirschvogel's etching of
+    // the Adoration of the Golden Calf (1549). Drop it in at the same path.
+    // Overlay is 0.62 rather than the 0.50 default because a Renaissance
+    // line etching is a very light, high-key image behind white hero text.
     "blog-four-idols": {
       type: "image",
       src: "/assets/media/blog/post-four-idols.jpg",
-      alt: "The Four Idols: Control, Approval, Comfort, and Success",
-      overlay: { type: "dark", opacity: 0.55 }
+      alt: "Augustin Hirschvogel, The Adoration of the Golden Calf (1549), etching",
+      overlay: { type: "dark", opacity: 0.62 }
     },
 
     // PLACEHOLDER IMAGE — post-root-to-fruit.jpg currently reuses the vine
