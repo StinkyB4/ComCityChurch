@@ -309,6 +309,15 @@ const SITE_MEDIA = {
       overlay: { type: "dark", opacity: 0.50 }
     },
 
+    // PLACEHOLDER IMAGE — post-four-idols.jpg currently reuses the Gospel
+    // Fluency photo. Swap in the real image at the same path when ready.
+    "blog-four-idols": {
+      type: "image",
+      src: "/assets/media/blog/post-four-idols.jpg",
+      alt: "The Four Idols: Control, Approval, Comfort, and Success",
+      overlay: { type: "dark", opacity: 0.55 }
+    },
+
     "blog-sabbath": {
       type: "image",
       src: "/assets/media/blog/post-sabbath.jpg",
