@@ -167,6 +167,40 @@ small, .small { font-size: 14px; color: var(--muted-blue); }
 }
 .btn-group { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
 
+/* ---------- EMAIL BUTTON WITH HOVER-REVEALED ADDRESS ---------- */
+/* Not every visitor's browser has a mail app registered for mailto:, and
+   when none is, clicking the button is a silent no-op. Revealing the plain
+   address on hover gives those visitors something to read and copy. */
+.email-reveal {
+  position: relative;
+  display: inline-block;
+}
+.email-reveal__addr {
+  /* top:100% keeps the hit area flush with the button — the visual gap comes
+     from padding-top — so the address stays open while the pointer travels
+     onto it to select the text. */
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding-top: 10px;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 14px;
+  color: var(--muted-blue);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition);
+}
+.email-reveal:hover .email-reveal__addr,
+.email-reveal:focus-within .email-reveal__addr {
+  opacity: 1;
+  pointer-events: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  .email-reveal__addr { transition: none; }
+}
+
 /* ---------- CARDS ---------- */
 .card {
   background: var(--white);
