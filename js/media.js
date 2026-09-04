@@ -245,6 +245,16 @@ const SITE_MEDIA = {
       }
     },
 
+    "young-adults": {
+      type: "image",
+      src: "/assets/media/heroes/young-adults.jpg",
+      alt: "Young adults gathered together",
+      overlay: {
+        type: "dark",
+        opacity: 0.58,
+      }
+    },
+
     "moms-and-womens": {
       type: "image",
       src: "/assets/media/heroes/womens-hero.jpg",
@@ -384,6 +394,16 @@ const SITE_MEDIA = {
         direction: "to-top",
         color: "#112E53",
         opacity: 1.55,
+      }
+    },
+    "young-adults": {
+      src: "/assets/media/heroes/young-adults.jpg",
+      alt: "Young Adults community",
+      overlay: {
+        type: "gradient",
+        direction: "to-top",
+        color: "#112E53",
+        opacity: 1.60,
       }
     },
     "moms-and-womens": {
