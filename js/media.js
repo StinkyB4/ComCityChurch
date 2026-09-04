@@ -320,6 +320,15 @@ const SITE_MEDIA = {
     // etching from the "being before doing" block. Swap in the real image
     // at the same path when ready. Overlay is heavier than the 0.50 default
     // because the etching is a very light, cream-toned image.
+    // PLACEHOLDER IMAGE — post-dna.jpg currently reuses the welcome photo.
+    // Swap in the real image at the same path when ready.
+    "blog-dna": {
+      type: "image",
+      src: "/assets/media/blog/post-dna.jpg",
+      alt: "DNA: Discover, Nurture, Act",
+      overlay: { type: "dark", opacity: 0.55 }
+    },
+
     "blog-root-to-fruit": {
       type: "image",
       src: "/assets/media/blog/post-root-to-fruit.jpg",
