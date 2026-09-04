@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="/assets/logo.png">
+  <title>The Four Idols — Commissioned City Church</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400&family=Montserrat:wght@600;700;800&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+
+<!-- ===== NAVIGATION ===== -->
+<nav class="navbar" aria-label="Main navigation">
+  <div class="nav-inner">
+    <a class="nav-logo" href="../index.html" aria-label="Commissioned City Church home">
+      <img src="../assets/logo.png" alt="Commissioned City Church" onerror="this.parentElement.innerHTML='<div class=\'nav-logo-placeholder\'><div class=\'logo-mark\'><svg viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'white\' stroke-width=\'2\'><path d=\'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5\'/></svg></div><div class=\'logo-text\'>COMMISSIONED<br>CITY CHURCH</div></div>'">
+    </a>
+    <ul class="nav-links" role="list">
+      <li><a href="../index.html">Home</a></li>
+      <li class="nav-has-dropdown">
+        <a href="../about.html">About</a>
+        <ul class="nav-dropdown" role="list">
+          <li><a href="../team.html">Meet the Team</a></li>
+          <li><a href="../believe.html">What We Believe</a></li>
+          <li><a href="../partnerships.html">Our Partnerships</a></li>
+        </ul>
+      </li>
+      <li class="nav-has-dropdown">
+        <a href="../communities.html">Communities</a>
+        <ul class="nav-dropdown" role="list">
+          <li><a href="../communities/south-osborne.html">South Osborne</a></li>
+          <li><a href="../communities/river-heights.html">River Heights</a></li>
+          <li><a href="../communities/st-james.html">St. James</a></li>
+          <li><a href="../communities/youth.html">Youth</a></li>
+          <li><a href="../communities/young-adults.html">Young Adults</a></li>
+          <li><a href="../communities/moms-and-womens.html">Women's MC</a></li>
+          <li><a href="../communities/mens-discipleship.html">Men's Discipleship</a></li>
+          <li><a href="../communities/womens-prayer.html">Women's Prayer Call</a></li>
+        </ul>
+      </li>
+      <li><a href="../gatherings.html">Gatherings</a></li>
+      <li class="nav-has-dropdown">
+        <a href="../blog.html" aria-current="page">Resources</a>
+        <ul class="nav-dropdown" role="list">
+          <li><a href="../first-steps.html">First Steps</a></li>
+          <li><a href="../sermons.html">Sermons</a></li>
+          <li><a href="../blog.html">Blog</a></li>
+          <li><a href="../story-of-god.html">The Story of God</a></li>
+        </ul>
+      </li>
+      <li><a href="../give.html">Give</a></li>
+      <li><a href="/members/" target="_blank" rel="noopener">Log In</a></li>
+    </ul>
+    <a href="../visit.html" class="btn btn-primary nav-cta">Plan Your Visit →</a>
+    <button class="nav-hamburger" aria-label="Open menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="nav-mobile" role="dialog" aria-modal="true">
+  <button class="nav-mobile-close" aria-label="Close menu">✕</button>
+  <a href="../index.html">Home</a>
+  <div class="nav-mobile-group">
+    <a href="../about.html">About</a>
+    <div class="nav-mobile-sub">
+      <a href="../team.html">Meet the Team</a>
+      <a href="../believe.html">What We Believe</a>
+      <a href="../partnerships.html">Our Partnerships</a>
+    </div>
+  </div>
+  <div class="nav-mobile-group">
+    <a href="../communities.html">Communities</a>
+    <div class="nav-mobile-sub">
+      <a href="../communities/south-osborne.html">South Osborne</a>
+      <a href="../communities/river-heights.html">River Heights</a>
+      <a href="../communities/st-james.html">St. James</a>
+      <a href="../communities/youth.html">Youth</a>
+      <a href="../communities/young-adults.html">Young Adults</a>
+      <a href="../communities/moms-and-womens.html">Women's MC</a>
+      <a href="../communities/mens-discipleship.html">Men's Discipleship</a>
+      <a href="../communities/womens-prayer.html">Women's Prayer Call</a>
+    </div>
+  </div>
+  <a href="../gatherings.html">Gatherings</a>
+  <div class="nav-mobile-group">
+    <a href="../blog.html">Resources</a>
+    <div class="nav-mobile-sub">
+      <a href="../first-steps.html">First Steps</a>
+      <a href="../sermons.html">Sermons</a>
+      <a href="../blog.html">Blog</a>
+      <a href="../story-of-god.html">The Story of God</a>
+    </div>
+  </div>
+  <a href="../give.html">Give</a>
+  <a href="/members/" target="_blank" rel="noopener">Log In</a>
+  <a href="../visit.html" class="btn btn-primary">Plan Your Visit →</a>
+</div>
+
+<main>
+
+<!-- ===== HERO ===== -->
+<section class="page-hero page-hero--navy page-hero--left" data-media="heroes.blog-four-idols" style="min-height:52vh;" aria-labelledby="page-heading">
+  <nav style="position:absolute; top:calc(var(--navbar-h,72px) + var(--space-md)); left:var(--space-lg); font-size:13px; color:rgba(255,255,255,0.6);" aria-label="Breadcrumb">
+    <a href="../blog.html" style="color:rgba(255,255,255,0.6); text-decoration:none;">Blog</a>
+    <span aria-hidden="true" style="margin:0 6px;">&rsaquo;</span>
+    <span>Gospel Fluency</span>
+  </nav>
+  <span class="eyebrow fade-in-up" style="color:rgba(255,255,255,0.7);">Gospel Fluency</span>
+  <h1 id="page-heading" class="fade-in-up delay-1" style="color:white; max-width:700px;">The Four Idols: Control, Approval, Comfort, and Success</h1>
+  <p class="fade-in-up delay-2" style="color:rgba(255,255,255,0.8); max-width:560px; font-size:16px; margin-top:var(--space-sm);">Brennan Cattani &nbsp;&middot;&nbsp; September 3, 2025</p>
+</section>
+
+<!-- ===== ARTICLE ===== -->
+<section class="section">
+  <div class="container text-block mx-auto">
+
+    <a href="../blog.html" style="display:inline-flex; align-items:center; gap:6px; font-size:14px; font-weight:600; color:var(--muted-blue); margin-bottom:var(--space-lg); border-bottom:none;">&larr; Back to Blog</a>
+
+    <p class="fade-in-up" style="font-size:14px; color:var(--muted-blue); font-style:italic;">
+      Adapted from a Soma School session in Victoria, BC &mdash; May 2024. With gratitude to Jeff Vanderstelt and the SOMA Family of Churches.
+    </p>
+
+    <h2 class="fade-in-up">Why Do We Still Sin?</h2>
+
+    <div class="fade-in-up" style="border-left:4px solid var(--red); padding:var(--space-md) var(--space-lg); background:var(--gray-bg); border-radius:0 var(--radius-card) var(--radius-card) 0; margin:var(--space-lg) 0;">
+      <p style="font-style:italic; margin:0; color:var(--charcoal);">"And when they saw him they worshiped him, but some doubted."</p>
+      <p style="font-size:13px; font-weight:600; color:var(--muted-blue); margin:8px 0 0;">&mdash; Matthew 28:17 (ESV)</p>
+    </div>
+
+    <p class="fade-in-up">There they are, standing in front of the risen Christ. Worship and doubt in the same room, in the same moment, maybe even in the same heart. If you have followed Jesus for any length of time, that verse should feel familiar. So here is the question underneath so much of our frustration: <strong>why do we sin, even after we have been saved by faith in Jesus?</strong></p>
+
+    <p class="fade-in-up">Sinful acts always have their origin in some form of unbelief. Behind every sin is a lie. The root of all our behaviour and all our emotions is the heart &mdash; what it trusts and what it treasures. Paul says people are given over to sinful desires because <em>"they exchanged the truth about God for a lie"</em> (Romans 1:25). Another word for faith is <em>belief</em>, and this verse suggests that all sin comes from not believing what is true about God.</p>
+
+    <p class="fade-in-up">Typically we want to blame our sin on our circumstances. <em>I got angry because the guy cut me off in traffic. I started to worry all the time because my husband lost his job. I yelled at the kids because they weren't obeying me.</em> But our circumstances function merely to illuminate what is already in our hearts. <strong>Our struggles reveal our hearts.</strong></p>
+
+    <p class="fade-in-up">This is a radical view of sin and repentance. It is also a deeply hopeful one, because it shows us the way out. Most of us assume the way to stop sinning is to change our behaviour. But if behind every sin is a lie about God, then what really needs to change is what I am believing in my heart.</p>
+
+    <h2 class="fade-in-up">A Rich Young Man Worships in Front of Jesus</h2>
+
+    <div class="fade-in-up" style="border-left:4px solid var(--red); padding:var(--space-md) var(--space-lg); background:var(--gray-bg); border-radius:0 var(--radius-card) var(--radius-card) 0; margin:var(--space-lg) 0;">
+      <p style="font-style:italic; margin:0; color:var(--charcoal);">"Teacher, what good deed must I do to have eternal life?" &hellip; "All these I have kept. What do I still lack?" &hellip; When the young man heard this he went away sorrowful, for he had great possessions.</p>
+      <p style="font-size:13px; font-weight:600; color:var(--muted-blue); margin:8px 0 0;">&mdash; Matthew 19:16&ndash;22 (ESV)</p>
+    </div>
+
+    <p class="fade-in-up">This interaction pulls the cover off the man's heart. Notice how transactional he is: <em>what good deed must I do?</em> His security was in his resources &mdash; which is to say, his security was in himself.</p>
+
+    <ul class="fade-in-up" style="line-height:2; color:var(--charcoal); padding-left:var(--space-lg); list-style:disc;">
+      <li><strong>Energy</strong> &mdash; he can rely on his own efforts. He has the capacity to act, and he has kept the law rigorously with all his strength.</li>
+      <li><strong>Money</strong> &mdash; he can buy his way in. And if he fails, he still has a safety net; at the end of the day his servants will be there to cook, clean, and comfort him.</li>
+      <li><strong>Time</strong> &mdash; his possessions have afforded him the luxury of what he deems to be spiritual pursuit.</li>
+    </ul>
+
+    <p class="fade-in-up">He was worshipping his idols right in front of Jesus. He was reaching for a mechanism of control &mdash; the good deed &mdash; in order to acquire and keep the approval of both "the good teacher" and of God, so that he could live with a comforted conscience in this life and successfully achieve an everlasting life on the other side.</p>
+
+    <p class="fade-in-up">But we are no different, really. When we honestly look at the fruit in our lives right now, what is actually producing that fruit? What is going on under the surface? Which god are we worshipping? We are quick to speak in spiritual language, but so often it is to appease an idol.</p>
+
+    <div class="fade-in-up" style="border-left:4px solid var(--red); padding:var(--space-md) var(--space-lg); background:var(--gray-bg); border-radius:0 var(--radius-card) var(--radius-card) 0; margin:var(--space-lg) 0;">
+      <p style="font-style:italic; margin:0; color:var(--charcoal);">"The tendency for us all is to drift away from Jesus, because we can't control Jesus, but everything else promises us some level of control. That Jesus would take control of our flesh is interpreted as a threat, but it's the best thing for our flesh."</p>
+      <p style="font-size:13px; font-weight:600; color:var(--muted-blue); margin:8px 0 0;">&mdash; Jeff Vanderstelt</p>
+    </div>
+
+    <h2 class="fade-in-up">Four Source Idols</h2>
+
+    <p class="fade-in-up">We are each prone to chase something different. Our hearts are a tangle of branches trying to draw nourishment out of whatever they are rooted in. But underneath the endless variety, four source idols keep showing up &mdash; and they are all ultimately just different faces on the idol of pride, the false god of self. We live with a constant, stewing mix of all four, all the time.</p>
+
+    <h3 class="fade-in-up">1. Control</h3>
+
+    <p class="fade-in-up">We may know &mdash; and even say we believe &mdash; that God is in control of all things, that he is sovereign. And then we are filled with worry and anxiety about the details of our lives. It is as if we are saying, <em>"I know in my head that God is in control, but I don't really believe it in my heart&hellip; or maybe he needs my help. Therefore I must work to control certain people and situations in my life."</em></p>
+
+    <p class="fade-in-up">It sounds like this:</p>
+
+    <ul class="fade-in-up" style="line-height:2; color:var(--charcoal); padding-left:var(--space-lg); list-style:disc;">
+      <li>If it would all just go my way.</li>
+      <li>If everyone would just listen to me and do what I tell them.</li>
+      <li>You can't tell me what to do.</li>
+      <li>We control by fighting, yelling, giving the silent treatment, or running away.</li>
+      <li>We want to control outcomes and perceptions. We sit and listen &mdash; but we listen to critique.</li>
+    </ul>
+
+    <h3 class="fade-in-up">2. Approval</h3>
+
+    <p class="fade-in-up">One common reason we sin is that we crave the approval of others, or fear their rejection. We "need" the acceptance of a parent, a boss, a friend, a spouse &mdash; and so we are controlled by them and their opinion of us. The Bible's term for this is the fear of man.</p>
+
+    <ul class="fade-in-up" style="line-height:2; color:var(--charcoal); padding-left:var(--space-lg); list-style:disc;">
+      <li>If they only knew the thoughts that go through my mind, they would never accept me.</li>
+      <li>I have to keep my past to myself. A good Christian doesn't do those sorts of things; there's no way I can confess this out loud.</li>
+      <li>I actually really enjoy helping people&hellip; or maybe I just enjoy feeling needed.</li>
+      <li>If I shared my faith with my friends, neighbours, or family, they would certainly reject me.</li>
+      <li>I feel like I have to join every program the church offers. I can't miss adult Sunday school or people will think I'm backsliding.</li>
+      <li>I need to be the wise one, the one others come to for answers &mdash; never emotionally drawn in, always analytical.</li>
+    </ul>
+
+    <h3 class="fade-in-up">3. Comfort</h3>
+
+    <p class="fade-in-up">God created us to be needy. Hunger, thirst, exhaustion, the need for love and intimacy &mdash; these are continual reminders of our need for him. When we look for the fulfillment of those needs elsewhere, we become bitter and complaining, because people and things eventually fail to satisfy the soul.</p>
+
+    <ul class="fade-in-up" style="line-height:2; color:var(--charcoal); padding-left:var(--space-lg); list-style:disc;">
+      <li>To step into conflict would jeopardize so much. I might lose my job, my friends, my fun, my status.</li>
+      <li>Speaking the truth in love is simply not an option, because I don't know when it's appropriate. I'd hate to offend and cut off any future chance.</li>
+      <li>Internally, mentally, emotionally, it's easier to just let the firm word of the Lord pass me by. <em>This one is for someone else.</em></li>
+      <li>I can analyze this down to the minutiae, but things get uncomfortable when it pushes past intellectual examination. I see no need to have my skin in the game.</li>
+    </ul>
+
+    <h3 class="fade-in-up">4. Success</h3>
+
+    <p class="fade-in-up">Sometimes this one goes by the name <em>performance</em>. We spend our lives trying to prove that we are worthy, valuable, or right &mdash; to ourselves, to others, and finally to God.</p>
+
+    <ul class="fade-in-up" style="line-height:2; color:var(--charcoal); padding-left:var(--space-lg); list-style:disc;">
+      <li>I need to provide. I need to strive. I need to prove I can be self-sufficient.</li>
+      <li>I need to read the books and have the deep insights.</li>
+      <li>I need to invite people to church or small group &mdash; and have them actually show up.</li>
+      <li>I need to make sure every conversation lands with a substantial gospel presentation.</li>
+      <li>If I'm honest, I enter almost every situation looking for a way to succeed&hellip; rather, a way to <em>win</em>. Even when I'm listening to someone, I'm listening to win.</li>
+    </ul>
+
+    <p class="fade-in-up">And that last confession exposes the whole tangle: <strong>because winning is control. And if I can control, then I will gain approval, and then I will be comfortable, as the outcome of my success.</strong> It is a constant stew of all four.</p>
+
+    <h2 class="fade-in-up">False Gods Never Fail to Fail</h2>
+
+    <p class="fade-in-up">These four are not four separate deities. They are manifestations of pride &mdash; yourself as god. And as one writer put it, <em>"false gods never fail to fail."</em></p>
+
+    <p class="fade-in-up">The way this affects our relationships is profound. Every false god demands worship from everything else in the world. If we are the ones on the throne, then everyone else must bow. Control, approval, comfort, and success are all attempts to manipulate the world around us into conformity with what our god demands. We run from or manipulate the people and situations that challenge our rule.</p>
+
+    <p class="fade-in-up">Our false gods alter our eyes, so that we see everyone around us as either <strong>a resource to be exploited or a threat to be managed</strong>. And in our own hearts, idols puff us up with pride when things are trending toward conformity, and shame us when they are not.</p>
+
+    <p class="fade-in-up">So take a minute with this. Where have these false gods infected your relationships?</p>
+
+    <ul class="fade-in-up" style="line-height:2; color:var(--charcoal); padding-left:var(--space-lg); list-style:disc;">
+      <li>With your neighbours and co-workers?</li>
+      <li>With your parents and extended family?</li>
+      <li>With your children?</li>
+      <li>With your spouse?</li>
+      <li>With yourself, in the quiet of the night?</li>
+      <li>With God?</li>
+    </ul>
+
+    <p class="fade-in-up">Every area of life is a tangle of these relationships, and every one of them is prone to being tainted by the worship of false gods. But notice: the pursuit of a false god always comes out of some sort of unmet need. And our needs, at their core, are good. God made us to need. The problem is not that I have needs; the problem is that I do not believe Jesus has met them.</p>
+
+    <div class="fade-in-up" style="border-left:4px solid var(--red); padding:var(--space-md) var(--space-lg); background:var(--gray-bg); border-radius:0 var(--radius-card) var(--radius-card) 0; margin:var(--space-lg) 0;">
+      <p style="font-style:italic; margin:0; color:var(--charcoal);">"Success, popularity and power can indeed present a great temptation, but their seductive quality often comes from the way they are part of a much larger temptation of self-rejection. When we have come to believe in the voices that call us worthless and unlovable, then success, popularity and power are easily perceived as attractive solutions."</p>
+      <p style="font-size:13px; font-weight:600; color:var(--muted-blue); margin:8px 0 0;">&mdash; Henri Nouwen, <em>Life of the Beloved</em></p>
+    </div>
+
+    <h2 class="fade-in-up">The Lies Our Idols Tell</h2>
+
+    <p class="fade-in-up">This is how an idol grows. Hebrews warns of <em>"an evil, unbelieving heart, leading you to fall away from the living God"</em> (Hebrews 3:12). An unbelieving heart is, in many ways, simply allowing the idol to grow in influence &mdash; actually believing that the false god is telling you the truth about your needs, and that it is able to deliver on its promises:</p>
+
+    <ul class="fade-in-up" style="line-height:2; color:var(--charcoal); padding-left:var(--space-lg); list-style:disc;">
+      <li><em>You have a right to control.</em></li>
+      <li><em>You need the approval of others.</em></li>
+      <li><em>Your best life is now &mdash; just surround yourself with supportive people, or cut out the other voices altogether.</em></li>
+      <li><em>You must win. You can succeed.</em></li>
+    </ul>
+
+    <p class="fade-in-up">Every one of those lies demands that everyone and everything else in your sphere bow down and worship you, or be cut out of your life and their voice destroyed. This is the dead fruit of a rotten root.</p>
+
+    <h2 class="fade-in-up">Four Liberating Truths</h2>
+
+    <p class="fade-in-up">To combat the four idols, God's word gives us four liberating truths. This is not a new technique &mdash; it is the gospel, and it is what gets preached every Sunday wherever the word of God is faithfully handled.</p>
+
+    <h3 class="fade-in-up">God is Great &mdash; so I don't have to be in control</h3>
+
+    <p class="fade-in-up">He is powerful and sovereign. He is greater than any struggle, trial, challenge, or blessing that feels like a make-it-or-break-it thing. There is no government, ruler, by-law, subtle policy, school board decision, internal family dynamic, power struggle, or obedience issue that you are going to have the strength to conquer on your own. But his word says that <em>from him and through him and to him are all things</em> (Romans 11:36). All authority in heaven and on earth belongs to Jesus, and he is with us to the very end of the age. He has authority over life and power over death, and there is no sin that can separate us from him once we have confessed it. <strong>It is not in control, but in submission to him, that we find freedom.</strong></p>
+
+    <h3 class="fade-in-up">God is Glorious &mdash; so I don't have to win approval, or fear losing it</h3>
+
+    <p class="fade-in-up">You were purchased by Christ, at great cost. He has given you the Spirit of his Son so that we can cry out <em>Abba, Father</em>. We are given full access to his holy presence through the body of Jesus. The word <em>glory</em> means weighty &mdash; a person of importance. God should be the weightiest person in our lives.</p>
+
+    <p class="fade-in-up">So imagine Jesus standing next to the person whose approval you most crave, or whose rejection you most fear. Who is more glorious? Anyone you would allow to live rent-free in your mind will one day bow the knee to Jesus too &mdash; either in worship, or as one who kneels before the just executioner.</p>
+
+    <div class="fade-in-up" style="border-left:4px solid var(--red); padding:var(--space-md) var(--space-lg); background:var(--gray-bg); border-radius:0 var(--radius-card) var(--radius-card) 0; margin:var(--space-lg) 0;">
+      <p style="font-style:italic; margin:0; color:var(--charcoal);">"Therefore God has highly exalted him and bestowed on him the name that is above every name, so that at the name of Jesus every knee should bow, in heaven and on earth and under the earth, and every tongue confess that Jesus Christ is Lord, to the glory of God the Father."</p>
+      <p style="font-size:13px; font-weight:600; color:var(--muted-blue); margin:8px 0 0;">&mdash; Philippians 2:9&ndash;11 (ESV)</p>
+    </div>
+
+    <h3 class="fade-in-up">God is Good &mdash; so I don't have to look elsewhere for comfort</h3>
+
+    <p class="fade-in-up">Instead of seeking ultimate satisfaction from food, drink, exercise, sleep, sex, or relationships, we get to trust the only one who can truly satisfy a needy heart. Jesus came to satisfy the hunger of our souls, to give us rest, to live in an intimate and loving relationship with us. Jesus is the better fulfillment of our every need.</p>
+
+    <div class="fade-in-up" style="border-left:4px solid var(--red); padding:var(--space-md) var(--space-lg); background:var(--gray-bg); border-radius:0 var(--radius-card) var(--radius-card) 0; margin:var(--space-lg) 0;">
+      <p style="font-style:italic; margin:0; color:var(--charcoal);">"Therefore my heart is glad, and my whole being rejoices; my flesh also dwells secure&hellip; You make known to me the path of life; in your presence there is fullness of joy; at your right hand are pleasures forevermore."</p>
+      <p style="font-size:13px; font-weight:600; color:var(--muted-blue); margin:8px 0 0;">&mdash; Psalm 16:9&ndash;11 (ESV)</p>
+    </div>
+
+    <h3 class="fade-in-up">God is Gracious &mdash; so I don't have to prove myself</h3>
+
+    <p class="fade-in-up">The grace of God is so simple to understand and yet so hard to grasp. We seem to be hard-wired to believe we must do something to make God look on us favourably. But while we were still sinners, he sent his Son to die in our place &mdash; the ultimate act of grace toward us. When we actually believe in our hearts that God is gracious, we will stop trying to prove ourselves and earn his love. We work as unto the Lord, as a workman <em>already</em> approved. Jesus is our rest.</p>
+
+    <h2 class="fade-in-up">This Is Not Something You Do Alone</h2>
+
+    <p class="fade-in-up">Here is the honest problem. It is entirely possible to sit under the word preached on Sunday, or to sit in a Bible study deep-diving a theological concept, and to hear God's word while numbly letting conviction pass us by &mdash; interpreting the Holy Spirit's pressing of our conscience as something intended for someone else. <em>"Man, this preacher is killing it today, I've got to send this to Steve, he needs this word."</em></p>
+
+    <div class="fade-in-up" style="border-left:4px solid var(--red); padding:var(--space-md) var(--space-lg); background:var(--gray-bg); border-radius:0 var(--radius-card) var(--radius-card) 0; margin:var(--space-lg) 0;">
+      <p style="font-style:italic; margin:0; color:var(--charcoal);">"For good news came to us just as to them, but the message they heard did not benefit them, because they were not united by faith with those who listened."</p>
+      <p style="font-size:13px; font-weight:600; color:var(--muted-blue); margin:8px 0 0;">&mdash; Hebrews 4:2 (ESV)</p>
+    </div>
+
+    <p class="fade-in-up">Matthew Henry observed that <em>"those do not commonly know themselves best who think best of themselves."</em> And we know it &mdash; as the old hymn says, we are <em>"prone to wander, Lord, I feel it; prone to leave the God I love."</em></p>
+
+    <p class="fade-in-up">So I have become convinced of this: if we are going to be gospel-story-formed people, we need to become very familiar with our own chosen instruments of our own hardening &mdash; and that is not something that gets done in isolation. God has called us into community. We need broken and contrite hearts, longing for the renewal the good news brings, ready for confession, so that when we get real with each other and speak the truth in love, the true story exposes the false one.</p>
+
+    <div class="fade-in-up" style="border-left:4px solid var(--red); padding:var(--space-md) var(--space-lg); background:var(--gray-bg); border-radius:0 var(--radius-card) var(--radius-card) 0; margin:var(--space-lg) 0;">
+      <p style="font-style:italic; margin:0; color:var(--charcoal);">"But exhort one another every day, as long as it is called 'today,' that none of you may be hardened by the deceitfulness of sin."</p>
+      <p style="font-size:13px; font-weight:600; color:var(--muted-blue); margin:8px 0 0;">&mdash; Hebrews 3:13 (ESV)</p>
+    </div>
+
+    <p class="fade-in-up">Ephesians 4 takes on a deeper meaning here. Maturity is not merely acquiring theological knowledge or accumulating spiritual experiences. Maturity is ministering to each other &mdash; building each other up in the good news of Jesus. It is listening with gospel ears for the places where each of us disbelieves the good, true story of God, and then preaching the good news right into those spaces of felt need.</p>
+
+    <div class="fade-in-up" style="border-left:4px solid var(--red); padding:var(--space-md) var(--space-lg); background:var(--gray-bg); border-radius:0 var(--radius-card) var(--radius-card) 0; margin:var(--space-lg) 0;">
+      <p style="font-style:italic; margin:0; color:var(--charcoal);">"Rather, speaking the truth in love, we are to grow up in every way into him who is the head, into Christ, from whom the whole body, joined and held together by every joint with which it is equipped, when each part is working properly, makes the body grow so that it builds itself up in love."</p>
+      <p style="font-size:13px; font-weight:600; color:var(--muted-blue); margin:8px 0 0;">&mdash; Ephesians 4:15&ndash;16 (ESV)</p>
+    </div>
+
+    <p class="fade-in-up">Which means there is an evangelistic necessity to all of this. As Jeff Vanderstelt puts it, <em>"you don't grow someone up into Christ unless you speak Christ into someone."</em> We are comfortable speaking the truths of Christ for people's regeneration, and then we hand them something else entirely to grow them up &mdash; and they cannot grow up into Christ if they are not getting Christ through those things.</p>
+
+    <ul class="fade-in-up" style="line-height:2; color:var(--charcoal); padding-left:var(--space-lg); list-style:disc;">
+      <li>What is the question? <strong>Jesus is the answer.</strong></li>
+      <li>What is the problem? <strong>Jesus is the solution.</strong></li>
+      <li>What is the longing? <strong>Jesus is the hope.</strong></li>
+    </ul>
+
+    <p class="fade-in-up">To be curious and confessional, aware of our own need of grace, is what frees us to be curious about others &mdash; to actually listen to their stories.</p>
+
+    <h2 class="fade-in-up">Take This to Heart</h2>
+
+    <p class="fade-in-up">Take a few minutes to journal through these on your own, or talk through them as a family or missional community.</p>
+
+    <ol class="fade-in-up" style="color:var(--charcoal); line-height:1.8; padding-left:var(--space-lg);">
+      <li>What are you tempted to hide or cover up? From whom do you strive to gain approval or acceptance &mdash; yourself, someone else, God? In doing so, where are you placing your identity? Where does God tell you your identity is truly found?</li>
+      <li>In what ways do you try to become holy by your own strength, actions, or disciplines? How often does that actually work? In doing so, where are you placing your hope?</li>
+      <li>Do you have a hard time trusting God's promises to care for you, to be sufficient for you, to secure your future? Who or what do you rely on to secure your future?</li>
+      <li>What are some things that you love? Have any of them replaced God as the biggest desire or love in your life? How is God "of first importance" &mdash; a better goal for our love and purpose &mdash; over anything else you love?</li>
+    </ol>
+
+    <p class="fade-in-up">Confession of unbelief is at the root of dealing with every entangling sin. And by the power of the Holy Spirit, we are genuinely refreshed, renewed, and reinvigorated &mdash; which produces the fruit of the Spirit. Gospel fruit.</p>
+
+    <p class="fade-in-up">So don't be hardened by the deceitfulness of sin. Rather, speaking the truth in love, let's grow up in every way into him who is the head, into Christ.</p>
+
+    <div class="fade-in-up" style="border-left:4px solid var(--red); padding:var(--space-md) var(--space-lg); background:var(--gray-bg); border-radius:0 var(--radius-card) var(--radius-card) 0; margin:var(--space-lg) 0;">
+      <p style="font-style:italic; margin:0; color:var(--charcoal);">"Let us hold fast the confession of our hope without wavering, for he who promised is faithful. And let us consider how to stir up one another to love and good works, not neglecting to meet together, as is the habit of some, but encouraging one another, and all the more as you see the Day drawing near."</p>
+      <p style="font-size:13px; font-weight:600; color:var(--muted-blue); margin:8px 0 0;">&mdash; Hebrews 10:23&ndash;25 (ESV)</p>
+    </div>
+
+    <h3 class="fade-in-up">Keep Going</h3>
+
+    <p class="fade-in-up">Naming the idol is not the same as being free of it. The follow-up post, <a href="root-to-fruit.html">Root to Fruit</a>, works in the other direction &mdash; starting from the fruit you can actually see in your life this week and tracing it back down to the lie underneath it.</p>
+
+    <p class="fade-in-up">Our <a href="gospel-fluency.html">Gospel Fluency</a> page also has the Root to Fruit worksheet, a feelings chart, and a few books and courses we have found genuinely helpful.</p>
+
+    <p class="fade-in-up" style="font-size:14px; color:var(--muted-blue); font-style:italic; margin-top:var(--space-lg);">
+      Hero image: Nicolas Poussin, <em>The Adoration of the Golden Calf</em> (c. 1633&ndash;34). Public domain.
+    </p>
+
+    <div class="fade-in-up" style="display:flex; gap:var(--space-md); margin-top:var(--space-xl); flex-wrap:wrap;">
+      <a href="root-to-fruit.html" class="btn btn-primary">What happens now? &rarr;</a>
+      <a href="../blog.html" class="btn btn-outline">&larr; Back to Blog</a>
+    </div>
+
+  </div>
+</section>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <img src="../assets/logo.png" alt="Commissioned City Church" style="height:120px; background:white; border-radius:10px; padding:8px 12px; margin-bottom:var(--space-md);" onerror="this.outerHTML='<div style=\'font-family:Montserrat,sans-serif;font-weight:800;font-size:18px;color:white;margin-bottom:var(--space-md);\'>COMMISSIONED<br>CITY CHURCH</div>'">
+      <p class="footer-tagline">For the Good of the City, For the Glory of Christ</p>
+      <div class="footer-social">
+        <a href="#" aria-label="Instagram" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="white" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="white" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.5" fill="white"/></svg></a>
+        <a href="#" aria-label="Facebook" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <ul>
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../about.html">About</a></li>
+        <li><a href="../believe.html">What We Believe</a></li>
+        <li><a href="../communities.html">Communities</a></li>
+        <li><a href="../gatherings.html">Gatherings</a></li>
+        <li><a href="../sermons.html">Sermons</a></li>
+        <li><a href="../blog.html">Blog</a></li>
+        <li><a href="../story-of-god.html">The Story of God</a></li>
+        <li><a href="../give.html">Give</a></li>
+        <li><a href="../contact.html">Connect</a></li>
+      </ul>
+    </div>
+    <div class="footer-col footer-contact">
+      <h4>Find Us</h4>
+      <p>205 Roseberry St<br>Winnipeg, MB R3J 1T3</p>
+      <p style="margin-top:var(--space-sm);"> Coffee — 10:00am Sunday<br> Worship — 10:30am Sunday</p>
+      <p style="margin-top:var(--space-sm);"><a href="mailto:info@commissionedcity.church">info@commissionedcity.church</a></p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>Matthew 28:18–20 · © 2025 Commissioned City Church</span>
+    <span>Winnipeg, Manitoba</span>
+  </div>
+</footer>
+
+<script src="../js/media.js"></script>
+<script src="../js/main.js"></script>
+</body>
+</html>
