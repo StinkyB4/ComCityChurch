@@ -122,14 +122,39 @@ not the nav, not the footer, not the quick links — and carries a
 https://commissionedcity.church/links
 ```
 
-### It is one self-contained file
+### Two ways to edit it
 
-`links.html` has no dependencies: its own CSS is inlined, there is no
-JavaScript, and it doesn't load `styles.css` or `main.js`. Editing it means
-opening that one file. Nothing else on the site can break it, and it can't
-break anything else.
+**The admin panel** — `/members/admin` → **Link Page**. Colour pickers, a live
+phone preview, background image upload, and add/reorder/hide for both the
+buttons and the social icons. Changes go live on Save.
 
-### Changing the colours
+Requires a one-time setup: run `supabase/link-page-setup.sql` in the Supabase
+SQL editor. Until that is done the tab shows setup instructions and `/links`
+keeps serving its built-in defaults.
+
+**The file itself** — `links.html` holds the defaults and the fallback. What is
+written there is what visitors see before anyone has saved in the admin panel,
+and what they see if the database is ever unreachable.
+
+> **The database wins.** Once buttons have been saved in the admin panel, hand
+> edits to the button list in `links.html` will appear to do nothing on the live
+> page. Same for the colours. This is the most likely source of "I changed it
+> and nothing happened".
+
+### How the fallback works
+
+`links.html` is still self-contained: inlined CSS, no shared stylesheet, and it
+renders completely on its own. `js/links-page.js` is deferred and purely
+additive — it applies saved settings over the defaults and swaps the link list
+only when it has links to swap in. With JavaScript off, the tables missing, the
+database empty, or the network down, the page renders correctly from its own
+markup. All four cases are covered by tests.
+
+A returning visitor's last-known colours are cached in `localStorage` and applied
+before first paint, so the page doesn't flash the built-in colours before the
+saved ones arrive.
+
+### Changing the colours by hand
 
 Everything visual is controlled by nine values in the `:root` block at the very
 top of the file, under the `★ EDIT THE LOOK OF THE PAGE HERE ★` banner:
@@ -197,7 +222,21 @@ Claude at that section when asking for changes.
 ### If you add a new page for it to link to
 
 Add a clean-URL route in `staticwebapp.config.json`, or Azure will serve the
-homepage instead of your page.
+homepage instead of your page. This applies whether the link was added in the
+admin panel or by hand.
+
+### Where the pieces live
+
+| File | Role |
+|------|------|
+| `links.html` | The page. Defaults, fallback, and the icon sprite. |
+| `js/links-page.js` | Applies saved settings over the defaults. Fails silent. |
+| `js/admin-links.js` | The admin tab. Reads the icon sprite out of `/links`. |
+| `supabase/link-page-setup.sql` | Tables, RLS, storage bucket, seed rows. Run once. |
+
+The icon sprite in `links.html` section 8 is the single source of truth for
+icons — the admin dropdowns are built from it at runtime, so adding a `<symbol>`
+there makes it selectable in the panel with no other change.
 
 ---
 

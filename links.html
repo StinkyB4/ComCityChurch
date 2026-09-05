@@ -16,11 +16,24 @@
   direct address:  https://commissionedcity.church/links
 
 
-  HOW TO EDIT IT
-  --------------
-  Everything is in this one file. There is no other file to open, no
-  database, and no admin login. If you can edit this file and save it,
-  you can change the page.
+  TWO WAYS TO EDIT IT
+  -------------------
+  1. THE ADMIN PANEL, which is the easy way and the one to use.
+     Log in at /members, open Admin, and choose the "Link Page" tab.
+     You get colour pickers, a live preview of the phone screen, and
+     drag-free reordering of the buttons. Changes go live when you
+     press Save. No files, no publishing step.
+
+  2. THIS FILE, for whoever set the page up in the first place.
+     What is written here is what visitors see BEFORE anyone has saved
+     anything in the admin panel, and what they see if the database is
+     ever unreachable. It is the safety net.
+
+  IMPORTANT, SO YOU ARE NOT CAUGHT OUT: once someone has saved buttons
+  in the admin panel, those buttons win. Editing the button list in this
+  file by hand will then look like it did nothing on the live page. The
+  colours behave the same way. If you want the admin panel to stop
+  overriding something, change it in the admin panel.
 
   The file is split into clearly labelled sections. Each section starts
   with a banner like this:
@@ -115,12 +128,35 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
 
+<!-- Applies the last-known admin settings before the page paints, so a
+     returning visitor never sees the built-in colours flash to the saved
+     ones. Runs from a local cache only; the real fetch happens in
+     /js/links-page.js after load. Wrapped in try/catch because private
+     browsing modes throw on localStorage access. -->
+<script>
+(function () {
+  try {
+    var c = JSON.parse(localStorage.getItem('ccc-linkpage-theme') || 'null');
+    if (!c) return;
+    var r = document.documentElement.style;
+    for (var k in c.vars) r.setProperty(k, c.vars[k]);
+    document.addEventListener('DOMContentLoaded', function () {
+      for (var a in c.attrs) document.body.setAttribute(a, c.attrs[a]);
+    });
+  } catch (e) { /* no cache, or storage blocked: the defaults below stand */ }
+})();
+</script>
+
 <style>
 /* =====================================================================
    == SECTION 1 ==  COLOURS AND SIZES
    =====================================================================
 
    THIS IS THE MAIN CONTROL PANEL FOR THE PAGE.
+
+   Most people should use the admin panel instead: /members/admin, the
+   "Link Page" tab, which sets all of this with colour pickers and a live
+   preview. What is below is the starting point it falls back to.
 
    These nine settings control how the whole page looks. Change one here
    and it updates everywhere it is used. You never need to hunt through
@@ -794,6 +830,20 @@ body[data-btn="outline"] .lp-btn {
   <symbol id="icon-map" viewBox="0 0 24 24"><path d="M9 3L3 6v15l6-3 6 3 6-3V3l-6 3-6-3z"/><path d="M9 3v15M15 6v15"/></symbol>
   <symbol id="icon-chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
   <symbol id="icon-arrow-out" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></symbol>
+
+  <!-- Social marks. These set their own fill and stroke, because some are
+       solid logos and some are outlines. The admin editor renders the social
+       row from these, keyed by the platform name after "icon-social-". -->
+  <symbol id="icon-social-instagram" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5.5"/><circle cx="12" cy="12" r="4.2"/></g><circle cx="17.6" cy="6.4" r="1.2" fill="currentColor"/></symbol>
+  <symbol id="icon-social-facebook" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="icon-social-spotify" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 100 20 10 10 0 000-20zm4.586 14.424a.75.75 0 01-1.032.25c-2.824-1.726-6.377-2.116-10.564-1.16a.75.75 0 11-.334-1.462c4.585-1.047 8.514-.598 11.68 1.34a.75.75 0 01.25 1.032zm1.223-2.722a.937.937 0 01-1.29.309c-3.23-1.986-8.157-2.56-11.98-1.4a.937.937 0 11-.545-1.794c4.366-1.325 9.795-.684 13.505 1.596a.937.937 0 01.31 1.289zm.106-2.835c-3.874-2.3-10.263-2.514-13.96-1.392a1.125 1.125 0 11-.653-2.153c4.243-1.288 11.3-1.04 15.76 1.608a1.124 1.124 0 11-1.147 1.937z"/></symbol>
+  <symbol id="icon-social-youtube" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10.2 9.3l5 2.7-5 2.7z" fill="currentColor"/></symbol>
+  <symbol id="icon-social-applepodcasts" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9 16V9l7-1.4V15"/></g><circle cx="9" cy="16" r="1.6" fill="currentColor"/><circle cx="16" cy="15" r="1.6" fill="currentColor"/></symbol>
+  <symbol id="icon-social-x" viewBox="0 0 24 24"><path fill="currentColor" d="M17.53 3h3.02l-6.6 7.54L21.8 21h-5.9l-4.2-5.5L6.7 21H3.68l6.9-7.87L2.5 3h5.9l3.96 5.2zm-1.06 16.2h1.67L7.6 4.72H5.8z"/></symbol>
+  <symbol id="icon-social-tiktok" viewBox="0 0 24 24"><path fill="currentColor" d="M16.2 2h-3.1v13.1a2.6 2.6 0 11-1.9-2.5V9.4a5.7 5.7 0 105 5.7V9.2a6.4 6.4 0 003.6 1.1V7.2a3.6 3.6 0 01-3.6-3.6z"/></symbol>
+  <symbol id="icon-social-mail" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/></g></symbol>
+  <symbol id="icon-social-phone" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .4 1.9.7 2.8a2 2 0 01-.5 2.1L8.1 9.9a16 16 0 006 6l1.3-1.3a2 2 0 012.1-.4c.9.3 1.8.6 2.8.7a2 2 0 011.7 2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="icon-social-map" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1116 0z"/><circle cx="12" cy="10" r="3"/></g></symbol>
 </svg>
 
 
@@ -841,16 +891,30 @@ body[data-btn="outline"] .lp-btn {
   preferences. Church staff who are not developers maintain this page by
   hand, so its readability is a feature, not a nicety.
 
-  ARCHITECTURE, DO NOT CHANGE WITHOUT BEING ASKED
-  -----------------------------------------------
-  1.  This file is deliberately self-contained. CSS is inlined. There is
-      no JavaScript. It does not load /css/styles.css or /js/main.js,
-      unlike the rest of the site. Do not "improve" it by extracting the
-      CSS to a stylesheet, adding a build step, adding a framework, or
-      wiring it to Supabase. The isolation is the point: this page must
-      keep working when anything else on the site breaks, and it must
-      paint instantly on a phone on mobile data.
-  2.  Keep it to a single HTTP request plus the logo and the web font.
+  1.  THE FALLBACK CONTRACT. Everything written into this file is the
+      default AND the fallback. An admin editor at /members/admin ->
+      "Link Page" saves to the link_page_settings and link_page_links
+      tables, and /js/links-page.js applies those over what is here.
+      The database wins when it answers; this file wins when it does not.
+      Both halves matter, so:
+        - Never make the page depend on the fetch succeeding. It must
+          render completely and correctly with JavaScript off, the
+          database empty, the tables missing, or the network down.
+          There are tests for all four.
+        - Never let a fetch failure blank a list. links-page.js replaces
+          the buttons only when it has at least one to put there.
+        - When you change the markup or the --lp-* names here, change
+          links-page.js and js/admin-links.js to match. The admin editor
+          writes the same custom property names section 1 documents, so
+          hand-editing and the editor stay interchangeable.
+      When these tables have rows, editing this file's buttons by hand
+      will appear to do nothing on the live page, because the database
+      overrides them. That is expected. Say so if someone reports it.
+  2.  Beyond that one script, keep the page self-contained: CSS inlined,
+      no /css/styles.css, no /js/main.js, no build step, no framework.
+      It must paint on first load over mobile data and keep working when
+      the rest of the site is broken. The hydration is additive and
+      deferred; it never blocks the first paint.
   3.  Do not add analytics, cookie banners, trackers or third-party
       embeds unless explicitly asked.
   4.  Keep <meta name="robots" content="noindex, follow">.
@@ -879,6 +943,11 @@ body[data-btn="outline"] .lp-btn {
       which sets fill="currentColor" stroke="none" on that path alone.
       Then add a row to the name list in SECTION 8's comment. An icon
       that is not listed there does not exist as far as staff know.
+      The admin editor reads this sprite out of the served page at
+      runtime and builds its icon dropdown from it, so a symbol added
+      here shows up there with no change to admin-links.js. Keep the
+      icon-social- prefix for social marks: that prefix is how the two
+      dropdowns are told apart.
 
   CONTENT RULES
   -------------
@@ -923,6 +992,16 @@ body[data-btn="outline"] .lp-btn {
   22. Confirm no commented-out block leaked into the visible page.
   =====================================================================
 -->
+
+<!-- Pulls the saved settings and links from the admin panel and applies them
+     over the defaults above. If it cannot reach the database, or the tables
+     have not been created yet, it does nothing at all and the page stands as
+     written. See section 9. -->
+<script>
+  window.SUPABASE_URL = 'https://lkmphayrithxkmhvfiep.supabase.co';
+  window.SUPABASE_ANON_KEY = 'sb_publishable_GO6ATIZLQftqjoBHTU8EKQ_5RR1397W';
+</script>
+<script src="/js/links-page.js" defer></script>
 
 </body>
 </html>
