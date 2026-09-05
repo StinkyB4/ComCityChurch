@@ -41,6 +41,7 @@
       <a href="#" data-tab="files"                     onclick="switchTab('files');       return false;">Files</a>
       <a href="#" data-tab="settings"                  onclick="switchTab('settings');    return false;">Settings</a>
       <a href="#" data-tab="blog"                      onclick="switchTab('blog');         return false;">Blog Posts</a>
+      <a href="#" data-tab="links"                     onclick="switchTab('links');        return false;">Link Page</a>
       <a href="/members/dashboard">&#8592; Dashboard</a>
       <a href="#" onclick="doSignOut(); return false;">Sign Out</a>
     </div>
@@ -118,6 +119,11 @@
         <p class="loading" style="color:var(--color-text-muted);">Loading&hellip;</p>
       </section>
 
+      <!-- TAB 9: LINK PAGE (/links) -->
+      <section id="tab-links" class="admin-tab-panel" style="display:none;">
+        <p class="loading" style="color:var(--color-text-muted);">Loading&hellip;</p>
+      </section>
+
       <!-- TAB 7: SETTINGS -->
       <section id="tab-settings" class="admin-tab-panel" style="display:none;">
         <div class="section-header" style="margin-bottom:1.5rem;">
@@ -182,6 +188,7 @@
   <script src="/js/supabase.js" defer></script>
   <script src="/js/admin.js" defer></script>
   <script src="/js/admin-blog.js" defer></script>
+  <script src="/js/admin-links.js" defer></script>
 
 </body>
 </html>
