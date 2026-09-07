@@ -1215,7 +1215,15 @@
       /* spouse link — uses SECURITY DEFINER RPC to update both profiles */
       var spId=fd.get('spouse_link_id')||'';
       if(spId&&!effectiveSpouseId){
-        await _sb.rpc('link_spouses',{p_user_a:_user.id, p_user_b:spId});
+        /* the RPC refuses a link when the other person is already coupled, so
+           surface that instead of writing a one-sided spouse_id it just rejected */
+        var { error:linkErr }=await _sb.rpc('link_spouses',{p_user_a:_user.id, p_user_b:spId});
+        if(linkErr){
+          window._profileResult={errors:[linkErr.message]};
+          var lurl=new URL(window.location.href); lurl.searchParams.set('edit','1');
+          window.history.replaceState({},'',lurl.toString());
+          renderProfileTab(); return;
+        }
         updates.spouse_id=spId;
         callEdge('send-email',{action:'spouse_linked',linker_id:_user.id,spouse_id:spId});
       }

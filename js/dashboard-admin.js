@@ -372,9 +372,37 @@
     renderAdminTab();
   };
   window.mpAdminUnlinkSpouse = async function (uid, name) {
-    if (!confirm('Unlink ' + name + ' and their spouse?')) return;
+    if (!confirm('Unlink ' + (name || 'this member') + ' and their spouse?')) return;
     var _sb2 = window.mpDashboard.getSb();
-    await _sb2.rpc('unlink_spouses', { p_uid: uid });
+    var { error } = await _sb2.rpc('unlink_spouses', { p_uid: uid });
+    if (error) { alert('Could not unlink: ' + error.message); return; }
+    renderAdminTab();
+  };
+  /* spouse picker in the admin member editor */
+  window.mpAdminFilterSpouseList = function (q) {
+    var sel = document.getElementById('adm-sp-select'); if (!sel) return;
+    q = (q || '').toLowerCase().trim();
+    for (var i = 0; i < sel.options.length; i++) {
+      var o = sel.options[i];
+      o.style.display = (!q || (o.dataset.search || '').indexOf(q) !== -1) ? '' : 'none';
+    }
+    sel.selectedIndex = -1;
+    var btn = document.getElementById('adm-sp-link-btn'); if (btn) btn.disabled = true;
+  };
+  window.mpAdminSpouseChosen = function (sel) {
+    var o = sel.options[sel.selectedIndex]; if (!o || !o.value) return;
+    var btn = document.getElementById('adm-sp-link-btn'); if (btn) btn.disabled = false;
+    var lbl = document.getElementById('adm-sp-lbl');
+    if (lbl) lbl.textContent = '"' + (o.dataset.name || o.textContent) + '" selected — click Link Profiles.';
+  };
+  window.mpAdminLinkSpouse = async function (uid) {
+    var sel = document.getElementById('adm-sp-select');
+    var opt = sel && sel.selectedIndex >= 0 ? sel.options[sel.selectedIndex] : null;
+    if (!opt || !opt.value) { alert('Select a member to link first.'); return; }
+    if (!confirm('Link these two profiles as a couple?\n\nThey will share children and appear together in the directory.')) return;
+    var _sb2 = window.mpDashboard.getSb();
+    var { error } = await _sb2.rpc('link_spouses', { p_user_a: uid, p_user_b: opt.value });
+    if (error) { alert('Could not link profiles: ' + error.message); return; }
     renderAdminTab();
   };
   window.mpAdminDeleteUser = async function (uid, name) {
@@ -402,18 +430,43 @@
     var D = window.mpDashboard;
     var _sb = D.getSb();
 
-    var [profRes, childRes, teamRes, allTeamsRes] = await Promise.all([
+    var [profRes, childRes, teamRes, allTeamsRes, allProfRes] = await Promise.all([
       _sb.from('profiles').select('*').eq('id', editUid).single(),
       _sb.from('children').select('*').eq('profile_id', editUid).order('id'),
       _sb.from('team_members').select('team_id').eq('member_id', editUid),
-      _sb.from('teams').select('id,name').order('name')
+      _sb.from('teams').select('id,name').order('name'),
+      /* everyone, for the spouse picker — pending members included so an admin
+         can link a couple before either of them is approved */
+      _sb.from('profiles').select('id,first_name,last_name,full_name,email,avatar_url,phone1,phone1_type,spouse_id,status').order('last_name', { nullsFirst: false })
     ]);
     var ep = profRes.data;
     if (!ep) { D.setContent('<p class="mp-empty">Member not found.</p>'); return; }
     var children    = childRes.data || [];
     var myTeamIds   = (teamRes.data || []).map(function (r) { return r.team_id; });
     var allTeams    = allTeamsRes.data || [];
+    var allProfiles = allProfRes.data || [];
     var mname       = ((ep.first_name || '') + (ep.last_name ? ' ' + ep.last_name : '')).trim() || ep.full_name || ep.email;
+
+    /* spouse state — spouse_id has historically only been written on one side,
+       so resolve the link in both directions before deciding link vs unlink */
+    var spouseRow = allProfiles.find(function (x) { return ep.spouse_id && x.id === ep.spouse_id; })
+                 || allProfiles.find(function (x) { return x.spouse_id === editUid; })
+                 || null;
+    var takenIds = {};
+    allProfiles.forEach(function (x) {
+      if (!x.spouse_id) return;
+      takenIds[x.id] = true; takenIds[x.spouse_id] = true;
+    });
+    var spouseChoices = allProfiles.filter(function (x) { return x.id !== editUid && !takenIds[x.id]; });
+
+    /* children live under a single canonical owner shared by both spouses
+       (save_children resolves it), so a linked member's list must be read
+       across both profile_ids — reading only this one would render an empty
+       list and the next save would delete the whole family's children */
+    if (spouseRow) {
+      var famKids = await _sb.from('children').select('*').in('profile_id', [editUid, spouseRow.id]).order('id');
+      children = famKids.data || children;
+    }
 
     var html = '<div class="mp-admin-edit-header"><a href="#" class="mp-admin-back-link" onclick="mpAdminBackToList();return false;">← Back to Members</a>';
     html += '<h2 class="mp-tab-title" style="margin:0;">Editing: ' + D.esc(mname) + '</h2></div>';
@@ -446,9 +499,41 @@
       html += '</div></div>';
     }
 
+    /* family — spouse link first, then children */
+    html += '<div class="mp-section-divider">Family</div>';
+    html += '<div class="mp-form-group"><label>Spouse</label>';
+    if (spouseRow) {
+      var spName = ((spouseRow.first_name || '') + (spouseRow.last_name ? ' ' + spouseRow.last_name : '')).trim() || spouseRow.full_name || spouseRow.email;
+      html += '<div class="mp-family-linked-notice"><div class="mp-spouse-profile-card">';
+      html += D.renderAvatar(D.getInitials(spouseRow), spouseRow.avatar_url || '', '');
+      html += '<div class="mp-spouse-profile-info"><strong>' + D.esc(spName) + '</strong>';
+      if (spouseRow.email) html += '<span class="mp-spouse-profile-email">' + D.esc(spouseRow.email) + '</span>';
+      html += '</div></div>';
+      html += '<div class="mp-spouse-picker-footer" style="margin-top:10px;"><span class="mp-spouse-selected-label">Linked as a couple. Children and family scheduling are shared.</span>';
+      /* name is not interpolated into the handler — esc() leaves apostrophes
+         alone, which would break the inline call for names like O'Brien */
+      html += '<button type="button" class="mp-btn mp-btn--danger mp-btn--small" onclick="mpAdminUnlinkSpouse(\'' + D.esc(editUid) + '\')">Unlink</button></div>';
+      html += '</div>';
+    } else if (spouseChoices.length) {
+      html += '<div class="mp-spouse-picker">';
+      html += '<input type="text" class="mp-spouse-filter-input" placeholder="Type to filter…" autocomplete="off" oninput="mpAdminFilterSpouseList(this.value)">';
+      html += '<select id="adm-sp-select" class="mp-spouse-select-list" size="6" onchange="mpAdminSpouseChosen(this)">';
+      spouseChoices.forEach(function (x) {
+        var xn = ((x.first_name || '') + (x.last_name ? ' ' + x.last_name : '')).trim() || x.full_name || x.email;
+        var lbl = xn + (x.status === 'approved' ? '' : ' (pending)');
+        html += '<option value="' + D.esc(x.id) + '" data-name="' + D.esc(xn) + '" data-search="' + D.esc((xn + ' ' + (x.email || '')).toLowerCase()) + '">' + D.esc(lbl) + '</option>';
+      });
+      html += '</select>';
+      html += '<div class="mp-spouse-picker-footer"><span class="mp-spouse-selected-label" id="adm-sp-lbl">Select a member to link as ' + D.esc(mname) + '\'s spouse.</span>';
+      html += '<button type="button" class="mp-btn mp-btn--primary mp-btn--small" id="adm-sp-link-btn" disabled onclick="mpAdminLinkSpouse(\'' + D.esc(editUid) + '\')">Link Profiles</button></div>';
+      html += '</div><span class="mp-hint">Only members who aren\'t already linked to someone are listed. Linking writes both profiles and shares the family\'s children.</span>';
+    } else {
+      html += '<p class="mp-hint" style="margin:0;">No unlinked members available to link.</p>';
+    }
+    html += '</div>';
+
     /* children */
     var kidsRows = children.concat([{ name: '', gender: 'boy', birthday: '' }]);
-    html += '<div class="mp-section-divider">Family</div>';
     html += '<div class="mp-form-group"><label>Children</label><div id="admin-children-list">';
     kidsRows.forEach(function (ch, i) {
       html += '<div class="mp-child-row" data-index="' + i + '" data-id="' + D.esc(ch.id || '') + '">';
