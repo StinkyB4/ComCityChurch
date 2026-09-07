@@ -1,8 +1,14 @@
 /**
  * ADMIN — Link Page editor
  *
- * Adds the "Link Page" tab to /members/admin. Edits the public /links page:
- * colours, background, logo, headline, the link buttons and the social row.
+ * The "Link Page" editor for the public /links page: colours, background,
+ * logo, headline, the link buttons and the social row.
+ *
+ * It mounts in two places, from this one implementation:
+ *   - /members/dashboard?tab=linkpage  (the members portal, where staff work)
+ *   - /members/admin                   (the older standalone admin page)
+ * Both render into a #tab-links container, so everything below is unchanged
+ * between them. Do not fork this file for the two surfaces.
  *
  * Two things worth knowing before changing this file:
  *
@@ -42,7 +48,19 @@
 
   /* ── plumbing ────────────────────────────────────────────── */
 
+  /* Always reuse the client the host page already authenticated. Building a
+     fresh one with createClient() would not carry the signed-in session, so
+     every write would reach Postgres as anon and RLS would reject it — the
+     policies require an approved admin. The last branch is a fallback for a
+     page that has neither helper. */
   function sb() {
+    if (window.mpDashboard && typeof window.mpDashboard.getSb === 'function') {
+      var d = window.mpDashboard.getSb();
+      if (d) return d;
+    }
+    if (typeof window.getSupabase === 'function') {
+      try { var g = window.getSupabase(); if (g) return g; } catch (e) { /* not initialised yet */ }
+    }
     if (window._adminLinksSb) return window._adminLinksSb;
     if (!window.supabase) return null;
     window._adminLinksSb = window.supabase.createClient(
@@ -56,17 +74,29 @@
       .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
-  function toast(msg) {
+  /* The legacy admin page ships an #admin-toast element; the dashboard does
+     not, so create one rather than silently swallowing the confirmation. */
+  function toastEl() {
     var t = document.getElementById('admin-toast');
-    if (!t) return;
+    if (t) return t;
+    t = document.createElement('div');
+    t.id = 'admin-toast';
+    t.className = 'admin-toast';
+    t.setAttribute('role', 'alert');
+    t.setAttribute('aria-live', 'polite');
+    document.body.appendChild(t);
+    return t;
+  }
+
+  function toast(msg) {
+    var t = toastEl();
     t.textContent = msg;
     t.className = 'admin-toast show toast-success';
     setTimeout(function () { t.className = 'admin-toast'; }, 3800);
   }
 
   function fail(msg) {
-    var t = document.getElementById('admin-toast');
-    if (!t) { alert(msg); return; }
+    var t = toastEl();
     t.textContent = msg;
     t.className = 'admin-toast show toast-error';
     setTimeout(function () { t.className = 'admin-toast'; }, 6000);
@@ -675,7 +705,28 @@
     show: show, save: save, add: add, remove: remove, move: move, uploadBg: uploadBg
   };
 
-  /* Wrap admin.js's switchTab, exactly as admin-blog.js does. */
+  /* ── Mount 1: the members portal dashboard ───────────────
+     dashboard.js dispatches a tab by looking for
+     window.mpDashboard.render_<tab>, so registering that name is all it
+     takes. setContent gives us a fresh container each time the tab is
+     opened, so reload the data rather than showing a stale form. */
+  function whenDashboardReady(fn) {
+    if (window.mpDashboard && typeof window.mpDashboard.getSb === 'function') { fn(); return; }
+    setTimeout(function () { whenDashboardReady(fn); }, 60);
+  }
+
+  whenDashboardReady(function () {
+    window.mpDashboard.render_linkpage = function () {
+      var D = window.mpDashboard;
+      if (!D.isAdmin()) { D.setContent('<p class="mp-empty">Access denied.</p>'); return; }
+      D.setContent('<div id="tab-links"></div>');
+      loaded = false;
+      show();
+    };
+  });
+
+  /* ── Mount 2: the older standalone admin page ────────────
+     Wraps admin.js's switchTab, exactly as admin-blog.js does. */
   document.addEventListener('DOMContentLoaded', function () {
     var orig = window.switchTab;
     window.switchTab = function (tab) {
