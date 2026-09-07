@@ -1,15 +1,15 @@
 ================================================================
-COMMISSIONED CITY CHURCH — BLOG FORMATTING GUIDE
+COMMISSIONED CITY CHURCH — GO DEEPER FORMATTING GUIDE
 ================================================================
-This file explains how to format and add content to blog posts
+This file explains how to format and add content to Go Deeper posts
 on the Commissioned City Church website.
 ================================================================
 
 
 ----------------------------------------------------------------
-ADDING A NEW BLOG POST
+ADDING A NEW GO DEEPER POST
 ----------------------------------------------------------------
-1. Duplicate an existing post file in the blog/ folder
+1. Duplicate an existing post file in the go-deeper/ folder
    (e.g. copy a-family-of-missionary-servants.html and rename it)
 
 2. Update in the new file:
@@ -22,33 +22,33 @@ ADDING A NEW BLOG POST
    - All article body content
 
 3. Add the post's featured image to:
-   assets/media/blog/your-image-name.jpg
+   assets/media/go-deeper/your-image-name.jpg
 
 4. Add a hero entry to js/media.js under heroes:
-   "blog-your-slug": {
+   "go-deeper-your-slug": {
      type: "image",
-     src: "../assets/media/blog/your-image-name.jpg",
+     src: "../assets/media/go-deeper/your-image-name.jpg",
      alt: "Description of image",
      overlay: { type: "dark", opacity: 0.50 }
    },
 
-5. Add a new card to the TOP of the grid in blog.html
+5. Add a new card to the TOP of the grid in go-deeper.html
    (duplicate an existing <article> block and update it)
 
 
 ----------------------------------------------------------------
 INLINE IMAGES IN POSTS
 ----------------------------------------------------------------
-All images for blog posts go in:  assets/media/blog/
+All images for go-deeper posts go in:  assets/media/go-deeper/
 
-In post files (inside the blog/ subfolder), the path back up to
+In post files (inside the go-deeper/ subfolder), the path back up to
 assets always starts with ../assets/...
 
 -- FULL-WIDTH IMAGE (recommended default) --
 
 <figure class="fade-in-up" style="margin:var(--space-xl) 0;">
   <img
-    src="../assets/media/blog/your-image.jpg"
+    src="../assets/media/go-deeper/your-image.jpg"
     alt="Describe what is in the photo"
     style="width:100%; border-radius:var(--radius-card); display:block;">
   <figcaption style="font-size:13px; color:var(--muted-blue); margin-top:8px; text-align:center;">
@@ -59,7 +59,7 @@ assets always starts with ../assets/...
 
 -- HALF-WIDTH, FLOATED RIGHT (text wraps around) --
 
-<img src="../assets/media/blog/your-image.jpg" alt="..."
+<img src="../assets/media/go-deeper/your-image.jpg" alt="..."
   style="float:right; width:45%; margin:0 0 var(--space-md) var(--space-lg); border-radius:var(--radius-card);">
 
 Add this after the paragraph that follows to stop the text wrap:
@@ -68,7 +68,7 @@ Add this after the paragraph that follows to stop the text wrap:
 
 -- CENTRED, NARROWER (good for portraits or square photos) --
 
-<img src="../assets/media/blog/your-image.jpg" alt="..."
+<img src="../assets/media/go-deeper/your-image.jpg" alt="..."
   style="display:block; width:60%; margin:var(--space-lg) auto; border-radius:var(--radius-card);">
 
 
@@ -78,7 +78,7 @@ Add this after the paragraph that follows to stop the text wrap:
 
 <figure class="fade-in-up" style="margin:var(--space-xl) 0;">
   <img
-    src="../assets/media/blog/community-gathering.jpg"
+    src="../assets/media/go-deeper/community-gathering.jpg"
     alt="South Osborne MC gathered for a meal"
     style="width:100%; border-radius:var(--radius-card); display:block;">
   <figcaption style="font-size:13px; color:var(--muted-blue); margin-top:8px; text-align:center;">
@@ -150,14 +150,14 @@ Each post page uses a hero image set via data-media in the
 <section> tag at the top of <main>:
 
   <section class="page-hero page-hero--navy"
-    data-media="heroes.blog-your-slug"
+    data-media="heroes.go-deeper-your-slug"
     style="min-height:52vh;" aria-labelledby="page-heading">
 
 The matching entry in js/media.js (heroes section):
 
-  "blog-your-slug": {
+  "go-deeper-your-slug": {
     type: "image",
-    src: "../assets/media/blog/your-image.jpg",
+    src: "../assets/media/go-deeper/your-image.jpg",
     alt: "Description",
     overlay: { type: "dark", opacity: 0.50 }
   },
@@ -172,11 +172,11 @@ Overlay opacity guide:
 ----------------------------------------------------------------
 FILE & PATH REFERENCE
 ----------------------------------------------------------------
-Blog index page:       blog.html                (root level)
-Individual posts:      blog/post-name.html      (one level deep)
-Post images:           assets/media/blog/       (root level)
+Go Deeper index page:       go-deeper.html                (root level)
+Individual posts:      go-deeper/post-name.html      (one level deep)
+Post images:           assets/media/go-deeper/       (root level)
 Path to images from
-a post file:           ../assets/media/blog/
+a post file:           ../assets/media/go-deeper/
 CSS & JS:              ../css/styles.css
                        ../js/media.js
                        ../js/main.js

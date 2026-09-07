@@ -1,6 +1,10 @@
 -- ============================================================
--- BLOG POSTS — Supabase Setup
+-- GO DEEPER POSTS — Supabase Setup
 -- Run this in the Supabase SQL editor for your project.
+--
+-- NOTE: the section is named "Go Deeper" throughout the site, but the
+-- database objects keep their original names (table blog_posts, storage
+-- bucket blog-images) so existing data and policies stay valid.
 -- ============================================================
 
 -- 1. TABLE

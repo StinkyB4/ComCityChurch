@@ -13,13 +13,25 @@
     { "route": "/communities",            "rewrite": "/communities.html"            },
     { "route": "/gatherings",             "rewrite": "/gatherings.html"             },
     { "route": "/sermons",                "rewrite": "/sermons.html"                },
+    { "route": "/go-deeper",              "rewrite": "/go-deeper.html"              },
     { "route": "/give",                   "rewrite": "/give.html"                   },
     { "route": "/contact",                "rewrite": "/contact.html"                },
     { "route": "/members",                "rewrite": "/members/index.html"          },
     { "route": "/members/register",       "rewrite": "/members/register.html"       },
     { "route": "/members/pending",        "rewrite": "/members/pending.html"        },
     { "route": "/members/dashboard",      "rewrite": "/members/dashboard.html"      },
-    { "route": "/members/admin",          "rewrite": "/members/admin.html"          }
+    { "route": "/members/admin",          "rewrite": "/members/admin.html"          },
+    { "route": "/blog",     "redirect": "/go-deeper",      "statusCode": 301 },
+    { "route": "/blog.html","redirect": "/go-deeper.html", "statusCode": 301 },
+    { "route": "/blog/a-family-of-missionary-servants.html", "redirect": "/go-deeper/a-family-of-missionary-servants.html", "statusCode": 301 },
+    { "route": "/blog/dna.html", "redirect": "/go-deeper/dna.html", "statusCode": 301 },
+    { "route": "/blog/four-idols.html", "redirect": "/go-deeper/four-idols.html", "statusCode": 301 },
+    { "route": "/blog/gospel-fluency.html", "redirect": "/go-deeper/gospel-fluency.html", "statusCode": 301 },
+    { "route": "/blog/matthew-715-29.html", "redirect": "/go-deeper/matthew-715-29.html", "statusCode": 301 },
+    { "route": "/blog/post.html", "redirect": "/go-deeper/post.html", "statusCode": 301 },
+    { "route": "/blog/root-to-fruit.html", "redirect": "/go-deeper/root-to-fruit.html", "statusCode": 301 },
+    { "route": "/blog/the-essence-of-sabbath.html", "redirect": "/go-deeper/the-essence-of-sabbath.html", "statusCode": 301 },
+    { "route": "/blog/*",   "redirect": "/go-deeper.html", "statusCode": 301 }
   ],
   "responseOverrides": {
     "404": {

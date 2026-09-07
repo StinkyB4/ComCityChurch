@@ -44,7 +44,7 @@ const PAGES = [
   { path: '/gatherings.html',                   name: 'gatherings' },
   { path: '/visit.html',                        name: 'visit' },
   { path: '/sermons.html',                      name: 'sermons' },
-  { path: '/blog.html',                         name: 'blog' },
+  { path: '/go-deeper.html',                         name: 'go-deeper' },
   { path: '/give.html',                         name: 'give' },
   { path: '/contact.html',                      name: 'contact' },
   { path: '/members/',                          name: 'members-login' },

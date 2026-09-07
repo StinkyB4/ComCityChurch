@@ -726,7 +726,7 @@
   });
 
   /* ── Mount 2: the older standalone admin page ────────────
-     Wraps admin.js's switchTab, exactly as admin-blog.js does. */
+     Wraps admin.js's switchTab, exactly as admin-go-deeper.js does. */
   document.addEventListener('DOMContentLoaded', function () {
     var orig = window.switchTab;
     window.switchTab = function (tab) {

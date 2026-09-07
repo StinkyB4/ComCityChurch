@@ -1,16 +1,16 @@
 /* ============================================================
-   BLOG EDITOR — Members Portal
-   Styles for the blog post list, editor toolbar, and canvas.
-   Loaded by dashboard.html via dashboard-blog.js injection.
+   GO DEEPER EDITOR — Members Portal
+   Styles for the go-deeper post list, editor toolbar, and canvas.
+   Loaded by dashboard.html via dashboard-go-deeper.js injection.
    ============================================================ */
 
 /* ── Post list table ─────────────────────────────────────── */
-.blog-posts-table {
+.go-deeper-posts-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.88rem;
 }
-.blog-posts-table th {
+.go-deeper-posts-table th {
   text-align: left;
   padding: 8px 12px;
   font-size: 0.75rem;
@@ -20,16 +20,16 @@
   color: var(--color-text-muted, #5C718E);
   border-bottom: 2px solid #e5eaf0;
 }
-.blog-posts-table td {
+.go-deeper-posts-table td {
   padding: 12px;
   border-bottom: 1px solid #f0f4f8;
   vertical-align: middle;
 }
-.blog-posts-table tr:last-child td { border-bottom: none; }
-.blog-posts-table tr:hover td { background: #f7f9fc; }
+.go-deeper-posts-table tr:last-child td { border-bottom: none; }
+.go-deeper-posts-table tr:hover td { background: #f7f9fc; }
 
 /* ── Status badges ───────────────────────────────────────── */
-.blog-status {
+.go-deeper-status {
   display: inline-block;
   font-size: 0.72rem;
   font-weight: 700;
@@ -39,24 +39,24 @@
   border-radius: 20px;
   white-space: nowrap;
 }
-.blog-status--draft     { background: #f0f4f8; color: #5C718E; }
-.blog-status--pending   { background: #fff3e0; color: #e65100; }
-.blog-status--published { background: #e8f5e9; color: #2e7d32; }
-.blog-status--scheduled { background: #e8eaf6; color: #3949ab; }
+.go-deeper-status--draft     { background: #f0f4f8; color: #5C718E; }
+.go-deeper-status--pending   { background: #fff3e0; color: #e65100; }
+.go-deeper-status--published { background: #e8f5e9; color: #2e7d32; }
+.go-deeper-status--scheduled { background: #e8eaf6; color: #3949ab; }
 
 /* ── Editor wrap (two-panel layout) ─────────────────────── */
-.blog-editor-wrap {
+.go-deeper-editor-wrap {
   display: flex;
   gap: 24px;
   align-items: flex-start;
   min-height: 600px;
 }
 @media (max-width: 900px) {
-  .blog-editor-wrap { flex-direction: column; }
+  .go-deeper-editor-wrap { flex-direction: column; }
 }
 
 /* ── Left panel: toolbar + canvas ────────────────────────── */
-.blog-editor-left {
+.go-deeper-editor-left {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -65,7 +65,7 @@
 }
 
 /* ── Toolbar ─────────────────────────────────────────────── */
-.blog-toolbar {
+.go-deeper-toolbar {
   display: flex;
   flex-wrap: wrap;
   gap: 2px;
@@ -75,13 +75,13 @@
   border-bottom: none;
   border-radius: 8px 8px 0 0;
 }
-.blog-toolbar-sep {
+.go-deeper-toolbar-sep {
   width: 1px;
   background: #dde3eb;
   margin: 2px 4px;
   align-self: stretch;
 }
-.blog-tb-btn {
+.go-deeper-tb-btn {
   padding: 5px 10px;
   border: 1.5px solid transparent;
   border-radius: 5px;
@@ -95,19 +95,19 @@
   transition: background 0.12s, border-color 0.12s;
   line-height: 1.3;
 }
-.blog-tb-btn:hover {
+.go-deeper-tb-btn:hover {
   background: #e5eaf0;
   border-color: #c8d0db;
 }
-.blog-tb-btn.is-active {
+.go-deeper-tb-btn.is-active {
   background: #112E53;
   color: #fff;
   border-color: #112E53;
 }
-.blog-tb-btn--danger:hover { background: #fce8e8; border-color: #D5393B; color: #D5393B; }
+.go-deeper-tb-btn--danger:hover { background: #fce8e8; border-color: #D5393B; color: #D5393B; }
 
 /* ── Editor canvas (iframe) ──────────────────────────────── */
-.blog-canvas-frame {
+.go-deeper-canvas-frame {
   width: 100%;
   min-height: 520px;
   border: 1.5px solid #dde3eb;
@@ -117,7 +117,7 @@
 }
 
 /* ── Right panel: metadata form ──────────────────────────── */
-.blog-meta-panel {
+.go-deeper-meta-panel {
   width: 280px;
   flex-shrink: 0;
   display: flex;
@@ -125,16 +125,16 @@
   gap: 16px;
 }
 @media (max-width: 900px) {
-  .blog-meta-panel { width: 100%; }
+  .go-deeper-meta-panel { width: 100%; }
 }
 
-.blog-meta-card {
+.go-deeper-meta-card {
   background: #fff;
   border: 1.5px solid #dde3eb;
   border-radius: 8px;
   padding: 16px;
 }
-.blog-meta-card h4 {
+.go-deeper-meta-card h4 {
   font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -144,7 +144,7 @@
 }
 
 /* hero image preview */
-.blog-hero-preview {
+.go-deeper-hero-preview {
   width: 100%;
   height: 140px;
   object-fit: cover;
@@ -153,7 +153,7 @@
   background: #f0f4f8;
   margin-bottom: 8px;
 }
-.blog-hero-placeholder {
+.go-deeper-hero-placeholder {
   width: 100%;
   height: 140px;
   background: #f0f4f8;
@@ -167,15 +167,15 @@
 }
 
 /* action buttons row */
-.blog-editor-actions {
+.go-deeper-editor-actions {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
-.blog-editor-actions .mp-btn { flex: 1; min-width: 0; }
+.go-deeper-editor-actions .mp-btn { flex: 1; min-width: 0; }
 
 /* admin note banner */
-.blog-admin-note {
+.go-deeper-admin-note {
   background: #fff3e0;
   border: 1px solid #ffb74d;
   border-radius: 6px;
@@ -184,17 +184,17 @@
   color: #e65100;
   margin-bottom: 16px;
 }
-.blog-admin-note strong { display: block; margin-bottom: 4px; }
+.go-deeper-admin-note strong { display: block; margin-bottom: 4px; }
 
 /* editor header */
-.blog-editor-header {
+.go-deeper-editor-header {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 20px;
   flex-wrap: wrap;
 }
-.blog-editor-header h3 {
+.go-deeper-editor-header h3 {
   margin: 0;
   font-size: 1.1rem;
   font-weight: 700;
@@ -203,4 +203,4 @@
 }
 
 /* slug lock icon */
-.blog-slug-locked { color: #5C718E; font-size: 0.78rem; display: flex; align-items: center; gap: 4px; }
+.go-deeper-slug-locked { color: #5C718E; font-size: 0.78rem; display: flex; align-items: center; gap: 4px; }

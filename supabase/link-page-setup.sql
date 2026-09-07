@@ -71,7 +71,7 @@ create index if not exists link_page_links_order_idx
 
 -- ------------------------------------------------------------
 -- 3. UPDATED_AT triggers
---    (update_updated_at_column() already exists from the blog
+--    (update_updated_at_column() already exists from the Go Deeper
 --     setup; created here too so this file stands alone.)
 -- ------------------------------------------------------------
 create or replace function update_updated_at_column()
