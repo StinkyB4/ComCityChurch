@@ -125,7 +125,7 @@ async function handleSignIn(e) {
       const profile = await getProfile();
 
       if (profile.status === 'pending') {
-        showMessage('signin', 'info', 'Your account is pending approval. You'll receive an email when approved.');
+        showMessage('signin', 'info', 'Your account is pending approval. You\'ll receive an email when approved.');
         await signOut();
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
