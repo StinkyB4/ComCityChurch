@@ -585,6 +585,10 @@
         e.preventDefault();
         var fd = new FormData(form);
         var uid = fd.get('edit_uid');
+        /* "+ Add"/"Remove" on a child row submit the form to persist the change
+           but expect to stay on this member — only an explicit Save Changes
+           returns to the list */
+        var stayEdit = fd.get('stay_edit') === '1';
         var updates = {
           first_name: fd.get('first_name') || '', last_name: fd.get('last_name') || '',
           full_name: ((fd.get('first_name') || '') + ' ' + (fd.get('last_name') || '')).trim(),
@@ -648,7 +652,17 @@
 
         if (error) { window._adminEditResult = { errors: [error.message] }; renderAdminTab(); return; }
         window._adminEditResult = { success: true };
-        var url = new URL(window.location.href); url.searchParams.set('tab', 'admin'); url.searchParams.delete('admin_edit');
+        var url = new URL(window.location.href); url.searchParams.set('tab', 'admin');
+        if (stayEdit) {
+          /* keep admin_edit so the re-render lands back on this member; the
+             reloaded editor shows the saved child plus a fresh blank row */
+          window.history.replaceState({}, '', url.toString());
+          await renderAdminTab();
+          var blank = document.querySelector('#admin-children-list .mp-child-row:last-child .mp-child-name');
+          if (blank) blank.focus();
+          return;
+        }
+        url.searchParams.delete('admin_edit');
         window.history.pushState({}, '', url.toString());
         renderAdminTab();
       });
