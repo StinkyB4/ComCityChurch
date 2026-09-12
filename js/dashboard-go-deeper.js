@@ -1,10 +1,10 @@
 /**
- * DASHBOARD — Blog Tab
- * Registers render_blog on window.mpDashboard.
+ * DASHBOARD — Go Deeper Tab
+ * Registers render_godeeper on window.mpDashboard.
  * Leaders and admins can create/edit posts and submit for review.
  *
  * Supabase table required: blog_posts
- * See supabase-blog-setup.sql for schema and RLS policies.
+ * See supabase-go-deeper-setup.sql for schema and RLS policies.
  */
 (function () {
   'use strict';
@@ -20,9 +20,9 @@
 
   /* ── Inject editor CSS once ──────────────────────────────── */
   function injectCSS() {
-    if (document.getElementById('blog-editor-css')) return;
+    if (document.getElementById('go-deeper-editor-css')) return;
     var link = document.createElement('link');
-    link.id = 'blog-editor-css';
+    link.id = 'go-deeper-editor-css';
     link.rel = 'stylesheet';
     link.href = '/css/editor.css';
     document.head.appendChild(link);
@@ -60,7 +60,7 @@
     var _slugLocked = false; /* lock slug after first publish */
 
     /* ── Post list ─────────────────────────────────────────── */
-    async function renderBlogList() {
+    async function renderGoDeeperList() {
       var user = D.getUser();
       var isAdmin = D.isAdmin();
 
@@ -72,8 +72,8 @@
       if (error) { setContent('<p class="mp-empty">Error loading posts: ' + esc(error.message) + '</p>'); return; }
 
       var html = '<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px;">';
-      html += '<h2 class="mp-tab-title" style="margin:0;">Blog Posts</h2>';
-      html += '<button class="mp-btn mp-btn--primary" onclick="mpBlog.openEditor(null)">+ New Post</button>';
+      html += '<h2 class="mp-tab-title" style="margin:0;">Go Deeper Posts</h2>';
+      html += '<button class="mp-btn mp-btn--primary" onclick="mpGoDeeper.openEditor(null)">+ New Post</button>';
       html += '</div>';
 
       if (!posts || !posts.length) {
@@ -83,23 +83,23 @@
       }
 
       html += '<div style="background:#fff; border:1.5px solid #dde3eb; border-radius:8px; overflow:hidden;">';
-      html += '<table class="blog-posts-table"><thead><tr>';
+      html += '<table class="go-deeper-posts-table"><thead><tr>';
       html += '<th>Title</th><th>Status</th><th>Date</th>';
       if (isAdmin) html += '<th>Author</th>';
       html += '<th style="text-align:right;">Actions</th>';
       html += '</tr></thead><tbody>';
 
       posts.forEach(function (p) {
-        var statusClass = 'blog-status--' + p.status;
+        var statusClass = 'go-deeper-status--' + p.status;
         html += '<tr>';
         html += '<td style="font-weight:600; color:#112E53;">' + esc(p.title || '(untitled)') + '</td>';
-        html += '<td><span class="blog-status ' + statusClass + '">' + esc(p.status) + '</span></td>';
+        html += '<td><span class="go-deeper-status ' + statusClass + '">' + esc(p.status) + '</span></td>';
         html += '<td style="color:#5C718E; font-size:0.83rem;">' + esc(fmtPubDate(p)) + '</td>';
         if (isAdmin) html += '<td style="font-size:0.83rem; color:#5C718E;">' + esc(p.author_name) + '</td>';
         html += '<td style="text-align:right;">';
-        html += '<button class="mp-btn mp-btn--small mp-btn--outline" onclick="mpBlog.openEditor(\'' + esc(p.id) + '\')">Edit</button> ';
-        html += '<a href="/blog/post.html?slug=' + encodeURIComponent(p.slug) + '&preview=1" target="_blank" class="mp-btn mp-btn--small" style="background:#f0f4f8; color:#112E53; text-decoration:none;">Preview</a> ';
-        html += '<button class="mp-btn mp-btn--small blog-tb-btn--danger" onclick="mpBlog.deletePost(\'' + esc(p.id) + '\',\'' + esc(p.title) + '\')">Delete</button>';
+        html += '<button class="mp-btn mp-btn--small mp-btn--outline" onclick="mpGoDeeper.openEditor(\'' + esc(p.id) + '\')">Edit</button> ';
+        html += '<a href="/go-deeper/post.html?slug=' + encodeURIComponent(p.slug) + '&preview=1" target="_blank" class="mp-btn mp-btn--small" style="background:#f0f4f8; color:#112E53; text-decoration:none;">Preview</a> ';
+        html += '<button class="mp-btn mp-btn--small go-deeper-tb-btn--danger" onclick="mpGoDeeper.deletePost(\'' + esc(p.id) + '\',\'' + esc(p.title) + '\')">Delete</button>';
         html += '</td></tr>';
       });
 
@@ -132,93 +132,93 @@
       var html = '';
 
       /* header */
-      html += '<div class="blog-editor-header">';
-      html += '<button class="mp-btn mp-btn--outline mp-btn--small" onclick="mpBlog.backToList()">← All Posts</button>';
+      html += '<div class="go-deeper-editor-header">';
+      html += '<button class="mp-btn mp-btn--outline mp-btn--small" onclick="mpGoDeeper.backToList()">← All Posts</button>';
       html += '<h3>' + (post ? 'Edit Post' : 'New Post') + '</h3>';
-      html += '<span class="blog-status blog-status--' + esc(status) + '">' + esc(status) + '</span>';
+      html += '<span class="go-deeper-status go-deeper-status--' + esc(status) + '">' + esc(status) + '</span>';
       html += '</div>';
 
       if (adminNote && status === 'draft') {
-        html += '<div class="blog-admin-note"><strong>Returned by admin:</strong>' + esc(adminNote) + '</div>';
+        html += '<div class="go-deeper-admin-note"><strong>Returned by admin:</strong>' + esc(adminNote) + '</div>';
       }
 
-      html += '<div class="blog-editor-wrap">';
+      html += '<div class="go-deeper-editor-wrap">';
 
       /* ── Left: toolbar + iframe canvas ── */
-      html += '<div class="blog-editor-left">';
-      html += '<div class="blog-toolbar" id="blog-toolbar">';
+      html += '<div class="go-deeper-editor-left">';
+      html += '<div class="go-deeper-toolbar" id="go-deeper-toolbar">';
 
       /* Block formats */
-      html += '<button class="blog-tb-btn" title="Section heading" onclick="mpBlog.applyBlock(\'h2\',\'fade-in-up\')">H2</button>';
-      html += '<button class="blog-tb-btn" title="Sub-heading" onclick="mpBlog.applyBlock(\'h3\',\'fade-in-up\')">H3</button>';
-      html += '<button class="blog-tb-btn" title="Body paragraph" onclick="mpBlog.applyBlock(\'p\',\'fade-in-up\')">Body</button>';
-      html += '<div class="blog-toolbar-sep"></div>';
+      html += '<button class="go-deeper-tb-btn" title="Section heading" onclick="mpGoDeeper.applyBlock(\'h2\',\'fade-in-up\')">H2</button>';
+      html += '<button class="go-deeper-tb-btn" title="Sub-heading" onclick="mpGoDeeper.applyBlock(\'h3\',\'fade-in-up\')">H3</button>';
+      html += '<button class="go-deeper-tb-btn" title="Body paragraph" onclick="mpGoDeeper.applyBlock(\'p\',\'fade-in-up\')">Body</button>';
+      html += '<div class="go-deeper-toolbar-sep"></div>';
 
       /* Text styles */
-      html += '<button class="blog-tb-btn" title="Eyebrow label" onclick="mpBlog.insertInline(\'eyebrow\')">Eyebrow</button>';
-      html += '<button class="blog-tb-btn" title="Pull quote" onclick="mpBlog.applyBlock(\'p\',\'pull-quote fade-in-up\')">Pull Quote</button>';
-      html += '<button class="blog-tb-btn" title="Scripture passage" onclick="mpBlog.applyBlock(\'p\',\'scripture fade-in-up\')">Scripture</button>';
-      html += '<div class="blog-toolbar-sep"></div>';
+      html += '<button class="go-deeper-tb-btn" title="Eyebrow label" onclick="mpGoDeeper.insertInline(\'eyebrow\')">Eyebrow</button>';
+      html += '<button class="go-deeper-tb-btn" title="Pull quote" onclick="mpGoDeeper.applyBlock(\'p\',\'pull-quote fade-in-up\')">Pull Quote</button>';
+      html += '<button class="go-deeper-tb-btn" title="Scripture passage" onclick="mpGoDeeper.applyBlock(\'p\',\'scripture fade-in-up\')">Scripture</button>';
+      html += '<div class="go-deeper-toolbar-sep"></div>';
 
       /* Inline */
-      html += '<button class="blog-tb-btn" title="Bold" onclick="mpBlog.execCmd(\'bold\')"><strong>B</strong></button>';
-      html += '<button class="blog-tb-btn" title="Italic" onclick="mpBlog.execCmd(\'italic\')"><em>I</em></button>';
-      html += '<div class="blog-toolbar-sep"></div>';
+      html += '<button class="go-deeper-tb-btn" title="Bold" onclick="mpGoDeeper.execCmd(\'bold\')"><strong>B</strong></button>';
+      html += '<button class="go-deeper-tb-btn" title="Italic" onclick="mpGoDeeper.execCmd(\'italic\')"><em>I</em></button>';
+      html += '<div class="go-deeper-toolbar-sep"></div>';
 
       /* Insert */
-      html += '<button class="blog-tb-btn" title="Styled blockquote" onclick="mpBlog.insertBlockquote()">Blockquote</button>';
-      html += '<button class="blog-tb-btn" title="Unordered list" onclick="mpBlog.execCmd(\'insertUnorderedList\')">List</button>';
-      html += '<button class="blog-tb-btn" title="Insert a link button" onclick="mpBlog.insertButton()">Button</button>';
-      html += '<button class="blog-tb-btn" title="Insert inline image" onclick="mpBlog.insertImage()">Image</button>';
+      html += '<button class="go-deeper-tb-btn" title="Styled blockquote" onclick="mpGoDeeper.insertBlockquote()">Blockquote</button>';
+      html += '<button class="go-deeper-tb-btn" title="Unordered list" onclick="mpGoDeeper.execCmd(\'insertUnorderedList\')">List</button>';
+      html += '<button class="go-deeper-tb-btn" title="Insert a link button" onclick="mpGoDeeper.insertButton()">Button</button>';
+      html += '<button class="go-deeper-tb-btn" title="Insert inline image" onclick="mpGoDeeper.insertImage()">Image</button>';
 
       html += '</div>'; /* end toolbar */
 
       /* iframe canvas */
-      html += '<iframe id="blog-editor-frame" class="blog-canvas-frame" title="Post content editor"></iframe>';
+      html += '<iframe id="go-deeper-editor-frame" class="go-deeper-canvas-frame" title="Post content editor"></iframe>';
       html += '</div>'; /* end left */
 
       /* ── Right: metadata ── */
-      html += '<div class="blog-meta-panel">';
+      html += '<div class="go-deeper-meta-panel">';
 
       /* Publish actions */
-      html += '<div class="blog-meta-card">';
+      html += '<div class="go-deeper-meta-card">';
       html += '<h4>Publish</h4>';
-      html += '<div class="blog-editor-actions">';
-      html += '<button class="mp-btn mp-btn--secondary" onclick="mpBlog.saveDraft()">Save Draft</button>';
+      html += '<div class="go-deeper-editor-actions">';
+      html += '<button class="mp-btn mp-btn--secondary" onclick="mpGoDeeper.saveDraft()">Save Draft</button>';
       if (status !== 'published' && status !== 'scheduled') {
-        html += '<button class="mp-btn mp-btn--primary" onclick="mpBlog.submitForReview()">Submit for Review</button>';
+        html += '<button class="mp-btn mp-btn--primary" onclick="mpGoDeeper.submitForReview()">Submit for Review</button>';
       }
       html += '</div>';
       html += '</div>';
 
       /* Hero image */
-      html += '<div class="blog-meta-card"><h4>Hero Image</h4>';
+      html += '<div class="go-deeper-meta-card"><h4>Hero Image</h4>';
       if (heroUrl) {
-        html += '<img id="blog-hero-preview" src="' + esc(heroUrl) + '" class="blog-hero-preview" alt="Hero image">';
+        html += '<img id="go-deeper-hero-preview" src="' + esc(heroUrl) + '" class="go-deeper-hero-preview" alt="Hero image">';
       } else {
-        html += '<div class="blog-hero-placeholder" id="blog-hero-placeholder">No image selected</div>';
-        html += '<img id="blog-hero-preview" src="" class="blog-hero-preview" alt="Hero image" style="display:none;">';
+        html += '<div class="go-deeper-hero-placeholder" id="go-deeper-hero-placeholder">No image selected</div>';
+        html += '<img id="go-deeper-hero-preview" src="" class="go-deeper-hero-preview" alt="Hero image" style="display:none;">';
       }
-      html += '<label class="mp-btn mp-btn--secondary mp-btn--small" for="blog-hero-file" style="cursor:pointer; display:block; text-align:center; margin-top:4px;">Choose Image</label>';
-      html += '<input type="file" id="blog-hero-file" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="mpBlog.onHeroFile(this)">';
+      html += '<label class="mp-btn mp-btn--secondary mp-btn--small" for="go-deeper-hero-file" style="cursor:pointer; display:block; text-align:center; margin-top:4px;">Choose Image</label>';
+      html += '<input type="file" id="go-deeper-hero-file" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="mpGoDeeper.onHeroFile(this)">';
       html += '<span class="mp-hint" style="margin-top:4px; display:block;">JPG/PNG/WebP. Recommended: 1400×700px.</span>';
       html += '</div>';
 
       /* Post details */
-      html += '<div class="blog-meta-card"><h4>Details</h4>';
+      html += '<div class="go-deeper-meta-card"><h4>Details</h4>';
       html += '<div class="mp-form-group"><label style="font-size:0.8rem;">Title <span class="mp-required">*</span></label>';
-      html += '<input type="text" id="blog-title" value="' + esc(title) + '" placeholder="Post title" oninput="mpBlog.onTitleInput(this.value)"></div>';
+      html += '<input type="text" id="go-deeper-title" value="' + esc(title) + '" placeholder="Post title" oninput="mpGoDeeper.onTitleInput(this.value)"></div>';
 
       html += '<div class="mp-form-group"><label style="font-size:0.8rem;">Slug';
-      if (_slugLocked) html += ' <span class="blog-slug-locked" title="Locked after publishing">🔒</span>';
+      if (_slugLocked) html += ' <span class="go-deeper-slug-locked" title="Locked after publishing">🔒</span>';
       html += '</label>';
-      html += '<input type="text" id="blog-slug" value="' + esc(slug) + '" placeholder="url-friendly-slug"' + (_slugLocked ? ' readonly style="background:#f4f5f7; color:#5C718E;"' : '') + '></div>';
+      html += '<input type="text" id="go-deeper-slug" value="' + esc(slug) + '" placeholder="url-friendly-slug"' + (_slugLocked ? ' readonly style="background:#f4f5f7; color:#5C718E;"' : '') + '></div>';
 
       html += '<div class="mp-form-group"><label style="font-size:0.8rem;">Category</label>';
-      html += '<input type="text" id="blog-category" value="' + esc(category) + '" placeholder="e.g. Sermon Reflection"></div>';
+      html += '<input type="text" id="go-deeper-category" value="' + esc(category) + '" placeholder="e.g. Sermon Reflection"></div>';
 
       html += '<div class="mp-form-group"><label style="font-size:0.8rem;">Excerpt</label>';
-      html += '<textarea id="blog-excerpt" rows="3" placeholder="Brief description shown on the blog index…">' + esc(excerpt) + '</textarea></div>';
+      html += '<textarea id="go-deeper-excerpt" rows="3" placeholder="Brief description shown on the go-deeper index…">' + esc(excerpt) + '</textarea></div>';
 
       html += '</div>'; /* end details card */
       html += '</div>'; /* end meta panel */
@@ -227,7 +227,7 @@
       setContent(html);
 
       /* init iframe editor */
-      _editorFrame = document.getElementById('blog-editor-frame');
+      _editorFrame = document.getElementById('go-deeper-editor-frame');
       if (_editorFrame) {
         _editorFrame.addEventListener('load', function () {
           initEditorFrame(post ? post.content : '');
@@ -263,7 +263,7 @@
       _editorFrame.contentWindow.addEventListener('keydown', function (e) {
         if ((e.ctrlKey || e.metaKey) && e.key === 's') {
           e.preventDefault();
-          mpBlog.saveDraft();
+          mpGoDeeper.saveDraft();
         }
       });
     }
@@ -406,8 +406,8 @@
       _heroFileName = input.files[0].name;
       var reader = new FileReader();
       reader.onload = function (e) {
-        var preview = document.getElementById('blog-hero-preview');
-        var placeholder = document.getElementById('blog-hero-placeholder');
+        var preview = document.getElementById('go-deeper-hero-preview');
+        var placeholder = document.getElementById('go-deeper-hero-placeholder');
         if (preview) { preview.src = e.target.result; preview.style.display = ''; }
         if (placeholder) placeholder.style.display = 'none';
       };
@@ -417,17 +417,17 @@
     /* ── Title → auto-slug ──────────────────────────────────── */
     function onTitleInput(val) {
       if (_slugLocked) return;
-      var slugEl = document.getElementById('blog-slug');
+      var slugEl = document.getElementById('go-deeper-slug');
       if (slugEl) slugEl.value = slugify(val);
     }
 
     /* ── Collect form fields ────────────────────────────────── */
     function collectFields() {
       return {
-        title: (document.getElementById('blog-title') || {}).value || '',
-        slug: (document.getElementById('blog-slug') || {}).value || '',
-        category: (document.getElementById('blog-category') || {}).value || '',
-        excerpt: (document.getElementById('blog-excerpt') || {}).value || '',
+        title: (document.getElementById('go-deeper-title') || {}).value || '',
+        slug: (document.getElementById('go-deeper-slug') || {}).value || '',
+        category: (document.getElementById('go-deeper-category') || {}).value || '',
+        excerpt: (document.getElementById('go-deeper-excerpt') || {}).value || '',
         content: getEditorContent()
       };
     }
@@ -497,7 +497,7 @@
       var { error } = await sb().from('blog_posts').update({ status: 'pending', admin_note: null }).eq('id', _editingId);
       if (error) { alert('Submit failed: ' + error.message); return; }
       showToast('Post submitted for review.');
-      renderBlogList();
+      renderGoDeeperList();
     }
 
     /* ── Delete post ────────────────────────────────────────── */
@@ -506,7 +506,7 @@
       var { error } = await sb().from('blog_posts').delete().eq('id', id);
       if (error) { alert('Delete failed: ' + error.message); return; }
       showToast('Post deleted.');
-      renderBlogList();
+      renderGoDeeperList();
     }
 
     /* ── execCommand wrapper ─────────────────────────────────── */
@@ -517,8 +517,8 @@
     }
 
     /* ── Public API (global for onclick handlers) ────────────── */
-    window.mpBlog = {
-      backToList:       renderBlogList,
+    window.mpGoDeeper = {
+      backToList:       renderGoDeeperList,
       openEditor:       renderEditor,
       saveDraft:        saveDraft,
       submitForReview:  submitForReview,
@@ -534,12 +534,12 @@
     };
 
     /* ── Register tab renderer ───────────────────────────────── */
-    window.mpDashboard.render_blog = async function () {
+    window.mpDashboard.render_godeeper = async function () {
       if (!D.isLeader()) {
-        D.setContent('<p class="mp-empty">Blog posting is available to leaders and admins.</p>');
+        D.setContent('<p class="mp-empty">Go Deeper posting is available to leaders and admins.</p>');
         return;
       }
-      await renderBlogList();
+      await renderGoDeeperList();
     };
 
   }); /* end whenReady */

@@ -1,8 +1,8 @@
 /**
- * BLOG PUBLIC — Commissioned City Church
+ * GO DEEPER PUBLIC — Commissioned City Church
  * Handles two contexts:
- *   1. blog.html — fetches published posts and renders dynamic cards
- *   2. blog/post.html — reads ?slug= and renders the full post
+ *   1. go-deeper.html — fetches published posts and renders dynamic cards
+ *   2. go-deeper/post.html — reads ?slug= and renders the full post
  */
 (function () {
   'use strict';
@@ -34,8 +34,8 @@
     return res.json();
   }
 
-  /* ── CONTEXT: blog.html ──────────────────────────────────── */
-  async function initBlogIndex() {
+  /* ── CONTEXT: go-deeper.html ──────────────────────────────────── */
+  async function initGoDeeperIndex() {
     var grid = document.getElementById('dynamic-posts-grid');
     if (!grid) return;
 
@@ -47,7 +47,7 @@
 
     var html = '';
     data.forEach(function (post, i) {
-      var href = 'blog/post.html?slug=' + encodeURIComponent(post.slug);
+      var href = 'go-deeper/post.html?slug=' + encodeURIComponent(post.slug);
       var delay = ['', ' delay-1', ' delay-2', ' delay-3'][i % 4];
       var imgHtml = post.hero_image_url
         ? '<img src="' + esc(post.hero_image_url) + '" alt="' + esc(post.title) + '" style="width:100%; height:220px; object-fit:cover; display:block; transition:transform 0.3s;" onmouseover="this.style.transform=\'scale(1.03)\'" onmouseout="this.style.transform=\'scale(1)\'">'
@@ -86,7 +86,7 @@
     }
   }
 
-  /* ── CONTEXT: blog/post.html ─────────────────────────────── */
+  /* ── CONTEXT: go-deeper/post.html ─────────────────────────────── */
   async function initPostPage() {
     var main = document.getElementById('post-main');
     if (!main) return;
@@ -138,7 +138,7 @@
     /* hero */
     html += '<section class="page-hero page-hero--navy page-hero--left" style="min-height:52vh; ' + heroStyle + '" aria-labelledby="post-heading">';
     html += '<nav style="position:absolute; top:calc(var(--navbar-h,72px) + var(--space-md)); left:var(--space-lg); font-size:13px; color:rgba(255,255,255,0.6);" aria-label="Breadcrumb">';
-    html += '<a href="../blog.html" style="color:rgba(255,255,255,0.6); text-decoration:none;">Blog</a>';
+    html += '<a href="../go-deeper.html" style="color:rgba(255,255,255,0.6); text-decoration:none;">Go Deeper</a>';
     if (post.category) {
       html += '<span aria-hidden="true" style="margin:0 6px;">›</span><span>' + esc(post.category) + '</span>';
     }
@@ -152,10 +152,10 @@
 
     /* article body */
     html += '<section class="section"><div class="container text-block mx-auto">';
-    html += '<a href="../blog.html" style="display:inline-flex; align-items:center; gap:6px; font-size:14px; font-weight:600; color:var(--muted-blue); margin-bottom:var(--space-lg); border-bottom:none;">← Back to Blog</a>';
+    html += '<a href="../go-deeper.html" style="display:inline-flex; align-items:center; gap:6px; font-size:14px; font-weight:600; color:var(--muted-blue); margin-bottom:var(--space-lg); border-bottom:none;">← Back to Go Deeper</a>';
     html += post.content || '<p class="fade-in-up">No content yet.</p>';
     html += '<div class="fade-in-up" style="display:flex; gap:var(--space-md); margin-top:var(--space-xl); flex-wrap:wrap;">';
-    html += '<a href="../blog.html" class="btn btn-outline">← Back to Blog</a>';
+    html += '<a href="../go-deeper.html" class="btn btn-outline">← Back to Go Deeper</a>';
     html += '</div></div></section>';
 
     main.innerHTML = html;
@@ -172,7 +172,7 @@
     main.innerHTML = '<section class="section"><div class="container text-block mx-auto" style="padding-top:80px;">'
       + '<h2 style="color:var(--navy);">Post not found</h2>'
       + '<p style="color:var(--muted-blue);">' + esc(msg) + '</p>'
-      + '<a href="../blog.html" class="btn btn-outline" style="margin-top:24px;">← Back to Blog</a>'
+      + '<a href="../go-deeper.html" class="btn btn-outline" style="margin-top:24px;">← Back to Go Deeper</a>'
       + '</div></section>';
   }
 
@@ -199,7 +199,7 @@
   function boot() {
     var path = window.location.pathname;
     if (document.getElementById('dynamic-posts-grid')) {
-      initBlogIndex();
+      initGoDeeperIndex();
     } else if (document.getElementById('post-main')) {
       initPostPage();
     }

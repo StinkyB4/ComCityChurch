@@ -33,7 +33,7 @@
  */
 
 // NOTE: All paths are root-absolute (/assets/...) so the registry resolves
-// correctly from any page depth (root, /communities/, /members/, /blog/).
+// correctly from any page depth (root, /communities/, /members/, /go-deeper/).
 //
 // PLACEHOLDER IMAGES — these keys currently reuse existing photography because
 // the real photo has not been supplied yet. Swap in the real image when ready:
@@ -275,41 +275,41 @@ const SITE_MEDIA = {
       }
     },
 
-    // ── BLOG PAGES ─────────────────────────────────────────────────
-    // "blog" is used by blog.html (root level) — assets/ paths.
-    // Post-level keys are used by blog/*.html (one level deep) — ../assets/ paths.
+    // ── GO DEEPER PAGES ─────────────────────────────────────────────────
+    // "go-deeper" is used by go-deeper.html (root level) — assets/ paths.
+    // Post-level keys are used by go-deeper/*.html (one level deep) — ../assets/ paths.
     // Same convention as communities/ sub-pages. Switch to absolute paths
-    // (e.g. /assets/media/blog/...) when the site is deployed to a server.
+    // (e.g. /assets/media/go-deeper/...) when the site is deployed to a server.
 
-    blog: {
+    "go-deeper": {
       type: "image",
-      src: "/assets/media/blog/post-missionary-servants.jpg",
-      alt: "Resources — Blog",
+      src: "/assets/media/go-deeper/post-missionary-servants.jpg",
+      alt: "Resources — Go Deeper",
       overlay: { type: "dark", opacity: 0.55 }
     },
 
-    "blog-missionary-servants": {
+    "go-deeper-missionary-servants": {
       type: "image",
-      src: "/assets/media/blog/post-missionary-servants.jpg",
+      src: "/assets/media/go-deeper/post-missionary-servants.jpg",
       alt: "A Family of Missionary Servants",
       overlay: { type: "dark", opacity: 0.50 }
     },
 
-    "blog-matthew-715": {
+    "go-deeper-matthew-715": {
       type: "image",
-      src: "/assets/media/blog/post-matthew-715.jpg",
+      src: "/assets/media/go-deeper/post-matthew-715.jpg",
       alt: "Matthew 7:15–29 — Hearing and Doing",
       overlay: { type: "dark", opacity: 0.50 }
     },
 
-    "blog-gospel-fluency": {
+    "go-deeper-gospel-fluency": {
       type: "image",
-      src: "/assets/media/blog/post-gospel-fluency.jpg",
+      src: "/assets/media/go-deeper/post-gospel-fluency.jpg",
       alt: "Gospel Fluency",
       overlay: { type: "dark", opacity: 0.50 }
     },
 
-    "blog-four-idols": {
+    "go-deeper-four-idols": {
       type: "image",
       src: "/assets/media/heroes/four-idols.jpg",
       alt: "Nicolas Poussin, The Adoration of the Golden Calf (c. 1633\u201334): Israelites dancing around the golden calf while Moses descends with the tablets",
@@ -322,23 +322,23 @@ const SITE_MEDIA = {
     // because the etching is a very light, cream-toned image.
     // PLACEHOLDER IMAGE — post-dna.jpg currently reuses the welcome photo.
     // Swap in the real image at the same path when ready.
-    "blog-dna": {
+    "go-deeper-dna": {
       type: "image",
-      src: "/assets/media/blog/post-dna.jpg",
+      src: "/assets/media/go-deeper/post-dna.jpg",
       alt: "DNA: Discover, Nurture, Act",
       overlay: { type: "dark", opacity: 0.55 }
     },
 
-    "blog-root-to-fruit": {
+    "go-deeper-root-to-fruit": {
       type: "image",
-      src: "/assets/media/blog/post-root-to-fruit.jpg",
+      src: "/assets/media/go-deeper/post-root-to-fruit.jpg",
       alt: "Root to Fruit",
       overlay: { type: "dark", opacity: 0.62 }
     },
 
-    "blog-sabbath": {
+    "go-deeper-sabbath": {
       type: "image",
-      src: "/assets/media/blog/post-sabbath.jpg",
+      src: "/assets/media/go-deeper/post-sabbath.jpg",
       alt: "The Essence of Sabbath in the Body of Christ",
       overlay: { type: "dark", opacity: 0.50 }
     },

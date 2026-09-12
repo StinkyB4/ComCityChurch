@@ -1,6 +1,6 @@
 /**
- * ADMIN — Blog Management Tab
- * Adds a "Blog" tab to admin.html.
+ * ADMIN — Go Deeper Management Tab
+ * Adds a "Go Deeper" tab to admin.html.
  * Admins can: review pending posts, approve, schedule, reject, delete all posts.
  */
 (function () {
@@ -8,9 +8,9 @@
 
   /* ── Inject editor CSS once ──────────────────────────────── */
   function injectCSS() {
-    if (document.getElementById('blog-editor-css')) return;
+    if (document.getElementById('go-deeper-editor-css')) return;
     var link = document.createElement('link');
-    link.id = 'blog-editor-css';
+    link.id = 'go-deeper-editor-css';
     link.rel = 'stylesheet';
     link.href = '/css/editor.css';
     document.head.appendChild(link);
@@ -39,18 +39,18 @@
 
   /* ── Supabase client ─────────────────────────────────────── */
   function getSb() {
-    if (window._adminBlogSb) return window._adminBlogSb;
+    if (window._adminGoDeeperSb) return window._adminGoDeeperSb;
     if (!window.supabase) return null;
-    window._adminBlogSb = window.supabase.createClient(
+    window._adminGoDeeperSb = window.supabase.createClient(
       window.SUPABASE_URL, window.SUPABASE_ANON_KEY
     );
-    return window._adminBlogSb;
+    return window._adminGoDeeperSb;
   }
 
-  /* ── Render blog admin panel ─────────────────────────────── */
-  async function renderBlogAdmin(subTab) {
+  /* ── Render go-deeper admin panel ─────────────────────────────── */
+  async function renderGoDeeperAdmin(subTab) {
     subTab = subTab || 'pending';
-    var panel = document.getElementById('tab-blog');
+    var panel = document.getElementById('tab-godeeper');
     if (!panel) return;
 
     injectCSS();
@@ -60,10 +60,10 @@
 
     /* sub-nav */
     var html = '<div class="section-header" style="margin-bottom:1.5rem; align-items:flex-start; flex-direction:column; gap:12px;">';
-    html += '<h2>Blog Posts</h2>';
+    html += '<h2>Go Deeper Posts</h2>';
     html += '<div style="display:flex; gap:8px; flex-wrap:wrap;">';
-    html += '<button class="mp-btn mp-btn--small' + (subTab === 'pending' ? ' mp-btn--primary' : ' mp-btn--outline') + '" onclick="adminBlog.show(\'pending\')">Pending Review</button>';
-    html += '<button class="mp-btn mp-btn--small' + (subTab === 'all' ? ' mp-btn--primary' : ' mp-btn--outline') + '" onclick="adminBlog.show(\'all\')">All Posts</button>';
+    html += '<button class="mp-btn mp-btn--small' + (subTab === 'pending' ? ' mp-btn--primary' : ' mp-btn--outline') + '" onclick="adminGoDeeper.show(\'pending\')">Pending Review</button>';
+    html += '<button class="mp-btn mp-btn--small' + (subTab === 'all' ? ' mp-btn--primary' : ' mp-btn--outline') + '" onclick="adminGoDeeper.show(\'all\')">All Posts</button>';
     html += '</div></div>';
 
     if (subTab === 'pending') {
@@ -87,7 +87,7 @@
         html += '<div style="font-weight:700; font-size:0.95rem; color:#112E53;">' + esc(p.title) + '</div>';
         html += '<div style="font-size:0.8rem; color:#5C718E; margin-top:2px;">By ' + esc(p.author_name) + ' &nbsp;·&nbsp; Submitted ' + esc(fmtDate(p.updated_at)) + '</div>';
         html += '</div>';
-        html += '<a href="/blog/post.html?slug=' + encodeURIComponent(p.slug) + '&preview=1" target="_blank" class="mp-btn mp-btn--small" style="background:#e5ecf8; color:#112E53; text-decoration:none;">Preview →</a>';
+        html += '<a href="/go-deeper/post.html?slug=' + encodeURIComponent(p.slug) + '&preview=1" target="_blank" class="mp-btn mp-btn--small" style="background:#e5ecf8; color:#112E53; text-decoration:none;">Preview →</a>';
         html += '</div>';
 
         /* excerpt */
@@ -97,9 +97,9 @@
 
         /* actions */
         html += '<div style="padding:12px 16px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">';
-        html += '<button class="mp-btn mp-btn--small mp-btn--approve" onclick="adminBlog.approve(\'' + esc(p.id) + '\')">✓ Approve &amp; Publish</button>';
-        html += '<button class="mp-btn mp-btn--small" style="background:#e8eaf6; color:#3949ab;" onclick="adminBlog.scheduleModal(\'' + esc(p.id) + '\',\'' + esc(p.title) + '\')">Schedule</button>';
-        html += '<button class="mp-btn mp-btn--small mp-btn--danger" onclick="adminBlog.reject(\'' + esc(p.id) + '\',\'' + esc(p.title) + '\')">Reject</button>';
+        html += '<button class="mp-btn mp-btn--small mp-btn--approve" onclick="adminGoDeeper.approve(\'' + esc(p.id) + '\')">✓ Approve &amp; Publish</button>';
+        html += '<button class="mp-btn mp-btn--small" style="background:#e8eaf6; color:#3949ab;" onclick="adminGoDeeper.scheduleModal(\'' + esc(p.id) + '\',\'' + esc(p.title) + '\')">Schedule</button>';
+        html += '<button class="mp-btn mp-btn--small mp-btn--danger" onclick="adminGoDeeper.reject(\'' + esc(p.id) + '\',\'' + esc(p.title) + '\')">Reject</button>';
         html += '</div>';
         html += '</div>';
       });
@@ -119,7 +119,7 @@
       }
 
       html += '<div style="background:#fff; border:1.5px solid #dde3eb; border-radius:8px; overflow:hidden;">';
-      html += '<table class="blog-posts-table"><thead><tr>';
+      html += '<table class="go-deeper-posts-table"><thead><tr>';
       html += '<th>Title</th><th>Author</th><th>Status</th><th>Date</th><th style="text-align:right;">Actions</th>';
       html += '</tr></thead><tbody>';
 
@@ -127,17 +127,17 @@
         html += '<tr>';
         html += '<td style="font-weight:600; color:#112E53;">' + esc(p.title || '(untitled)') + '</td>';
         html += '<td style="font-size:0.83rem; color:#5C718E;">' + esc(p.author_name) + '</td>';
-        html += '<td><span class="blog-status blog-status--' + esc(p.status) + '">' + esc(p.status) + '</span></td>';
+        html += '<td><span class="go-deeper-status go-deeper-status--' + esc(p.status) + '">' + esc(p.status) + '</span></td>';
         html += '<td style="font-size:0.83rem; color:#5C718E;">' + esc(fmtDate(p.publish_at || p.updated_at)) + '</td>';
         html += '<td style="text-align:right;">';
-        html += '<a href="/blog/post.html?slug=' + encodeURIComponent(p.slug) + '&preview=1" target="_blank" class="mp-btn mp-btn--small" style="background:#e5ecf8; color:#112E53; text-decoration:none;">Preview</a> ';
+        html += '<a href="/go-deeper/post.html?slug=' + encodeURIComponent(p.slug) + '&preview=1" target="_blank" class="mp-btn mp-btn--small" style="background:#e5ecf8; color:#112E53; text-decoration:none;">Preview</a> ';
         if (p.status === 'published' || p.status === 'scheduled') {
-          html += '<button class="mp-btn mp-btn--small" style="background:#fff3e0; color:#e65100;" onclick="adminBlog.unpublish(\'' + esc(p.id) + '\')">Unpublish</button> ';
+          html += '<button class="mp-btn mp-btn--small" style="background:#fff3e0; color:#e65100;" onclick="adminGoDeeper.unpublish(\'' + esc(p.id) + '\')">Unpublish</button> ';
         }
         if (p.status === 'pending') {
-          html += '<button class="mp-btn mp-btn--small mp-btn--approve" onclick="adminBlog.approve(\'' + esc(p.id) + '\')">Approve</button> ';
+          html += '<button class="mp-btn mp-btn--small mp-btn--approve" onclick="adminGoDeeper.approve(\'' + esc(p.id) + '\')">Approve</button> ';
         }
-        html += '<button class="mp-btn mp-btn--small mp-btn--danger" onclick="adminBlog.deletePost(\'' + esc(p.id) + '\',\'' + esc(p.title) + '\')">Delete</button>';
+        html += '<button class="mp-btn mp-btn--small mp-btn--danger" onclick="adminGoDeeper.deletePost(\'' + esc(p.id) + '\',\'' + esc(p.title) + '\')">Delete</button>';
         html += '</td></tr>';
       });
 
@@ -167,7 +167,7 @@
     }).eq('id', id);
     if (error) { alert('Schedule failed: ' + error.message); return; }
     showToast('Post scheduled.');
-    renderBlogAdmin('pending');
+    renderGoDeeperAdmin('pending');
   }
 
   async function approve(id) {
@@ -179,7 +179,7 @@
     }).eq('id', id);
     if (error) { alert('Approve failed: ' + error.message); return; }
     showToast('Post published.');
-    renderBlogAdmin('pending');
+    renderGoDeeperAdmin('pending');
   }
 
   async function reject(id, title) {
@@ -192,7 +192,7 @@
     }).eq('id', id);
     if (error) { alert('Reject failed: ' + error.message); return; }
     showToast('Post returned to author.');
-    renderBlogAdmin('pending');
+    renderGoDeeperAdmin('pending');
   }
 
   async function unpublish(id) {
@@ -201,7 +201,7 @@
     var { error } = await sb.from('blog_posts').update({ status: 'draft', publish_at: null }).eq('id', id);
     if (error) { alert('Failed: ' + error.message); return; }
     showToast('Post unpublished.');
-    renderBlogAdmin('all');
+    renderGoDeeperAdmin('all');
   }
 
   async function deletePost(id, title) {
@@ -210,12 +210,12 @@
     var { error } = await sb.from('blog_posts').delete().eq('id', id);
     if (error) { alert('Delete failed: ' + error.message); return; }
     showToast('Post deleted.');
-    renderBlogAdmin('all');
+    renderGoDeeperAdmin('all');
   }
 
   /* ── Global API ──────────────────────────────────────────── */
-  window.adminBlog = {
-    show:          function (tab) { renderBlogAdmin(tab); },
+  window.adminGoDeeper = {
+    show:          function (tab) { renderGoDeeperAdmin(tab); },
     approve:       approve,
     scheduleModal: scheduleModal,
     reject:        reject,
@@ -225,23 +225,23 @@
 
   /* ── Hook into admin.html switchTab ──────────────────────── */
   document.addEventListener('DOMContentLoaded', function () {
-    /* wrap existing switchTab to intercept 'blog' */
+    /* wrap existing switchTab to intercept 'godeeper' */
     var origSwitchTab = window.switchTab;
     window.switchTab = function (tab) {
-      if (tab === 'blog') {
-        /* hide other panels, show blog panel */
+      if (tab === 'godeeper') {
+        /* hide other panels, show go-deeper panel */
         document.querySelectorAll('.admin-tab-panel').forEach(function (el) {
           el.style.display = 'none';
         });
-        var blogPanel = document.getElementById('tab-blog');
-        if (blogPanel) { blogPanel.style.display = ''; }
+        var goDeeperPanel = document.getElementById('tab-godeeper');
+        if (goDeeperPanel) { goDeeperPanel.style.display = ''; }
 
         /* update sub-nav active */
         document.querySelectorAll('#admin-sub-nav a[data-tab]').forEach(function (a) {
-          a.classList.toggle('active', a.dataset.tab === 'blog');
+          a.classList.toggle('active', a.dataset.tab === 'godeeper');
         });
 
-        renderBlogAdmin('pending');
+        renderGoDeeperAdmin('pending');
         return;
       }
       if (typeof origSwitchTab === 'function') origSwitchTab(tab);
