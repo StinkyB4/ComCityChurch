@@ -14,6 +14,7 @@ mock of `@supabase/supabase-js` into the real portal pages.
 | `mock-supabase.js` | Browser-side fake Supabase client (chainable query builder + auth/storage/channel/rpc stubs) backed by the seed. Served to pages in place of the CDN bundle. |
 | `run-portal-tests.mjs` | Puppeteer driver. Logs in as each person, drives the real dashboard UI, asserts notifications, drives the team-add form, screenshots everything. |
 | `send-reminders-sim.mjs` | Faithful Node port of `supabase/functions/send-reminders` run against the seed. Captures the emails it *would* send to `results/emails/*.html`. |
+| `test-master-schedule-picker.mjs` | Asserts the Master Schedule cell editor only offers people who are on that team. No browser: evaluates the real `dashboard-schedule-master.js` in a vm sandbox. |
 
 ## Run
 
@@ -22,6 +23,7 @@ cd tests/portal
 npm install                 # Puppeteer (Chromium cached from tests/ux)
 node send-reminders-sim.mjs # reminder-email logic + captured emails
 node run-portal-tests.mjs   # UI: welcome notifications, scheduler, team add, render emails
+node test-master-schedule-picker.mjs   # Master Schedule picker is team-scoped (no browser needed)
 ```
 
 Output: `results/portal-report.json`, `results/emails/*.html`,
