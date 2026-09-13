@@ -26,7 +26,7 @@
   var _rosters    = [];   // schedule_rosters rows (type='sunday')
   var _sundays    = [];   // ['2026-05-03', ...]
   var _teams      = [];   // teams with is_sunday_serving=true
-  var _tmMap      = {};   // team_id → [member_id, ...]
+  var _tmMap      = {};   // team_id → { members:[id], children:[id], families:[anchorId], nonmembers:[{name,email}] }
   var _profMap    = {};
   var _guestMap   = {};
   var _childMap   = {};
@@ -86,13 +86,68 @@
     return list;
   }
 
-  /* ── team-specific assignee dropdown ──────────────────────────── */
+  /* ── team roster (who is actually on each team) ───────────────────
+     team_members holds four kinds of row: regular members, children,
+     families (anchored to one parent) and non-member volunteers. */
+  var TM_COLS = 'team_id,member_id,member_type,child_id,nonmember_name,nonmember_email';
+
+  function emptyRoster() {
+    return { members: [], children: [], families: [], nonmembers: [] };
+  }
+
+  function buildTmMap(rows) {
+    _tmMap = {};
+    _teams.forEach(function (t) { _tmMap[t.id] = emptyRoster(); });
+    (rows || []).forEach(function (tm) {
+      var bucket = _tmMap[tm.team_id]; if (!bucket) return;
+      var mt = tm.member_type || 'member';
+      if (mt === 'child') {
+        if (tm.child_id && bucket.children.indexOf(tm.child_id) === -1) bucket.children.push(tm.child_id);
+      } else if (mt === 'family') {
+        if (tm.member_id && bucket.families.indexOf(tm.member_id) === -1) bucket.families.push(tm.member_id);
+      } else if (mt === 'nonmember') {
+        if (tm.nonmember_name) bucket.nonmembers.push({ name: tm.nonmember_name, email: tm.nonmember_email || '' });
+      } else if (tm.member_id && bucket.members.indexOf(tm.member_id) === -1) {
+        bucket.members.push(tm.member_id);
+      }
+    });
+    /* stable order — the dropdown addresses non-members by index */
+    Object.keys(_tmMap).forEach(function (tid) {
+      _tmMap[tid].nonmembers.sort(function (a, b) { return a.name.localeCompare(b.name); });
+    });
+  }
+
+  /* ── team-specific assignee dropdown ──────────────────────────────
+     Only people who are actually ON this team are offered: the team's
+     member rows (plus couples where BOTH spouses are on the team), the
+     families, children and non-member volunteers added to the team in
+     Teams → Edit. Assigning someone to Worship should never list the
+     whole church. */
+  function personName(p) {
+    if (!p) return '';
+    return ((p.first_name||'')+(p.last_name?' '+p.last_name:'')).trim() || p.full_name || '';
+  }
+
+  function teamRoster(team) {
+    return (team && _tmMap[team.id]) || emptyRoster();
+  }
+
+  /* true when the team has nobody on its roster to choose from */
+  function teamRosterEmpty(team) {
+    var r = teamRoster(team);
+    return !r.members.length && !r.children.length && !r.families.length && !r.nonmembers.length;
+  }
+
   function buildTeamOpts(team) {
-    var memberIds = _tmMap[team.id] || [];
-    var html = '<option value="">— Select person —</option>';
+    var roster = teamRoster(team);
+    var body = '';
+
+    /* members on this team (+ couples where both spouses are on it) */
+    var memberIds = roster.members.filter(function (pid) { return !!_profMap[pid]; });
+    memberIds.sort(function (a, b) { return personName(_profMap[a]).localeCompare(personName(_profMap[b])); });
     var mOpts = '', cOpts = '', seen = {};
     memberIds.forEach(function (pid) {
-      var p = _profMap[pid]; if (!p) return;
+      var p = _profMap[pid];
       if (p.spouse_id && _profMap[p.spouse_id] && memberIds.indexOf(p.spouse_id) !== -1) {
         var k = [p.id, p.spouse_id].sort().join('_');
         if (!seen[k]) {
@@ -100,44 +155,59 @@
           cOpts += '<option value="couple:' + p.id + ':' + p.spouse_id + '">' + esc(window.mpDashboard.coupleDisplayName(p, _profMap[p.spouse_id])) + '</option>';
         }
       }
-      var mn = ((p.first_name||'')+(p.last_name?' '+p.last_name:'')).trim()||p.full_name||'';
-      mOpts += '<option value="member:' + p.id + '">' + esc(mn) + '</option>';
+      mOpts += '<option value="member:' + p.id + '">' + esc(personName(p)) + '</option>';
     });
-    if (mOpts) html += '<optgroup label="Members">'         + mOpts + '</optgroup>';
-    if (cOpts) html += '<optgroup label="Couples">' + cOpts + '</optgroup>';
-    var famOpts = buildFamilyOpts();
-    if (famOpts) html += '<optgroup label="Families">' + famOpts + '</optgroup>';
-    if (team.allow_children) {
-      var kids = Object.values(_childMap).sort(function (a,b) { return a.name.localeCompare(b.name); }).map(function (c) {
-        var par = _profMap[c.profile_id];
-        var pn  = par ? (((par.first_name||'')+(par.last_name?' '+par.last_name:'')).trim()||par.full_name||'') : '';
-        return '<option value="child:' + c.id + '">' + esc(c.name+(pn?' ('+pn+')':'')) + '</option>';
+    if (mOpts) body += '<optgroup label="Members">' + mOpts + '</optgroup>';
+    if (cOpts) body += '<optgroup label="Couples">' + cOpts + '</optgroup>';
+
+    /* families added to this team */
+    var famOpts = buildFamilyOpts(roster.families);
+    if (famOpts) body += '<optgroup label="Families">' + famOpts + '</optgroup>';
+
+    /* children added to this team */
+    var kids = roster.children.map(function (cid) { return _childMap[cid]; })
+      .filter(Boolean)
+      .sort(function (a, b) { return a.name.localeCompare(b.name); })
+      .map(function (c) {
+        var pn = personName(_profMap[c.profile_id]);
+        return '<option value="child:' + c.id + '">' + esc(c.name + (pn ? ' (' + pn + ')' : '')) + '</option>';
       }).join('');
-      if (kids) html += '<optgroup label="Children">' + kids + '</optgroup>';
-    }
+    if (kids) body += '<optgroup label="Children">' + kids + '</optgroup>';
+
+    /* non-member volunteers added to this team */
+    var nms = roster.nonmembers.map(function (nm, i) {
+      return '<option value="nonmember:' + i + '">' + esc(nm.name) + '</option>';
+    }).join('');
+    if (nms) body += '<optgroup label="Non-members">' + nms + '</optgroup>';
+
+    var html = body
+      ? '<option value="">— Select person —</option>' + body
+      : '<option value="">— No one on this team yet —</option>';
+
+    /* escape hatch: a one-off non-member, when the team allows them */
     if (team.allow_nonmembers) {
       html += '<option value="guest_inline">✚ Non-member (enter name &amp; email)</option>';
     }
     return html;
   }
 
-  /* ── family options (a couple with children) — shown for any role ──
+  /* ── family options (a couple with children) ───────────────────────
      A "family" is anchored to one parent; the spouse + children are derived.
+     Only the families explicitly added to the team are listed.
      Value: family:<anchorParentId>:<spouseId>  (spouseId may be empty). */
-  function buildFamilyOpts() {
-    var fams = {};
-    Object.keys(_childMap).forEach(function (cid) {
-      var c = _childMap[cid];
-      var par = _profMap[c.profile_id]; if (!par) return;
+  function buildFamilyOpts(anchorIds) {
+    var seen = {}, fams = [];
+    (anchorIds || []).forEach(function (pid) {
+      var par = _profMap[pid]; if (!par) return;
       var spouseId = (par.spouse_id && _profMap[par.spouse_id]) ? par.spouse_id : '';
       var key = [par.id].concat(spouseId ? [spouseId] : []).sort().join('_');
-      if (!fams[key]) {
-        var ln = par.last_name || (spouseId && _profMap[spouseId] ? _profMap[spouseId].last_name : '') || '';
-        fams[key] = { anchor: par.id, spouse: spouseId, label: (ln ? ln + ' ' : '') + 'Family' };
-      }
+      if (seen[key]) return;
+      seen[key] = true;
+      var ln = par.last_name || (spouseId && _profMap[spouseId] ? _profMap[spouseId].last_name : '') || '';
+      fams.push({ anchor: par.id, spouse: spouseId, label: (ln ? ln + ' ' : '') + 'Family' });
     });
-    return Object.keys(fams).sort(function (a, b) { return fams[a].label.localeCompare(fams[b].label); })
-      .map(function (k) { var f = fams[k]; return '<option value="family:' + f.anchor + ':' + f.spouse + '">' + esc(f.label) + '</option>'; })
+    return fams.sort(function (a, b) { return a.label.localeCompare(b.label); })
+      .map(function (f) { return '<option value="family:' + f.anchor + ':' + f.spouse + '">' + esc(f.label) + '</option>'; })
       .join('');
   }
 
@@ -207,6 +277,7 @@
       '.mp-ms-guest-f{display:none;flex-direction:column;gap:5px;}',
       '.mp-ms-guest-f input{width:100%;font-size:0.84rem;box-sizing:border-box;}',
       '.mp-ms-add-row{display:flex;gap:7px;align-items:center;}',
+      '.mp-ms-team-hint{font-size:0.78rem;color:#92700c;background:#fffbeb;border:1px solid #fde68a;border-radius:5px;padding:7px 9px;line-height:1.4;}',
       '.mp-ms-ft{display:flex;gap:8px;margin-top:14px;}'
     ].join('');
     document.head.appendChild(s);
@@ -248,7 +319,7 @@
     var [rRes, tRes, tmRes, pRes, gRes, cRes, defTplRes] = await Promise.all([
       _sb.from('schedule_rosters').select('*').gte('date', rs).lte('date', re).eq('type', 'sunday').order('date'),
       _sb.from('teams').select('*').eq('is_sunday_serving', true).order('serving_order').order('name'),
-      _sb.from('team_members').select('team_id,member_id'),
+      _sb.from('team_members').select(TM_COLS),
       _sb.from('profiles').select('id,first_name,last_name,full_name,spouse_id').eq('status', 'approved'),
       _sb.from('guests').select('*'),
       _sb.from('children').select('id,name,profile_id').order('name'),
@@ -260,8 +331,13 @@
     (pRes.data || []).forEach(function (p) { _profMap[p.id]  = p; });
     (gRes.data || []).forEach(function (g) { _guestMap[g.id] = g; });
     (cRes.data || []).forEach(function (c) { _childMap[c.id] = c; });
-    _teams.forEach(function (t) { _tmMap[t.id] = []; });
-    (tmRes.data || []).forEach(function (tm) { if (_tmMap[tm.team_id]) _tmMap[tm.team_id].push(tm.member_id); });
+    /* the extended columns only exist once the team_members migration has run */
+    var tmRows = tmRes.data;
+    if (tmRes.error) {
+      var tmFb = await _sb.from('team_members').select('team_id,member_id');
+      tmRows = tmFb.data || [];
+    }
+    buildTmMap(tmRows);
 
     /* ── auto-create Sunday serving teams from default template if none exist ── */
     var defTpl = (defTplRes.data || [])[0];
@@ -272,7 +348,7 @@
       var autoTRes = await _sb.from('teams').insert(toCreate).select();
       if (!autoTRes.error && autoTRes.data) {
         _teams = autoTRes.data;
-        _teams.forEach(function (t) { _tmMap[t.id] = []; });
+        _teams.forEach(function (t) { _tmMap[t.id] = emptyRoster(); });
       }
     }
 
@@ -488,6 +564,10 @@
     var d    = new Date(date + 'T12:00:00');
     var dl   = d.toLocaleDateString('en-CA', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
     var opts = buildTeamOpts(team);
+    var emptyHint = teamRosterEmpty(team)
+      ? '<div class="mp-ms-team-hint">No one has been added to <strong>' + esc(team.name) + '</strong> yet. '
+        + 'Add people to the team under <strong>Teams</strong> to make them selectable here.</div>'
+      : '';
 
     var html = '<div class="mp-ms-ov" id="mp-ms-ov" onclick="if(event.target===this)mpMasterClose()">'
       + '<div class="mp-ms-box">'
@@ -495,6 +575,7 @@
       + '<div class="mp-ms-box-sub">' + esc(dl) + '</div>'
       + buildListHtml(_editSlots)
       + '<div class="mp-ms-add">'
+      + emptyHint
       + '<select class="mp-ms-add-sel" id="mp-ms-sel" onchange="mpMasterSelChg(this.value)">' + opts + '</select>'
       + '<div class="mp-ms-guest-f" id="mp-ms-gf">'
       + '<input type="text"  id="mp-ms-gname"  placeholder="Full name (required)">'
@@ -550,6 +631,14 @@
     }
   };
 
+  /* already assigned as a manually-entered / non-member guest? */
+  function hasGuestNamed(name) {
+    var n = String(name || '').trim().toLowerCase();
+    return !!n && _editSlots.some(function (s) {
+      return s.assignee_type === 'guest_inline' && String(s.guest_name || '').trim().toLowerCase() === n;
+    });
+  }
+
   window.mpMasterAdd = function () {
     var sel = document.getElementById('mp-ms-sel');
     var val = sel ? sel.value : ''; if (!val) return;
@@ -558,10 +647,18 @@
       var gn = (document.getElementById('mp-ms-gname')  || {}).value || '';
       var ge = (document.getElementById('mp-ms-gemail') || {}).value || '';
       if (!gn.trim()) { var ni = document.getElementById('mp-ms-gname'); if (ni) ni.focus(); return; }
+      if (hasGuestNamed(gn)) { sel.value = ''; return; }
       slot = { id: 'slot_'+Math.random().toString(36).slice(2), role: _curTeam?_curTeam.name:'', team_id: _curTeam?_curTeam.id:'', assignee_type:'guest_inline', assignee_id:'', assignee_id_b:'', guest_id:'', guest_name:gn.trim(), guest_email:ge.trim() };
       var gni = document.getElementById('mp-ms-gname'), gei = document.getElementById('mp-ms-gemail');
       if (gni) gni.value = ''; if (gei) gei.value = '';
       var gf = document.getElementById('mp-ms-gf'); if (gf) gf.style.display = 'none';
+    } else if (val.indexOf('nonmember:') === 0) {
+      /* a non-member volunteer already on this team — stored like any other
+         inline guest so reminders and the grid resolve the name unchanged */
+      var nm = teamRoster(_curTeam).nonmembers[parseInt(val.split(':')[1], 10)];
+      if (!nm) { sel.value = ''; return; }
+      if (hasGuestNamed(nm.name)) { sel.value = ''; return; }
+      slot = { id: 'slot_'+Math.random().toString(36).slice(2), role: _curTeam?_curTeam.name:'', team_id: _curTeam?_curTeam.id:'', assignee_type:'guest_inline', assignee_id:'', assignee_id_b:'', guest_id:'', guest_name:nm.name, guest_email:nm.email||'' };
     } else {
       var pts = val.split(':');
       if (_editSlots.some(function(s) { return s.assignee_type===pts[0]&&s.assignee_id===pts[1]; })) { sel.value=''; return; }
