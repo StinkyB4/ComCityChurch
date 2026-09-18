@@ -70,6 +70,119 @@
     return null;
   }
 
+  /* ── sorting ─────────────────────────────────────────────── */
+  /* The stored tree keeps insertion (creation) order; what members
+     see is sorted on the fly, by name unless they pick otherwise. */
+  var SORT_KEYS = {
+    name:     'Name',
+    size:     'Size',
+    created:  'Date created',
+    modified: 'Date modified',
+    type:     'Type'
+  };
+  var SORT_DIR_LABELS = {
+    name:     ['A → Z', 'Z → A'],
+    size:     ['Smallest first', 'Largest first'],
+    created:  ['Oldest first', 'Newest first'],
+    modified: ['Oldest first', 'Newest first'],
+    type:     ['A → Z', 'Z → A']
+  };
+  var _sortKey = 'name';
+  var _sortDir = 'asc';
+
+  function nowSec() { return Math.floor(Date.now() / 1000); }
+
+  /* Stamps are stored in seconds (uploaded_at / added_at / created_at);
+     anything that big is already milliseconds. */
+  function toMs(v) {
+    var n = Number(v);
+    if (!n || !isFinite(n) || n <= 0) return 0;
+    return n < 1e11 ? n * 1000 : n;
+  }
+
+  /* Nodes created before the stamp fields existed still carry a
+     millisecond timestamp inside their id (e.g. file_1710000000000). */
+  function idStamp(id) {
+    var m = String(id || '').match(/_(\d{10,})$/);
+    return m ? toMs(m[1]) : 0;
+  }
+
+  function createdAt(n) {
+    return toMs(n.created_at) || toMs(n.uploaded_at) || toMs(n.added_at) || idStamp(n.id);
+  }
+
+  function modifiedAt(n) { return toMs(n.modified_at) || createdAt(n); }
+
+  /* A folder's size is everything inside it. Files uploaded before we
+     started recording sizes count as 0 and show a dash. */
+  function nodeSize(n) {
+    if (n.type === 'folder') {
+      return (n.children || []).reduce(function (sum, c) { return sum + nodeSize(c); }, 0);
+    }
+    var s = Number(n.size);
+    return (isFinite(s) && s > 0) ? s : 0;
+  }
+
+  function hasSize(n) {
+    if (n.type === 'folder') return (n.children || []).some(hasSize);
+    return isFinite(Number(n.size)) && Number(n.size) > 0;
+  }
+
+  function typeRank(n) { return n.type === 'folder' ? 0 : (n.type === 'file' ? 1 : 2); }
+
+  function fileExt(n) {
+    var m = String(n.filename || n.name || '').match(/\.([A-Za-z0-9]+)$/);
+    return m ? m[1].toLowerCase() : '';
+  }
+
+  function byName(a, b) {
+    return String(a.name || '').localeCompare(String(b.name || ''), undefined, { sensitivity: 'base', numeric: true });
+  }
+
+  function compareNodes(a, b) {
+    var dir = _sortDir === 'desc' ? -1 : 1, cmp;
+    if (_sortKey === 'size')          cmp = nodeSize(a) - nodeSize(b);
+    else if (_sortKey === 'created')  cmp = createdAt(a) - createdAt(b);
+    else if (_sortKey === 'modified') cmp = modifiedAt(a) - modifiedAt(b);
+    else if (_sortKey === 'type')     cmp = (typeRank(a) - typeRank(b)) || fileExt(a).localeCompare(fileExt(b));
+    else                              cmp = byName(a, b);
+    /* name breaks every tie, always ascending */
+    return cmp ? cmp * dir : byName(a, b);
+  }
+
+  /* Copy first: the tree in memory is what gets saved back. */
+  function sortNodes(nodes) { return (nodes || []).slice().sort(compareNodes); }
+
+  function sortDirLabel() {
+    var labels = SORT_DIR_LABELS[_sortKey] || SORT_DIR_LABELS.name;
+    return _sortDir === 'asc' ? '↑ ' + labels[0] : '↓ ' + labels[1];
+  }
+
+  function formatSize(bytes) {
+    if (!isFinite(bytes) || bytes <= 0) return '';
+    if (bytes < 1024) return bytes + ' B';
+    var units = ['KB', 'MB', 'GB', 'TB'], i = -1, v = bytes;
+    do { v /= 1024; i++; } while (v >= 1024 && i < units.length - 1);
+    return (v >= 10 ? Math.round(v) : Math.round(v * 10) / 10) + ' ' + units[i];
+  }
+
+  function formatStamp(ms) {
+    if (!ms) return '';
+    var d = new Date(ms);
+    return isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  /* Small grey column showing whatever the tree is sorted by, so the
+     order on screen explains itself. Name/type need no column. */
+  function sortMeta(n) {
+    var txt = '';
+    if (_sortKey === 'size')          txt = hasSize(n) ? formatSize(nodeSize(n)) : '—';
+    else if (_sortKey === 'created')  txt = formatStamp(createdAt(n));
+    else if (_sortKey === 'modified') txt = formatStamp(modifiedAt(n));
+    if (!txt) return '';
+    return '<span class="mp-tree-meta">' + window.mpDashboard.esc(txt) + '</span>';
+  }
+
   async function saveTree(sb, tree) {
     /* always one row */
     var { data: existing } = await sb.from('file_tree').select('id').limit(1).maybeSingle();
@@ -89,12 +202,17 @@
     var tree = window._fileTree || [];
     var isAdmin = D.isAdmin();
 
-    /* update tree view */
+    /* update tree view — re-sorting must not collapse open folders
+       or drop the search the member has typed */
     var wrap = document.getElementById('file-tree-wrap');
     if (wrap) {
+      var openIds = openFolderIds();
       wrap.innerHTML = tree.length
         ? '<ul class="mp-tree-root">' + renderTree(tree, isAdmin, 0) + '</ul>'
         : '<p class="mp-empty">No files or folders yet.</p>';
+      restoreOpenFolders(openIds);
+      var search = document.getElementById('file-search');
+      if (search && search.value) window.mpFilterFiles(search.value);
     }
 
     /* update folder dropdowns in all three create forms */
@@ -121,6 +239,26 @@
     if (formEl) formEl.reset();
   }
 
+  function openFolderIds() {
+    var ids = [];
+    document.querySelectorAll('.mp-tree-folder').forEach(function (li) {
+      var kids = li.querySelector('.mp-tree-children');
+      if (kids && kids.style.display !== 'none' && li.dataset.id) ids.push(li.dataset.id);
+    });
+    return ids;
+  }
+
+  function restoreOpenFolders(ids) {
+    if (!ids || !ids.length) return;
+    document.querySelectorAll('.mp-tree-folder').forEach(function (li) {
+      if (ids.indexOf(li.dataset.id) === -1) return;
+      var kids = li.querySelector('.mp-tree-children');
+      var chev = li.querySelector('.mp-folder-chevron');
+      if (kids) kids.style.display = '';
+      if (chev) chev.style.transform = 'rotate(90deg)';
+    });
+  }
+
   /* ── notify checkbox HTML (reused across forms) ── */
   function notifyCheckbox(name) {
     return '<div style="width:100%;margin-top:6px;">'
@@ -133,13 +271,14 @@
   function renderTree(nodes, isAdmin, depth) {
     var D = window.mpDashboard;
     var html = '';
-    (nodes || []).forEach(function (n) {
+    sortNodes(nodes).forEach(function (n) {
       var ind = depth * 20;
       if (n.type === 'folder') {
-        html += '<li class="mp-tree-folder" style="--indent:' + ind + 'px">';
+        html += '<li class="mp-tree-folder" data-id="' + D.esc(String(n.id)) + '" style="--indent:' + ind + 'px">';
         html += '<div class="mp-tree-row mp-tree-folder-row" onclick="mpFolderToggle(this)">';
         html += '<span class="mp-tree-icon mp-folder-icon">📁</span>';
         html += '<span class="mp-tree-name">' + D.esc(n.name) + '</span>';
+        html += sortMeta(n);
         html += '<span class="mp-folder-chevron">▶</span>';
         if (isAdmin) {
           html += '<span class="mp-tree-admin-actions">';
@@ -163,6 +302,7 @@
         html += '<span class="mp-tree-icon">📄</span>';
         html += '<span class="mp-tree-name">' + D.esc(n.name) + '</span>';
         if (n.filename) html += '<span class="mp-tree-filename">' + D.esc(n.filename) + '</span>';
+        html += sortMeta(n);
         html += '<div class="mp-tree-file-actions">';
         html += '<a href="' + D.esc(n.url) + '" target="_blank" rel="noopener" class="mp-btn mp-btn--small">Open</a>';
         html += '<a href="' + D.esc(n.url) + '" download="' + D.esc(n.filename || n.name) + '" class="mp-btn mp-btn--small mp-btn--outline">Download</a>';
@@ -177,6 +317,7 @@
         html += '<span class="mp-tree-icon">🔗</span>';
         html += '<span class="mp-tree-name">' + D.esc(n.name) + '</span>';
         html += '<span class="mp-tree-filename mp-tree-link-label">External link</span>';
+        html += sortMeta(n);
         html += '<div class="mp-tree-file-actions">';
         html += '<a href="' + D.esc(n.url) + '" target="_blank" rel="noopener" class="mp-btn mp-btn--small">Open</a>';
         if (isAdmin) {
@@ -272,8 +413,18 @@
       html += '</form></div>';
     }
 
-    /* search */
-    html += '<div class="mp-search-wrap"><input type="text" id="file-search" placeholder="Search files…" class="mp-search-input" oninput="mpFilterFiles(this.value)"></div>';
+    /* search + sort */
+    html += '<div class="mp-files-controls">';
+    html += '<input type="text" id="file-search" placeholder="Search files…" class="mp-search-input" oninput="mpFilterFiles(this.value)">';
+    html += '<div class="mp-files-sort-wrap">';
+    html += '<label for="file-sort" class="mp-files-sort-label">Sort by</label>';
+    html += '<select id="file-sort" class="mp-files-sort-select" onchange="mpSetFileSort(this.value)">';
+    Object.keys(SORT_KEYS).forEach(function (k) {
+      html += '<option value="' + k + '"' + (k === _sortKey ? ' selected' : '') + '>' + SORT_KEYS[k] + '</option>';
+    });
+    html += '</select>';
+    html += '<button type="button" id="file-sort-dir" class="mp-btn mp-btn--small mp-btn--outline mp-files-sort-dir" title="Reverse the sort order" onclick="mpToggleFileSortDir()">' + sortDirLabel() + '</button>';
+    html += '</div></div>';
 
     /* file tree */
     html += '<div id="file-tree-wrap">';
@@ -297,7 +448,7 @@
         var notify   = fd.get('folder_notify') === 'on';
         if (!name) { alert('Folder name is required.'); return; }
         var tree2 = window._fileTree || [];
-        var folder = { type: 'folder', id: 'fld_' + Date.now(), name: name, children: [] };
+        var folder = { type: 'folder', id: 'fld_' + Date.now(), name: name, children: [], created_at: nowSec(), modified_at: nowSec() };
         if (parentId) {
           var parent = findNode(tree2, parentId);
           if (parent && parent.type === 'folder') { parent.children = parent.children || []; parent.children.push(folder); }
@@ -345,7 +496,7 @@
           fileUrl = ud ? ud.publicUrl : '';
         }
 
-        var fileNode = { type: 'file', id: 'file_' + Date.now(), name: label, filename: f.name, url: fileUrl, uploaded_at: Math.floor(Date.now() / 1000), uploaded_by: D.getProfile().id };
+        var fileNode = { type: 'file', id: 'file_' + Date.now(), name: label, filename: f.name, url: fileUrl, size: f.size, uploaded_at: nowSec(), modified_at: nowSec(), uploaded_by: D.getProfile().id };
         var tree3 = window._fileTree || [];
         if (folderId) {
           var pnode = findNode(tree3, folderId);
@@ -373,7 +524,7 @@
         var notify   = fd.get('link_notify') === 'on';
         if (!name) { alert('Display name is required.'); return; }
         if (!url)  { alert('URL is required.'); return; }
-        var linkNode = { type: 'link', id: 'link_' + Date.now(), name: name, url: url, added_at: Math.floor(Date.now() / 1000), added_by: D.getProfile().id };
+        var linkNode = { type: 'link', id: 'link_' + Date.now(), name: name, url: url, added_at: nowSec(), modified_at: nowSec(), added_by: D.getProfile().id };
         var treeL = window._fileTree || [];
         if (folderId) {
           var pL = findNode(treeL, folderId);
@@ -398,7 +549,7 @@
         if (!id || !name) return;
         var tree4 = window._fileTree || [];
         var node = findNode(tree4, id);
-        if (node) { node.name = name; await saveTree(_sb, tree4); }
+        if (node) { node.name = name; node.modified_at = nowSec(); await saveTree(_sb, tree4); }
         document.getElementById('rename-panel').style.display = 'none';
         refreshFileSection(null);
       });
@@ -416,6 +567,7 @@
         var treeM = window._fileTree || [];
         var node = extractNode(treeM, id);
         if (!node) return;
+        node.modified_at = nowSec();
         if (destId) {
           var dest = findNode(treeM, destId);
           if (dest && dest.type === 'folder') {
@@ -499,6 +651,24 @@
     await saveTree(_sb2, tree5);
     refreshFileSection(null);
   };
+
+  window.mpSetFileSort = function (key) {
+    if (!SORT_KEYS[key]) return;
+    _sortKey = key;
+    updateSortDirButton();
+    refreshFileSection(null);
+  };
+
+  window.mpToggleFileSortDir = function () {
+    _sortDir = _sortDir === 'asc' ? 'desc' : 'asc';
+    updateSortDirButton();
+    refreshFileSection(null);
+  };
+
+  function updateSortDirButton() {
+    var btn = document.getElementById('file-sort-dir');
+    if (btn) btn.textContent = sortDirLabel();
+  }
 
   window.mpFilterFiles = function (q) {
     q = (q || '').toLowerCase().trim();

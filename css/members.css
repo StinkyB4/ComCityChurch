@@ -1891,6 +1891,11 @@ details[open] .mp-group-accordion-chevron { transform: rotate(90deg); }
 /* ══════════════════════════════════════════════════════════════════════════
    FILES TAB
    ══════════════════════════════════════════════════════════════════════════ */
+.mp-files-controls   { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.mp-files-sort-wrap  { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--mp-text-3); }
+.mp-files-sort-label { white-space: nowrap; }
+.mp-files-sort-select { padding: 6px 8px; border: 1.5px solid var(--mp-border); border-radius: 5px; font-size: 0.85rem; font-family: inherit; }
+.mp-files-sort-dir   { white-space: nowrap; }
 .mp-tree-root      { list-style: none; margin: 0; padding: 0; }
 .mp-tree-folder, .mp-tree-file { }
 .mp-tree-row       { display: flex; align-items: center; gap: 8px; padding: 8px 0 8px calc(var(--indent,0px) + 8px); cursor: pointer; border-radius: 6px; transition: background 0.12s; }
@@ -1900,6 +1905,7 @@ details[open] .mp-group-accordion-chevron { transform: rotate(90deg); }
 .mp-folder-icon    { }
 .mp-tree-name      { flex: 1; font-size: 0.88rem; font-weight: 600; }
 .mp-tree-filename  { font-size: 0.78rem; color: var(--mp-text-3); }
+.mp-tree-meta      { font-size: 0.78rem; color: var(--mp-text-3); white-space: nowrap; }
 .mp-folder-chevron { color: var(--mp-text-3); font-size: 0.85rem; transition: transform 0.2s; }
 .mp-tree-folder.mp-tree-open .mp-folder-chevron { transform: rotate(90deg); }
 .mp-tree-children  { list-style: none; margin: 0; padding: 0; }
