@@ -141,8 +141,124 @@
   </div>
 </section>
 
+<!-- ===== SCHEDULE ===== -->
+<section class="section section--gray" id="schedule">
+  <div class="container" style="max-width:760px;">
+    <div class="section-heading text-center">
+      <span class="eyebrow fade-in-up">Schedule</span>
+      <h2 class="fade-in-up delay-1">Wednesday, November 4</h2>
+    </div>
+
+    <div class="schedule-list fade-in-up delay-2">
+      <div class="schedule-row">
+        <div class="schedule-time">9:00 – 9:30</div>
+        <div class="schedule-body">
+          <p class="schedule-title">Arrival &amp; Connection</p>
+        </div>
+      </div>
+
+      <div class="schedule-row">
+        <div class="schedule-time">9:30 – 9:50</div>
+        <div class="schedule-body">
+          <p class="schedule-title">Welcome + Prayer</p>
+          <p class="schedule-desc">Why this day exists, why Canada, why now. A vision for on-going missional-disciplemaking conversations in Winnipeg, across denominational lines.</p>
+        </div>
+      </div>
+
+      <div class="schedule-row">
+        <div class="schedule-time">9:50 – 11:20</div>
+        <div class="schedule-body">
+          <p class="schedule-title">Session #1 — Vision for Gospel Saturation</p>
+          <p class="schedule-desc">Discipleship as a 24/7 identity, not a program.</p>
+        </div>
+      </div>
+
+      <div class="schedule-row schedule-break">
+        <div class="schedule-time">11:20 – 11:30</div>
+        <div class="schedule-body">
+          <p class="schedule-title">Break</p>
+        </div>
+      </div>
+
+      <div class="schedule-row">
+        <div class="schedule-time">11:30 – 12:30</div>
+        <div class="schedule-body">
+          <p class="schedule-title">Session #2 — Vision for Disciplemaking</p>
+          <p class="schedule-desc">More practical, but giving a vision for discipleship. What is a disciple? How is a disciple made? Why does this matter?</p>
+        </div>
+      </div>
+
+      <div class="schedule-row schedule-break">
+        <div class="schedule-time">12:30 – 1:30</div>
+        <div class="schedule-body">
+          <p class="schedule-title">Lunch + Connection</p>
+        </div>
+      </div>
+
+      <div class="schedule-row">
+        <div class="schedule-time">1:30 – 2:00</div>
+        <div class="schedule-body">
+          <p class="schedule-title">Debriefing + Discussion</p>
+          <p class="schedule-desc">Process in smaller groups — what have been some key learnings and takeaways?</p>
+        </div>
+      </div>
+
+      <div class="schedule-row schedule-break">
+        <div class="schedule-time">2:00 – 2:10</div>
+        <div class="schedule-body">
+          <p class="schedule-title">Break</p>
+        </div>
+      </div>
+
+      <div class="schedule-row">
+        <div class="schedule-time">2:10 – 2:45</div>
+        <div class="schedule-body">
+          <p class="schedule-title">Session #3</p>
+          <p class="schedule-desc">Something unique to the Canadian context. <em>Topic TBA.</em></p>
+        </div>
+      </div>
+
+      <div class="schedule-row">
+        <div class="schedule-time">2:45 – 3:00</div>
+        <div class="schedule-body">
+          <p class="schedule-title">Next Steps + Commissioning</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<style>
+  .schedule-list { display: flex; flex-direction: column; gap: 10px; margin-top: var(--space-md); }
+  .schedule-row {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: var(--space-md);
+    align-items: flex-start;
+    background: var(--white);
+    border-left: 3px solid var(--red);
+    border-radius: 6px;
+    padding: var(--space-sm) var(--space-md);
+    box-shadow: var(--shadow-card);
+  }
+  .schedule-row.schedule-break { border-left-color: var(--muted-blue); background: #eef1f5; box-shadow: none; }
+  .schedule-time {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    color: var(--navy);
+    font-size: 15px;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  .schedule-body { min-width: 0; }
+  .schedule-title { margin: 0; font-weight: 600; color: var(--navy); }
+  .schedule-desc { margin: 4px 0 0 0; font-size: 16px; color: var(--muted-blue); line-height: 1.55; }
+  @media (max-width: 560px) {
+    .schedule-row { grid-template-columns: 1fr; gap: 4px; }
+  }
+</style>
+
 <!-- ===== EVENT DETAILS (When / Where / Who) ===== -->
-<section class="section-sm section--gray" id="details">
+<section class="section-sm" id="details">
   <div class="container">
     <div class="grid-3" style="max-width:960px; margin:0 auto;">
       <div class="info-card fade-in-up">
@@ -160,28 +276,6 @@
         <h4>Who It's For</h4>
         <p>Pastors, church planters,<br>ministry leaders, and everyday<br>disciple-makers.</p>
       </div>
-    </div>
-  </div>
-</section>
-
-<!-- ===== SCHEDULE ===== -->
-<section class="section section--gray">
-  <div class="container" style="max-width:720px;">
-    <div class="section-heading text-center">
-      <span class="eyebrow fade-in-up">Schedule</span>
-      <h2 class="fade-in-up delay-1">Wednesday, November 4</h2>
-    </div>
-    <div class="fade-in-up delay-2" style="border-left:3px solid var(--red); padding:var(--space-sm) var(--space-md); background:var(--white); border-radius:6px; box-shadow:var(--shadow-card);">
-      <p style="margin:0;"><strong style="color:var(--navy);">9:00 AM</strong> — Doors Open</p>
-    </div>
-    <div class="fade-in-up delay-2" style="border-left:3px solid var(--red); padding:var(--space-sm) var(--space-md); background:var(--white); border-radius:6px; box-shadow:var(--shadow-card); margin-top:var(--space-xs);">
-      <p style="margin:0;"><strong style="color:var(--navy);">9:30 AM – 12:30 PM</strong> — Sessions 1 &amp; 2</p>
-    </div>
-    <div class="fade-in-up delay-2" style="border-left:3px solid var(--red); padding:var(--space-sm) var(--space-md); background:var(--white); border-radius:6px; box-shadow:var(--shadow-card); margin-top:var(--space-xs);">
-      <p style="margin:0;"><strong style="color:var(--navy);">12:30 – 1:30 PM</strong> — Lunch Provided</p>
-    </div>
-    <div class="fade-in-up delay-2" style="border-left:3px solid var(--red); padding:var(--space-sm) var(--space-md); background:var(--white); border-radius:6px; box-shadow:var(--shadow-card); margin-top:var(--space-xs);">
-      <p style="margin:0;"><strong style="color:var(--navy);">1:30 – 3:00 PM</strong> — Session 3, Discussion, &amp; Prayer</p>
     </div>
   </div>
 </section>
