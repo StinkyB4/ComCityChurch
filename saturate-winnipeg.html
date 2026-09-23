@@ -101,13 +101,43 @@
 <main>
 
 <!-- ===== HERO ===== -->
-<section class="page-hero page-hero--navy" aria-labelledby="page-heading">
-  <span class="eyebrow fade-in-up">Wednesday · November 4, 2026 · Winnipeg</span>
-  <h1 id="page-heading" class="fade-in-up delay-1">Saturate One-Day Winnipeg</h1>
-  <p class="page-hero-sub fade-in-up delay-2">A day for pastors and leaders to pray, learn, and lean in around disciple-making in our city — together.</p>
-  <div class="fade-in-up delay-3" style="margin-top:var(--space-md); display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
-    <a href="https://events.saturatetheworld.com/winnipeg/#register" target="_blank" rel="noopener" class="btn btn-red">Register Now →</a>
-    <a href="#details" class="btn btn-outline" style="border-color:rgba(255,255,255,0.6); color:#fff;">Event Details</a>
+<section class="page-hero saturate-hero" aria-labelledby="page-heading">
+  <div class="saturate-hero-inner">
+    <span class="eyebrow fade-in-up">Wednesday · November 4, 2026 · Winnipeg</span>
+    <h1 id="page-heading" class="fade-in-up delay-1">Saturate One-Day Winnipeg</h1>
+    <p class="page-hero-sub fade-in-up delay-2">A day for pastors and leaders to pray, learn, and lean in around disciple-making in our city — together.</p>
+    <div class="fade-in-up delay-3" style="margin-top:var(--space-md); display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
+      <a href="https://events.saturatetheworld.com/winnipeg/#register" target="_blank" rel="noopener" class="btn btn-red">Register Now →</a>
+      <a href="#details" class="btn btn-outline" style="border-color:rgba(255,255,255,0.6); color:#fff;">Event Details</a>
+    </div>
+  </div>
+</section>
+<style>
+  .saturate-hero {
+    position: relative;
+    min-height: 62vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-image: linear-gradient(rgba(17,46,83,0.72), rgba(17,46,83,0.72)), url('assets/media/heroes/winnipeg-skyline.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: #fff;
+    padding: var(--space-xxl) var(--space-lg);
+  }
+  .saturate-hero h1, .saturate-hero .page-hero-sub { color: #fff; }
+  .saturate-hero-inner { position: relative; z-index: 2; max-width: 780px; margin: 0 auto; text-align: center; }
+</style>
+
+<!-- ===== ABOUT ===== -->
+<section class="section">
+  <div class="container text-block mx-auto">
+    <span class="eyebrow fade-in-up">The Invitation</span>
+    <h2 class="fade-in-up delay-1">What would it look like for the good news of Jesus to saturate Winnipeg?</h2>
+    <p class="fade-in-up delay-2">Spend a day with pastors and leaders praying and leaning in around disciple-making in our city together.</p>
+    <p class="fade-in-up delay-2">What if disciple-making is not one more program you need to launch, but equipping and releasing everyday disciples to live as His people where they live, work, learn, and play? And what if you don't need to figure out what that looks like on your own, but within the context of a community of other leaders, working in the city together?</p>
+    <p class="fade-in-up delay-2">We believe God is already at work in Winnipeg. This is an invitation to gather and together prayerfully consider how we may join Him in that work. We hope you'll join us.</p>
   </div>
 </section>
 
@@ -131,17 +161,6 @@
         <p>Pastors, church planters,<br>ministry leaders, and everyday<br>disciple-makers.</p>
       </div>
     </div>
-  </div>
-</section>
-
-<!-- ===== ABOUT ===== -->
-<section class="section">
-  <div class="container text-block mx-auto">
-    <span class="eyebrow fade-in-up">The Invitation</span>
-    <h2 class="fade-in-up delay-1">What would it look like for the good news of Jesus to saturate Winnipeg?</h2>
-    <p class="fade-in-up delay-2">Spend a day with pastors and leaders praying and leaning in around disciple-making in our city together.</p>
-    <p class="fade-in-up delay-2">What if disciple-making is not one more program you need to launch, but equipping and releasing everyday disciples to live as His people where they live, work, learn, and play? And what if you don't need to figure out what that looks like on your own, but within the context of a community of other leaders, working in the city together?</p>
-    <p class="fade-in-up delay-2">We believe God is already at work in Winnipeg. This is an invitation to gather and together prayerfully consider how we may join Him in that work. We hope you'll join us.</p>
   </div>
 </section>
 
@@ -178,10 +197,8 @@
     </div>
 
     <div class="fade-in-up delay-2 speaker-layout" style="max-width:860px; margin:0 auto; display:flex; flex-wrap:wrap; gap:var(--space-lg); align-items:flex-start; justify-content:center;">
-      <div style="flex:0 0 200px;">
-        <div style="width:200px; height:240px; border-radius:var(--radius-card); background:var(--gray-bg); display:flex; align-items:center; justify-content:center; color:var(--muted-blue); font-family:Montserrat,sans-serif; font-weight:600; font-size:13px; box-shadow:var(--shadow-card); margin:0 auto;">
-          Headshot
-        </div>
+      <div style="flex:0 0 220px;">
+        <img src="assets/media/saturate/jeff-vanderstelt.webp" alt="Jeff Vanderstelt" style="width:220px; height:auto; border-radius:var(--radius-card); background:var(--gray-bg); box-shadow:var(--shadow-card); display:block; margin:0 auto;">
       </div>
       <div style="flex:1 1 320px; min-width:0;">
         <p style="font-size:12px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--red); margin-bottom:var(--space-sm);">Executive Director, Saturate · Founder, Soma</p>
@@ -202,48 +219,43 @@
   </div>
 </section>
 
-<!-- ===== SPONSORS =====
-     Drop sponsor logos into assets/media/sponsors/ and replace each dashed
-     placeholder <div> with an <img src="..." alt="Sponsor name">. Tier
-     headings (Presenting / Major / Supporting) can be renamed or removed
-     depending on how many sponsors come on board. -->
+<!-- ===== SPONSORS ===== -->
 <section class="section" id="sponsors">
   <div class="container">
-    <div class="section-heading text-center mx-auto" style="max-width:520px; margin-bottom:var(--space-lg);">
+    <div class="section-heading text-center mx-auto" style="max-width:560px; margin-bottom:var(--space-lg);">
       <span class="eyebrow fade-in-up">With Thanks To</span>
       <h2 class="fade-in-up delay-1">Our Sponsors</h2>
-      <p class="fade-in-up delay-2" style="color:var(--muted-blue); margin-top:var(--space-sm);">Saturate One-Day Winnipeg is made possible by the generosity of local businesses, churches, and ministry partners who share our vision for the city.</p>
+      <p class="fade-in-up delay-2" style="color:var(--muted-blue); margin-top:var(--space-sm);">Saturate One-Day Winnipeg is made possible by these gospel partners who share our vision for the city.</p>
     </div>
 
-    <!-- ── PRESENTING SPONSOR ────────────────────────────────────────────── -->
-    <div class="fade-in-up" style="text-align:center; margin-bottom:var(--space-xl);">
-      <p class="eyebrow" style="margin-bottom:var(--space-md);">Presenting Sponsor</p>
-      <div style="display:flex; justify-content:center;">
-        <div style="width:100%; max-width:320px; height:140px; border:2px dashed rgba(92,113,142,0.35); border-radius:var(--radius-card); display:flex; align-items:center; justify-content:center; color:var(--muted-blue); font-family:Montserrat,sans-serif; font-weight:600; font-size:14px; letter-spacing:0.05em;">
-          Presenting sponsor logo
+    <div class="sponsor-grid fade-in-up delay-2">
+      <a href="index.html" class="sponsor-card">
+        <div class="sponsor-logo">
+          <img src="assets/logo.png" alt="Commissioned City Church">
         </div>
-      </div>
-    </div>
+        <span class="sponsor-name">Commissioned City Church</span>
+      </a>
 
-    <!-- ── MAJOR SPONSORS ────────────────────────────────────────────────── -->
-    <div class="fade-in-up delay-1" style="margin-bottom:var(--space-xl);">
-      <p class="eyebrow text-center" style="margin-bottom:var(--space-md);">Major Sponsors</p>
-      <div class="grid-3" style="max-width:900px; margin:0 auto;">
-        <div style="height:120px; border:2px dashed rgba(92,113,142,0.35); border-radius:var(--radius-card); display:flex; align-items:center; justify-content:center; color:var(--muted-blue); font-family:Montserrat,sans-serif; font-weight:600; font-size:13px;">Logo slot</div>
-        <div style="height:120px; border:2px dashed rgba(92,113,142,0.35); border-radius:var(--radius-card); display:flex; align-items:center; justify-content:center; color:var(--muted-blue); font-family:Montserrat,sans-serif; font-weight:600; font-size:13px;">Logo slot</div>
-        <div style="height:120px; border:2px dashed rgba(92,113,142,0.35); border-radius:var(--radius-card); display:flex; align-items:center; justify-content:center; color:var(--muted-blue); font-family:Montserrat,sans-serif; font-weight:600; font-size:13px;">Logo slot</div>
-      </div>
-    </div>
+      <a href="https://www.bgc.ca/" target="_blank" rel="noopener" class="sponsor-card">
+        <div class="sponsor-logo">
+          <img src="assets/media/partners/bgc-canada.png" alt="Baptist General Conference of Canada">
+        </div>
+        <span class="sponsor-name">Baptist General Conference of Canada</span>
+      </a>
 
-    <!-- ── SUPPORTING SPONSORS ───────────────────────────────────────────── -->
-    <div class="fade-in-up delay-2">
-      <p class="eyebrow text-center" style="margin-bottom:var(--space-md);">Supporting Sponsors</p>
-      <div class="grid-4" style="max-width:1080px; margin:0 auto;">
-        <div style="height:96px; border:2px dashed rgba(92,113,142,0.35); border-radius:var(--radius-card); display:flex; align-items:center; justify-content:center; color:var(--muted-blue); font-family:Montserrat,sans-serif; font-weight:600; font-size:12px;">Logo slot</div>
-        <div style="height:96px; border:2px dashed rgba(92,113,142,0.35); border-radius:var(--radius-card); display:flex; align-items:center; justify-content:center; color:var(--muted-blue); font-family:Montserrat,sans-serif; font-weight:600; font-size:12px;">Logo slot</div>
-        <div style="height:96px; border:2px dashed rgba(92,113,142,0.35); border-radius:var(--radius-card); display:flex; align-items:center; justify-content:center; color:var(--muted-blue); font-family:Montserrat,sans-serif; font-weight:600; font-size:12px;">Logo slot</div>
-        <div style="height:96px; border:2px dashed rgba(92,113,142,0.35); border-radius:var(--radius-card); display:flex; align-items:center; justify-content:center; color:var(--muted-blue); font-family:Montserrat,sans-serif; font-weight:600; font-size:12px;">Logo slot</div>
-      </div>
+      <a href="https://www.nessbaptist.com/" target="_blank" rel="noopener" class="sponsor-card">
+        <div class="sponsor-logo">
+          <img src="assets/media/partners/ness-baptist.png" alt="Ness Avenue Baptist Church">
+        </div>
+        <span class="sponsor-name">Ness Avenue Baptist Church</span>
+      </a>
+
+      <a href="https://www.millarcollege.ca/" target="_blank" rel="noopener" class="sponsor-card">
+        <div class="sponsor-logo">
+          <img src="assets/media/partners/millar-college.png" alt="Millar College of the Bible">
+        </div>
+        <span class="sponsor-name">Millar College of the Bible</span>
+      </a>
     </div>
 
     <p class="small text-center fade-in-up delay-3" style="margin-top:var(--space-lg);">
@@ -251,6 +263,60 @@
     </p>
   </div>
 </section>
+<style>
+  .sponsor-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-md);
+    max-width: 1120px;
+    margin: 0 auto;
+  }
+  .sponsor-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    background: var(--white);
+    border: 1px solid rgba(17,46,83,0.08);
+    border-radius: var(--radius-card);
+    padding: var(--space-lg) var(--space-md);
+    box-shadow: var(--shadow-card);
+    text-decoration: none;
+    color: var(--navy);
+    transition: transform var(--transition), box-shadow var(--transition);
+  }
+  .sponsor-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 26px rgba(0,0,0,.12);
+  }
+  .sponsor-logo {
+    width: 100%;
+    height: 110px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--space-md);
+  }
+  .sponsor-logo img {
+    max-height: 110px;
+    max-width: 100%;
+    object-fit: contain;
+  }
+  .sponsor-name {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--navy);
+    text-align: center;
+    line-height: 1.35;
+  }
+  @media (max-width: 900px) {
+    .sponsor-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 480px) {
+    .sponsor-grid { grid-template-columns: 1fr; }
+  }
+</style>
 
 <!-- ===== MAP ===== -->
 <div class="map-wrapper" aria-label="Map showing Ness Baptist Church, 2700 Ness Ave, Winnipeg">
