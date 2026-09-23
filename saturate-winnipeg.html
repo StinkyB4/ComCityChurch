@@ -141,6 +141,15 @@
   </div>
 </section>
 
+<!-- ===== WHO IT'S FOR ===== -->
+<section class="section" style="padding-top:0;">
+  <div class="container text-block mx-auto">
+    <span class="eyebrow fade-in-up">Who It's For</span>
+    <h3 class="fade-in-up delay-1" style="margin-bottom:var(--space-sm);">Pastors, leaders, and everyday disciple-makers</h3>
+    <p class="fade-in-up delay-2">This day is shaped for pastors, church planters, ministry leaders, and anyone helping others follow Jesus in the everyday places God has already sent them. Bring your co-leaders. Bring a pastor friend. Come hungry for the gospel and ready to see God saturate our city.</p>
+  </div>
+</section>
+
 <!-- ===== SCHEDULE ===== -->
 <section class="section section--gray" id="schedule">
   <div class="container" style="max-width:760px;">
@@ -257,28 +266,64 @@
   }
 </style>
 
-<!-- ===== EVENT DETAILS (When / Where / Who) ===== -->
+<!-- ===== EVENT DETAILS (When / Where) ===== -->
 <section class="section-sm" id="details">
   <div class="container">
-    <div class="grid-3" style="max-width:960px; margin:0 auto;">
-      <div class="info-card fade-in-up">
-        <div class="info-icon">📅</div>
-        <h4>When</h4>
-        <p><strong>Wednesday</strong><br>November 4, 2026<br>9:30 AM – 3:00 PM<br><span class="small">(Doors open 9:00 AM)</span></p>
+    <div class="details-grid">
+      <div class="detail-block fade-in-up">
+        <span class="eyebrow">When</span>
+        <p class="detail-primary">Wednesday, November 4, 2026</p>
+        <p class="detail-secondary">9:30 AM – 3:00 PM</p>
+        <p class="detail-meta">Doors open at 9:00 AM</p>
       </div>
-      <div class="info-card fade-in-up delay-1">
-        <div class="info-icon">📍</div>
-        <h4>Where</h4>
-        <p><strong>Ness Baptist Church</strong><br>2700 Ness Ave<br>Winnipeg, MB R3J 3L1</p>
-      </div>
-      <div class="info-card fade-in-up delay-2">
-        <div class="info-icon">🙌</div>
-        <h4>Who It's For</h4>
-        <p>Pastors, church planters,<br>ministry leaders, and everyday<br>disciple-makers.</p>
+      <div class="detail-block fade-in-up delay-1">
+        <span class="eyebrow">Where</span>
+        <p class="detail-primary">Ness Baptist Church</p>
+        <p class="detail-secondary">2700 Ness Avenue<br>Winnipeg, MB R3J 3L1</p>
+        <p class="detail-meta"><a href="https://maps.google.com/maps?q=2700+Ness+Ave,+Winnipeg,+MB" target="_blank" rel="noopener" style="color:var(--red); font-weight:600;">View on Google Maps →</a></p>
       </div>
     </div>
   </div>
 </section>
+<style>
+  .details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-lg);
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .detail-block {
+    background: var(--white);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: var(--space-lg);
+    text-align: center;
+  }
+  .detail-block .eyebrow { margin-bottom: var(--space-sm); }
+  .detail-primary {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    color: var(--navy);
+    font-size: 22px;
+    line-height: 1.25;
+    margin: 0 0 6px 0;
+  }
+  .detail-secondary {
+    font-size: 18px;
+    color: var(--charcoal);
+    margin: 0 0 var(--space-sm) 0;
+    line-height: 1.4;
+  }
+  .detail-meta {
+    font-size: 14px;
+    color: var(--muted-blue);
+    margin: 0;
+  }
+  @media (max-width: 700px) {
+    .details-grid { grid-template-columns: 1fr; }
+  }
+</style>
 
 <!-- ===== SPEAKER ===== -->
 <!-- Drop Jeff's headshot into assets/media/saturate/jeff-vanderstelt.jpg and
