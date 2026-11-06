@@ -262,10 +262,23 @@ function showMsg(el, text, type) {
 function hideMsg(el) { el.style.display = 'none'; }
 
 document.addEventListener('DOMContentLoaded', async function() {
-  // Flash message from query string (e.g. ?approved=1)
-  var qs = new URLSearchParams(window.location.search);
+  // If Supabase redirected a password-recovery link here (e.g. the project's
+  // Site URL points at /members/ and reset-password.html isn't in the allow
+  // list), forward the user to the real reset page with the token intact.
+  var hash = window.location.hash || '';
+  var qs   = new URLSearchParams(window.location.search);
+  if (hash.indexOf('type=recovery') !== -1 ||
+      qs.get('type') === 'recovery' ||
+      qs.get('code')) {
+    window.location.replace('/members/reset-password.html' +
+      window.location.search + window.location.hash);
+    return;
+  }
+
+  // Flash messages from query string (e.g. ?approved=1, ?reset-success=1)
   var flash = document.getElementById('login-flash');
   if (qs.get('reset') === '1') showMsg(flash, 'Check your email for a password reset link.', 'success');
+  if (qs.get('reset-success') === '1') showMsg(flash, 'Password updated. Please sign in with your new password.', 'success');
 
   await new Promise(r => setTimeout(r, 400));
 
@@ -357,7 +370,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (!sb) { showMsg(forgotMsg, 'Service unavailable. Try again later.', 'error'); forgotSubmit.disabled = false; forgotSubmit.textContent = 'Send Reset Email'; return; }
 
     var { error } = await sb.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + '/members/?reset=1'
+      redirectTo: window.location.origin + '/members/reset-password.html'
     });
 
     forgotSubmit.disabled = false;
