@@ -10,6 +10,24 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400&family=Montserrat:wght@600;700;800&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="preload" href="assets/media/heroes/home-1.jpg" as="image" fetchpriority="high">
+  <script>
+    // If a Supabase password-recovery link redirects here (because the
+    // project's Site URL is set to the root), forward to the real reset
+    // page with the token intact. Runs before anything else loads.
+    (function() {
+      try {
+        var h = window.location.hash || '';
+        var q = window.location.search || '';
+        var isRecovery =
+          h.indexOf('type=recovery') !== -1 ||
+          /[?&]type=recovery(&|$)/.test(q) ||
+          /[?&]code=/.test(q);
+        if (isRecovery) {
+          window.location.replace('/members/reset-password.html' + q + h);
+        }
+      } catch (_) {}
+    })();
+  </script>
 </head>
 <body>
 

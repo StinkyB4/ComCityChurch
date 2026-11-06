@@ -21,6 +21,7 @@
     { "route": "/members/pending",        "rewrite": "/members/pending.html"        },
     { "route": "/members/dashboard",      "rewrite": "/members/dashboard.html"      },
     { "route": "/members/admin",          "rewrite": "/members/admin.html"          },
+    { "route": "/members/reset-password", "rewrite": "/members/reset-password.html" },
     { "route": "/blog",     "redirect": "/go-deeper",      "statusCode": 301 },
     { "route": "/blog.html","redirect": "/go-deeper.html", "statusCode": 301 },
     { "route": "/blog/a-family-of-missionary-servants.html", "redirect": "/go-deeper/a-family-of-missionary-servants.html", "statusCode": 301 },
